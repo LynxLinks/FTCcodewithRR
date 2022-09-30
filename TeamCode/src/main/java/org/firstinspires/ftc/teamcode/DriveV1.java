@@ -73,7 +73,7 @@ public class DriveV1 extends OpMode {
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        M0_2.setPower(-.5 * ((1 - Math.pow(10,((target - M0_2.getCurrentPosition())/100)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/100)))));
+        M0_2.setPower(-1 * ((1 - Math.pow(10,((target - M0_2.getCurrentPosition())/400)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/400)))));
         telemetry.addData("current ",M0_2.getCurrentPosition());
         telemetry.addData("delta", target - M0_2.getCurrentPosition());
         telemetry.addData("target",target);
