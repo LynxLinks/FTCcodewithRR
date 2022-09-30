@@ -7,7 +7,8 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.Sequenc
 import java.util.Collections;
 import java.util.List;
 
-public class TrajectorySequence {
+public class
+TrajectorySequence {
     private final List<SequenceSegment> sequenceList;
 
     public TrajectorySequence(List<SequenceSegment> sequenceList) {
