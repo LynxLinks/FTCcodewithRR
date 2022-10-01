@@ -77,7 +77,7 @@ public class DriveV1 extends OpMode {
         telemetry.addData("current ",M0_2.getCurrentPosition());
         telemetry.addData("delta", target - M0_2.getCurrentPosition());
         telemetry.addData("target",target);
-        telemetry.addData("equation",-.5 * ((1 - Math.pow( 10,((target - M0_2.getCurrentPosition())/100)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/100)))));
+        telemetry.addData("equation",-1 * ((1 - Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))));
         telemetry.addData("clamp ",D1.getState());
         telemetry.addData("slide ",D0.getState());
         telemetry.update();
