@@ -31,9 +31,9 @@ public class DriveV1 extends OpMode {
 
         //if (D0.getState() == true) S0.setPosition(.63);
 
-        if (gamepad1.left_bumper) S0.setPosition(.46);
-        if (gamepad1.right_bumper) S0.setPosition(.63);
-        if((D1.getState() == true) && (gamepad1.left_bumper == false)) S0.setPosition(.63);
+        if (gamepad1.left_bumper) S0.setPosition(0);
+        if (gamepad1.right_bumper) S0.setPosition(.51);
+        if((D1.getState() == true) && (gamepad1.left_bumper == false)) S0.setPosition(.51);
     }
     //drive loop
     public void MoveDriveTrain(){
@@ -43,9 +43,10 @@ public class DriveV1 extends OpMode {
         double Rotate;
 
         //input to change variables
-        yAxis = gamepad1.left_stick_y;
-        xAxis = gamepad1.left_stick_x;
+        yAxis = gamepad1.left_stick_y + gamepad1.right_stick_y/3;
+        xAxis = gamepad1.left_stick_x + gamepad1.right_stick_x/3;
         Rotate = -gamepad1.left_trigger+gamepad1.right_trigger;
+
 
         //apply variables to motor
         M0.setPower(-(Rotate + (-yAxis + xAxis)));
@@ -73,13 +74,19 @@ public class DriveV1 extends OpMode {
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        M0_2.setPower(-1 * ((1 - Math.pow(10,((target - M0_2.getCurrentPosition())/400)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/400)))));
+        if(target==0 && D0.getState() == false && M0_2.getCurrentPosition() <= 0){
+            M0_2.setPower(-0.05);
+        }
+        else {
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+        }
         telemetry.addData("current ",M0_2.getCurrentPosition());
         telemetry.addData("delta", target - M0_2.getCurrentPosition());
         telemetry.addData("target",target);
         telemetry.addData("equation",-1 * ((1 - Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))));
         telemetry.addData("clamp ",D1.getState());
         telemetry.addData("slide ",D0.getState());
+        telemetry.addData("servo shit",S0.getPosition() );
         telemetry.update();
         //dick
 
