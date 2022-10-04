@@ -39,6 +39,7 @@ public class Auto2 extends OpMode {
     //init sequence
     @Override
     public void init() {
+
     }
     @Override
     public void init_loop() {
@@ -48,7 +49,9 @@ public class Auto2 extends OpMode {
     //runs once after start is pressed
     @Override
     public void start(){
+        S0 = hardwareMap.get(Servo.class,"S0");
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
         Trajectory to = drive.trajectoryBuilder(new Pose2d())
                 .strafeTo(new Vector2d(-18, 0))
                 .splineToLinearHeading(new Pose2d(-32, 8, Math.toRadians(135)), Math.toRadians(0))
@@ -57,9 +60,12 @@ public class Auto2 extends OpMode {
                 .splineToLinearHeading(new Pose2d(-18, 0, Math.toRadians(0)), Math.toRadians(135))
                 .strafeTo(new Vector2d(0, 0))
                 .build();
-        //while t <25
-            //close clamp
-            //raise slide
+
+            S0.setPosition(.51);
+            target = 900;
+            while(Math.abs(target - M0.getCurrentPosition()) >10) {
+                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            }
             drive.followTrajectory(to);
             //open clamp
             //lower slide
@@ -75,7 +81,7 @@ public class Auto2 extends OpMode {
     //looping program after start
     @Override
     public void loop() {
-
+        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
     }
 
 }

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 //name and class
 
-@TeleOp(name = "DriveV3", group="Linear Opmode")
+@TeleOp(name = "DriveV1", group="Linear Opmode")
 
 
 public class DriveV1 extends OpMode {
