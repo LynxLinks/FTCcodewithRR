@@ -49,11 +49,27 @@ public class Auto2 extends OpMode {
     @Override
     public void start(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Trajectory traj = drive.trajectoryBuilder(new Pose2d())
-                .splineTo(new Vector2d(-18, 0),0)
-                .splineTo(new Vector2d(-32, 8), Math.toRadians(135))
+        Trajectory to = drive.trajectoryBuilder(new Pose2d())
+                .strafeTo(new Vector2d(-18, 0))
+                .splineToLinearHeading(new Pose2d(-32, 8, Math.toRadians(135)), Math.toRadians(0))
                 .build();
-        drive.followTrajectory(traj);
+        Trajectory from = drive.trajectoryBuilder(new Pose2d())
+                .splineToLinearHeading(new Pose2d(-18, 0, Math.toRadians(0)), Math.toRadians(135))
+                .strafeTo(new Vector2d(0, 0))
+                .build();
+        //while t <25
+            //close clamp
+            //raise slide
+            drive.followTrajectory(to);
+            //open clamp
+            //lower slide
+            drive.followTrajectory(from);
+            //while limit == false
+                //drive forward
+            //repeat
+
+
+
     }
 
     //looping program after start
