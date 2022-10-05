@@ -58,7 +58,8 @@ public class Auto2 extends OpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Trajectory to = drive.trajectoryBuilder(new Pose2d())
-                .splineToConstantHeading(new Vector2d(-32.5, 0),Math.toRadians(90))
+                .splineTo(new Vector2d(-32.5, 0),Math.toRadians(0))
+                .splineTo(new Vector2d(-32.5, 0),Math.toRadians(90))
                 .splineTo(new Vector2d(-32.5, 11), Math.toRadians(90))
                 .build();
        /* Trajectory from = drive.trajectoryBuilder(to.end())
