@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 public class Auto1 extends LinearOpMode {
     @Override
     public void runOpMode() {
+
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Trajectory traj1 = drive.trajectoryBuilder(new Pose2d())

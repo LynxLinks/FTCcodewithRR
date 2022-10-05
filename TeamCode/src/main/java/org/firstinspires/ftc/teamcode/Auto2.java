@@ -18,14 +18,10 @@ public class Auto2 extends OpMode {
 
     //Define Motors
     double target;
-    DcMotor M0;
-    DcMotor M1;
-    DcMotor M2;
-    DcMotor M3;
     DcMotor M0_2;
     Servo S0;
-    DigitalChannel D0;
     DigitalChannel D1;
+
 
     public void ServoClamp() {
 
@@ -39,6 +35,8 @@ public class Auto2 extends OpMode {
     //init sequence
     @Override
     public void init() {
+        S0 = hardwareMap.get(Servo.class,"S0");
+        S0.setPosition(.51);
 
     }
     @Override
@@ -49,27 +47,37 @@ public class Auto2 extends OpMode {
     //runs once after start is pressed
     @Override
     public void start(){
+        M0_2 = hardwareMap.get(DcMotor.class,"M0_2");
+
+        M0_2.setDirection(DcMotor.Direction.FORWARD);
+        M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         S0 = hardwareMap.get(Servo.class,"S0");
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Trajectory to = drive.trajectoryBuilder(new Pose2d())
-                .strafeTo(new Vector2d(-18, 0))
-                .splineToLinearHeading(new Pose2d(-32, 8, Math.toRadians(135)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-32.5, 0),Math.toRadians(90))
+                .splineTo(new Vector2d(-32.5, 11), Math.toRadians(90))
                 .build();
-        Trajectory from = drive.trajectoryBuilder(new Pose2d())
+       /* Trajectory from = drive.trajectoryBuilder(to.end())
                 .splineToLinearHeading(new Pose2d(-18, 0, Math.toRadians(0)), Math.toRadians(135))
                 .strafeTo(new Vector2d(0, 0))
                 .build();
 
-            S0.setPosition(.51);
-            target = 900;
-            while(Math.abs(target - M0.getCurrentPosition()) >10) {
-                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-            }
-            drive.followTrajectory(to);
+        */
+       // S0.setPosition(.51);
+        target = 2250;
+        while(Math.abs(target - M0_2.getCurrentPosition()) >10) {
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+        }
+        M0_2.setPower(0);
+        drive.followTrajectory(to);
+        S0.setPosition(0.0);
             //open clamp
             //lower slide
-            drive.followTrajectory(from);
+          //  drive.followTrajectory(from);
             //while limit == false
                 //drive forward
             //repeat
@@ -81,7 +89,6 @@ public class Auto2 extends OpMode {
     //looping program after start
     @Override
     public void loop() {
-        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
     }
 
 }
