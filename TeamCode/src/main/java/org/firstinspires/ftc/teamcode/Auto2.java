@@ -21,7 +21,9 @@ public class Auto2 extends OpMode {
     DcMotor M0_2;
     Servo S0;
     DigitalChannel D1;
-
+    public static double X1 = -40;
+    public static double Y1 = 6;
+    double loop = 0;
 
     public void ServoClamp() {
 
@@ -47,49 +49,56 @@ public class Auto2 extends OpMode {
     //runs once after start is pressed
     @Override
     public void start(){
-        M0_2 = hardwareMap.get(DcMotor.class,"M0_2");
-
-        M0_2.setDirection(DcMotor.Direction.FORWARD);
-        M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        S0 = hardwareMap.get(Servo.class,"S0");
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
-        Trajectory to = drive.trajectoryBuilder(new Pose2d())
-                .splineTo(new Vector2d(-32.5, 0),Math.toRadians(0))
-                .splineTo(new Vector2d(-32.5, 0),Math.toRadians(90))
-                .splineTo(new Vector2d(-32.5, 11), Math.toRadians(90))
-                .build();
-       /* Trajectory from = drive.trajectoryBuilder(to.end())
-                .splineToLinearHeading(new Pose2d(-18, 0, Math.toRadians(0)), Math.toRadians(135))
-                .strafeTo(new Vector2d(0, 0))
-                .build();
-
-        */
-       // S0.setPosition(.51);
-        target = 2250;
-        while(Math.abs(target - M0_2.getCurrentPosition()) >10) {
-            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-        }
-        M0_2.setPower(0);
-        drive.followTrajectory(to);
-        S0.setPosition(0.0);
-            //open clamp
-            //lower slide
-          //  drive.followTrajectory(from);
-            //while limit == false
-                //drive forward
-            //repeat
-
-
 
     }
 
     //looping program after start
     @Override
     public void loop() {
-    }
+        if (loop == 0) {
+            M0_2 = hardwareMap.get(DcMotor.class, "M0_2");
 
+            M0_2.setDirection(DcMotor.Direction.FORWARD);
+            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+            Trajectory to1 = drive.trajectoryBuilder(new Pose2d())
+                    .lineToLinearHeading(new Pose2d(X1, 0, Math.toRadians(90)))
+                    .build();
+            Trajectory to2 = drive.trajectoryBuilder(to1.end())
+                    .forward(Y1)
+                    .build();
+            Trajectory loop1 = drive.trajectoryBuilder(to2.end())
+                    .forward(8)
+                    .build();
+            Trajectory loop2 = drive.trajectoryBuilder(loop1.end())
+                    .back(8)
+                    .build();
+            Trajectory from2 = drive.trajectoryBuilder(loop2.end())
+                    .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
+                    .build();
+
+            target = 2400;
+            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            }
+            M0_2.setPower(0);
+            drive.followTrajectory(to1);
+            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            }
+            M0_2.setPower(0);
+            drive.followTrajectory(to2);
+            //S0.setPosition(.10);
+
+            target = 0;
+            drive.followTrajectory(from2);
+            //while limit == false
+            //drive forward
+            //repeat
+            loop = 1;
+        }
+    }
 }
