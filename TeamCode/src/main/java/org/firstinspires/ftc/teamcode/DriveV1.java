@@ -44,39 +44,54 @@ public class DriveV1 extends OpMode {
 
     public void RoadRunner() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
-        Trajectory left1 = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(270)))
+        Trajectory left1i = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
                 .build();
-        Trajectory left2 = drive.trajectoryBuilder(left1.end())
+
+        Trajectory left2i = drive.trajectoryBuilder(left1i.end())
                 .forward(y1)
                 .build();
+
         Trajectory left3 = drive.trajectoryBuilder(new Pose2d())
                 .back(y1)
                 .build();
         Trajectory left4 = drive.trajectoryBuilder(left3.end())
                 .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
                 .build();
-
-
-        Trajectory right1 = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
+        Trajectory left1 = drive.trajectoryBuilder(left4.end())
+                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(270)))
                 .build();
-        Trajectory right2 = drive.trajectoryBuilder(right1.end())
+        Trajectory left2 = drive.trajectoryBuilder(left1.end())
                 .forward(y1)
                 .build();
+
+
+        Trajectory right1i = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
+                .build();
+
+        Trajectory right2i = drive.trajectoryBuilder(right1i.end())
+                .forward(y1)
+                .build();
+
         Trajectory right3 = drive.trajectoryBuilder(new Pose2d())
                 .back(y1)
                 .build();
         Trajectory right4 = drive.trajectoryBuilder(right3.end())
                 .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
                 .build();
+        Trajectory right1 = drive.trajectoryBuilder(right4.end())
+                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
+                .build();
+        Trajectory right2 = drive.trajectoryBuilder(right1.end())
+                .forward(y1)
+                .build();
         if (gamepad1.dpad_right) {
             if (initial) {
                 S0.setPosition(.51);
                 target = 2225;
-                drive.followTrajectory(right1);
-                drive.followTrajectory(right2);
+                drive.followTrajectory(right1i);
+                drive.followTrajectory(right2i);
                 initial = false;
             } else {
                 S0.setPosition(0);
@@ -94,8 +109,8 @@ public class DriveV1 extends OpMode {
                 if (initial) {
                     S0.setPosition(.51);
                     target = 2225;
-                    drive.followTrajectory(left1);
-                    drive.followTrajectory(left2);
+                    drive.followTrajectory(left1i);
+                    drive.followTrajectory(left2i);
                     initial = false;
                 } else {
                     S0.setPosition(0);
@@ -126,7 +141,7 @@ public class DriveV1 extends OpMode {
         double Rotate;
 
         //input to change variables
-        /*yAxis = gamepad1.left_stick_y + gamepad1.right_stick_y/3;
+        yAxis = gamepad1.left_stick_y + gamepad1.right_stick_y/3;
         xAxis = gamepad1.left_stick_x + gamepad1.right_stick_x/3;
         Rotate = -gamepad1.left_trigger+gamepad1.right_trigger;
 
@@ -135,7 +150,7 @@ public class DriveV1 extends OpMode {
         M0.setPower(-(Rotate + (-yAxis + xAxis)));
         M1.setPower(-(Rotate + (+yAxis + xAxis)));
         M2.setPower(-(Rotate + (yAxis - xAxis)));
-        M3.setPower(-(Rotate + (-yAxis - xAxis)));*/
+        M3.setPower(-(Rotate + (-yAxis - xAxis)));
 
         //dowm
         if (gamepad1.a) {
