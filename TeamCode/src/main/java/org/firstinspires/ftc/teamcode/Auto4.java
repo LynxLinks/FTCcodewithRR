@@ -15,9 +15,9 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-
-@Autonomous(name="Auto0000", group="Linear Opmode")
 @Config
+@Autonomous(name="Auto0000", group="Linear Opmode")
+
 
 public class Auto4 extends LinearOpMode {
     // Declare OpMode members.
@@ -26,14 +26,22 @@ public class Auto4 extends LinearOpMode {
     Servo S0;
     DigitalChannel D1;
     ColorSensor C1;
-    public static double X1 = -40;
-    public static double Y1 = 8;
+
     double loop = 0;
     public int zone = 0;
+    FtcDashboard dashboard;
+    public static double sensedistance = -20;
+    public static double X1 = -51;
+    public static double Y1 = -12;
+    public static double X2 = -59;
+    public static double Y2 = 27;
+    public static double turncoef = 1;
+
+
 
     @Override
     public void runOpMode() {
-
+        dashboard = FtcDashboard.getInstance();
         S0 = hardwareMap.get(Servo.class,"S0");
         S0.setPosition(.51);
         C1 = hardwareMap.get(ColorSensor.class, "C1");
@@ -47,26 +55,30 @@ public class Auto4 extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Trajectory start0 = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(-20, 0, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(sensedistance, 0, Math.toRadians(0)))
                 .build();
         Trajectory start1 = drive.trajectoryBuilder(start0.end())
-                .lineToLinearHeading(new Pose2d(-53, 0, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(X1, 0, Math.toRadians(
+                        180)))
                 .build();
         Trajectory start2 = drive.trajectoryBuilder(start1.end())
-                .strafeLeft(12.5)
+                .strafeLeft(-(Y1))
                 .build();
         Trajectory loop1 = drive.trajectoryBuilder(start2.end())
-                .forward(7)
+                .forward(Math.abs(X2-X1))
                 .build();
         Trajectory loop2 = drive.trajectoryBuilder(loop1.end())
-                .back(8)
+                .back(Math.abs(X2-X1))
 
                 .build();
         Trajectory loop3 = drive.trajectoryBuilder(loop2.end())
-                .lineToLinearHeading(new Pose2d(-53, 26, Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d(X1, Y2, Math.toRadians(turncoef*    90)))
                 .build();
-        Trajectory loop4 = drive.trajectoryBuilder(loop3.end())
-                .lineToLinearHeading(new Pose2d(-53, -13, Math.toRadians(180)))
+        Trajectory loop35 = drive.trajectoryBuilder(loop3.end())
+                .forward(1)
+                .build();
+        Trajectory loop4 = drive.trajectoryBuilder(loop35.end())
+                .lineToLinearHeading(new Pose2d(X1, Y1, Math.toRadians(180)))
                 .build();
 
         Trajectory loopexit = drive.trajectoryBuilder(loop2.end())
@@ -122,6 +134,7 @@ public class Auto4 extends LinearOpMode {
 
 
             drive.followTrajectory(loop3);
+            drive.followTrajectory(loop35);
 
             target = 600;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
