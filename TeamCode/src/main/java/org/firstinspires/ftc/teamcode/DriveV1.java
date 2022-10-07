@@ -144,6 +144,18 @@ public class DriveV1 extends OpMode {
     @Override
     public void start(){
         target = 0;
+        if  ((600 < C1.red() ) & (C1.red() < 950)){
+            telemetry.addData("1",C1.red());
+
+        }
+        if  ((950 < C1.red())){
+            telemetry.addData("2",C1.red());
+
+        }
+        if  (C1.red() < 600){
+            telemetry.addData("3",C1.red());
+
+        }
 
     }
 

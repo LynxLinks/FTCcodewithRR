@@ -36,6 +36,14 @@ public class Auto4 extends LinearOpMode {
     public static double X2 = -59;
     public static double Y2 = 27;
     public static double turncoef = 1;
+    public static double slide1 = .27;
+    public static double slide2 = -.3;
+    public static double slide3 = -.4;
+    public static double slide4 = .35;
+
+
+    public static double slidei = 550;
+    public static double slided = -50;
 
 
 
@@ -102,18 +110,18 @@ public class Auto4 extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         if(isStopRequested()) return;
-        M0_2.setPower(.25);
+        M0_2.setPower(slide1);
         drive.followTrajectory(start0);
-        if  (C1.red() < 900){
+        if  ((600 < C1.red() ) & (C1.red() < 950)){
             telemetry.addData("1",C1.red());
             zone = 1;
         }
-        if  ((900 < C1.red() ) & (C1.red() < 1600)){
+        if  ((950 < C1.red())){
             telemetry.addData("2",C1.red());
             zone = 2;
         }
-        if  (C1.red() > 1600){
-            telemetry.addData("1",C1.red());
+        if  (C1.red() < 600){
+            telemetry.addData("3",C1.red());
             zone = 3;
         }
 
@@ -129,29 +137,30 @@ public class Auto4 extends LinearOpMode {
         M0_2.setPower(0);
         drive.followTrajectory(loop1);
         S0.setPosition(0.0);
-        M0_2.setPower(-.15);
+        M0_2.setPower(slide2);
         drive.followTrajectory(loop2);
         while(loop < 2) {
 
 
             drive.followTrajectory(loop3);
             drive.followTrajectory(loop35);
-
-            target = 600;
+            // set target before drop
+            /*target = slidei - (slided*loop);
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-            }
+            }*/
 
-            while (D1.getState() == false) {
-                M0_2.setPower(-.1);
-            }
+            target = slidei - (slided*loop);
+            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+                M0_2.setPower(slide3);
+            }/*
             target = M0_2.getCurrentPosition() - 150;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-            }
+            }*/
             S0.setPosition(0.51);
-            M0_2.setPower(.2);
-            while (M0_2.getCurrentPosition() < 600){
+            M0_2.setPower(slide4);
+            while (M0_2.getCurrentPosition() < slidei - (slided*loop)){
 
             }
             drive.followTrajectory(loop4);
