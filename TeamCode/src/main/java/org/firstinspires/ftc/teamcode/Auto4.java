@@ -150,9 +150,9 @@ public class Auto4 extends LinearOpMode {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
             }*/
 
-            target = slidei - (slided*loop);
-            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-                M0_2.setPower(slide3);
+            target = slidei - (slided*loop)-160;
+            while (Math.abs((target - M0_2.getCurrentPosition())) > 10) {
+                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
             }/*
             target = M0_2.getCurrentPosition() - 150;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
