@@ -1,5 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Auto4.X1;
+import static org.firstinspires.ftc.teamcode.Auto4.X2;
+import static org.firstinspires.ftc.teamcode.Auto4.Y1;
+
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -11,6 +18,7 @@ import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 //name and class
 
@@ -30,6 +38,30 @@ public class DriveV1 extends OpMode {
     DigitalChannel D0;
     DigitalChannel D1;
     ColorSensor C1;
+    public void RoadRunner(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        Trajectory start1 = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(X1, 0, Math.toRadians(145)))
+                .build();
+        Trajectory start2 = drive.trajectoryBuilder(start1.end())
+                .splineToConstantHeading(new Vector2d(X2, Y1), Math.toRadians(145))
+                .build();
+        Trajectory from1 = drive.trajectoryBuilder(new Pose2d())
+                .splineToConstantHeading(new Vector2d(X1, 0), Math.toRadians(145))
+                .build();
+        Trajectory from2 = drive.trajectoryBuilder(from1.end())
+                .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
+                .build();
+        if(gamepad1.dpad_up){
+            drive.followTrajectory(start1);
+            drive.followTrajectory(start2);
+        }
+        if(gamepad1.dpad_down){
+            drive.followTrajectory(from1);
+            drive.followTrajectory(from2);
+        }
+    }
 
     public void ServoClamp() {
 
@@ -164,7 +196,7 @@ public class DriveV1 extends OpMode {
     public void loop() {
         MoveDriveTrain();
         ServoClamp();
-
+        RoadRunner();
     }
 
 }
