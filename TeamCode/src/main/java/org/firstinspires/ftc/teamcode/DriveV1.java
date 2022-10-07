@@ -38,31 +38,78 @@ public class DriveV1 extends OpMode {
     DigitalChannel D0;
     DigitalChannel D1;
     ColorSensor C1;
-    public void RoadRunner(){
+    public static double x1 = -35;
+    public static double y1 = -12;
+    public boolean initial = true;
+
+    public void RoadRunner() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Trajectory start1 = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(X1, 0, Math.toRadians(145)))
+        Trajectory left1 = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(270)))
                 .build();
-        Trajectory start2 = drive.trajectoryBuilder(start1.end())
-                .splineToConstantHeading(new Vector2d(X2, Y1), Math.toRadians(145))
+        Trajectory left2 = drive.trajectoryBuilder(left1.end())
+                .forward(y1)
                 .build();
-        Trajectory from1 = drive.trajectoryBuilder(new Pose2d())
-                .splineToConstantHeading(new Vector2d(X1, 0), Math.toRadians(145))
+        Trajectory left3 = drive.trajectoryBuilder(new Pose2d())
+                .back(y1)
                 .build();
-        Trajectory from2 = drive.trajectoryBuilder(from1.end())
+        Trajectory left4 = drive.trajectoryBuilder(left3.end())
                 .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
                 .build();
-        if(gamepad1.dpad_up){
-            drive.followTrajectory(start1);
-            drive.followTrajectory(start2);
-        }
-        if(gamepad1.dpad_down){
-            drive.followTrajectory(from1);
-            drive.followTrajectory(from2);
+
+
+        Trajectory right1 = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
+                .build();
+        Trajectory right2 = drive.trajectoryBuilder(right1.end())
+                .forward(y1)
+                .build();
+        Trajectory right3 = drive.trajectoryBuilder(new Pose2d())
+                .back(y1)
+                .build();
+        Trajectory right4 = drive.trajectoryBuilder(right3.end())
+                .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
+                .build();
+        if (gamepad1.dpad_right) {
+            if (initial) {
+                S0.setPosition(.51);
+                target = 2225;
+                drive.followTrajectory(right1);
+                drive.followTrajectory(right2);
+                initial = false;
+            } else {
+                S0.setPosition(0);
+                target = 0;
+                drive.followTrajectory(right3);
+                drive.followTrajectory(right4);
+                S0.setPosition(.51);
+                target = 2225;
+                drive.followTrajectory(right1);
+                drive.followTrajectory(right2);
+
+
+            }
+            if (gamepad1.dpad_left) {
+                if (initial) {
+                    S0.setPosition(.51);
+                    target = 2225;
+                    drive.followTrajectory(left1);
+                    drive.followTrajectory(left2);
+                    initial = false;
+                } else {
+                    S0.setPosition(0);
+                    target = 0;
+                    drive.followTrajectory(left3);
+                    drive.followTrajectory(left4);
+                    S0.setPosition(.51);
+                    target = 2225;
+                    drive.followTrajectory(left1);
+                    drive.followTrajectory(left2);
+                }
+            }
         }
     }
-
     public void ServoClamp() {
 
         //if (D0.getState() == true) S0.setPosition(.63);
@@ -79,16 +126,16 @@ public class DriveV1 extends OpMode {
         double Rotate;
 
         //input to change variables
-        yAxis = gamepad1.left_stick_y + gamepad1.right_stick_y/3;
+        /*yAxis = gamepad1.left_stick_y + gamepad1.right_stick_y/3;
         xAxis = gamepad1.left_stick_x + gamepad1.right_stick_x/3;
         Rotate = -gamepad1.left_trigger+gamepad1.right_trigger;
 
-
+//dick
         //apply variables to motor
         M0.setPower(-(Rotate + (-yAxis + xAxis)));
         M1.setPower(-(Rotate + (+yAxis + xAxis)));
         M2.setPower(-(Rotate + (yAxis - xAxis)));
-        M3.setPower(-(Rotate + (-yAxis - xAxis)));
+        M3.setPower(-(Rotate + (-yAxis - xAxis)));*/
 
         //dowm
         if (gamepad1.a) {
@@ -137,10 +184,10 @@ public class DriveV1 extends OpMode {
     @Override
     public void init() {
         //Add Motors
-        M0 = hardwareMap.get(DcMotor.class,"M0");
+        /*M0 = hardwareMap.get(DcMotor.class,"M0");
         M1 = hardwareMap.get(DcMotor.class,"M1");
         M2 = hardwareMap.get(DcMotor.class,"M2");
-        M3 = hardwareMap.get(DcMotor.class,"M3");
+        M3 = hardwareMap.get(DcMotor.class,"M3");*/
         M0_2 = hardwareMap.get(DcMotor.class,"M0_2");
         S0 = hardwareMap.get(Servo.class,"S0");
         D0 = hardwareMap.get(DigitalChannel.class,"D0");
@@ -148,6 +195,7 @@ public class DriveV1 extends OpMode {
         C1 = hardwareMap.get(ColorSensor.class, "C1");
 
         //Set Motors
+        /*
         M0.setDirection(DcMotor.Direction.FORWARD);
         M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M1.setDirection(DcMotor.Direction.FORWARD);
@@ -156,7 +204,7 @@ public class DriveV1 extends OpMode {
         M2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M3.setDirection(DcMotor.Direction.FORWARD);
         M3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+*/
         M0_2.setDirection(DcMotor.Direction.FORWARD);
         M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
