@@ -2,9 +2,12 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -26,6 +29,7 @@ public class DriveV1 extends OpMode {
     Servo S0;
     DigitalChannel D0;
     DigitalChannel D1;
+    ColorSensor C1;
 
     public void ServoClamp() {
 
@@ -87,6 +91,9 @@ public class DriveV1 extends OpMode {
         telemetry.addData("clamp ",D1.getState());
         telemetry.addData("slide ",D0.getState());
         telemetry.addData("servo shit",S0.getPosition() );
+        telemetry.addData("red", C1.red());
+        telemetry.addData("green", C1.green());
+        telemetry.addData("blue", C1.blue());
         telemetry.update();
         //dick
 
@@ -106,6 +113,7 @@ public class DriveV1 extends OpMode {
         S0 = hardwareMap.get(Servo.class,"S0");
         D0 = hardwareMap.get(DigitalChannel.class,"D0");
         D1 = hardwareMap.get(DigitalChannel.class,"D1");
+        C1 = hardwareMap.get(ColorSensor.class, "C1");
 
         //Set Motors
         M0.setDirection(DcMotor.Direction.FORWARD);
@@ -122,7 +130,7 @@ public class DriveV1 extends OpMode {
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
+        C1.enableLed(true);
 
     }
 
