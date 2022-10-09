@@ -5,30 +5,31 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-@Autonomous(name="Basic: Omni Linear OpMode", group="Linear Opmode")
+@TeleOp(name="color test", group="Linear Opmode")
 
 public class Auto1 extends LinearOpMode {
     @Override
     public void runOpMode() {
-
+        ColorSensor C1;
+        C1 = hardwareMap.get(ColorSensor.class, "C1");
+        C1.enableLed(true);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Trajectory traj1 = drive.trajectoryBuilder(new Pose2d())
-                .forward(40)
+                .back(19)
                 .build();
 
-        Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
-                .forward(15)
-                .build();
+        drive.followTrajectory(traj1);
 
         waitForStart();
 
-        if(isStopRequested()) return;
-
-        drive.followTrajectory(traj1);
-        //drive.followTrajectory(traj2);
+        while (opModeIsActive()) {
+            telemetry.addData("red",C1.red());
+            telemetry.update();
+        }
     }
 }

@@ -41,7 +41,7 @@ public class DriveV2 extends LinearOpMode {
     DigitalChannel D0;
     DigitalChannel D1;
     ColorSensor C1;
-    public static double x1 = -40;
+    public static double x1 = -40.5;
     public static double y1 = -9;
     public boolean initial = true;
 
@@ -89,6 +89,7 @@ public class DriveV2 extends LinearOpMode {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
 
         }
+        return;
     }
     public void RoadRunner() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -140,6 +141,7 @@ public class DriveV2 extends LinearOpMode {
                 M0_2.setPower(.25);
                 drive.followTrajectory(right1i);
                 Untilslide();
+                M0_2.setPower(0);
                 drive.followTrajectory(right2i);
                 initial = false;
             } else {
@@ -161,6 +163,7 @@ public class DriveV2 extends LinearOpMode {
                 M0_2.setPower(.25);
                 drive.followTrajectory(left1i);
                 Untilslide();
+                M0_2.setPower(0);
                 drive.followTrajectory(left2i);
                 initial = false;
             }
@@ -221,8 +224,8 @@ public class DriveV2 extends LinearOpMode {
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        /*if(target==0 && D0.getState() == false && M0_2.getCurrentPosition() <= 0){
-            M0_2.setPower(-0.05);}*/
+        if(target==0 && D0.getState() == false && M0_2.getCurrentPosition() <= 0){
+            M0_2.setPower(-0.05);}
 
 
         M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));

@@ -26,14 +26,13 @@ public class Auto4 extends LinearOpMode {
     Servo S0;
     DigitalChannel D1;
     ColorSensor C1;
-
     double loop = 0;
     public int zone = 0;
     FtcDashboard dashboard;
-    public static double sensedistance = -20;
+    public static double sensedistance = -19;
     public static double X1 = -51;
-    public static double Y1 = -12;
-    public static double X2 = -59;
+    public static double Y1 = -11;
+    public static double X2 = -58.5;
     public static double Y2 = 27;
     public static double turncoef = 1;
     public static double slide1 = .27;
@@ -42,8 +41,8 @@ public class Auto4 extends LinearOpMode {
     public static double slide4 = .35;
 
 
-    public static double slidei = 550;
-    public static double slided = -50;
+    public static double slidei = 460;
+    public static double slided = 70;
 
 
 
@@ -124,6 +123,8 @@ public class Auto4 extends LinearOpMode {
             telemetry.addData("3",C1.red());
             zone = 3;
         }
+        telemetry.addData("red", C1.red());
+        telemetry.update();
 
 
         drive.followTrajectory(start1);
@@ -176,6 +177,10 @@ public class Auto4 extends LinearOpMode {
             drive.followTrajectory(loop2);
 
             loop++;
+        }
+        target = 0;
+        while (target - M0_2.getCurrentPosition() < 1) {
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         }
         M0_2.setPower(0);
         drive.followTrajectory(loopexit);
