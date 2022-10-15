@@ -17,11 +17,13 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 //name and class
@@ -39,8 +41,7 @@ public class DriveV2 extends LinearOpMode {
     DcMotor M0_2;
     Servo S0;
     DigitalChannel D0;
-    DigitalChannel D1;
-    ColorSensor C1;
+    DistanceSensor D1;
     public static double x1 = -40.5;
     public static double y1 = -9;
     public boolean initial = true;
@@ -55,8 +56,7 @@ public class DriveV2 extends LinearOpMode {
         M0_2 = hardwareMap.get(DcMotor.class,"M0_2");
         S0 = hardwareMap.get(Servo.class,"S0");
         D0 = hardwareMap.get(DigitalChannel.class,"D0");
-        D1 = hardwareMap.get(DigitalChannel.class,"D1");
-        C1 = hardwareMap.get(ColorSensor.class, "C1");
+        D1 = hardwareMap.get(DistanceSensor.class,"D1");
 
         //Set Motors
 
@@ -74,9 +74,22 @@ public class DriveV2 extends LinearOpMode {
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        C1.enableLed(true);
-
         waitForStart();
+
+        while(D0.getState() == true){
+            M0_2.setPower(.3);
+        }
+        while(D0.getState() == false){
+            M0_2.setPower(-0.05);
+        }
+        M0_2.setDirection(DcMotor.Direction.FORWARD);
+        M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        S0.setPosition(0.0);
+
+        target = 200;
 
         while (opModeIsActive()) {
             MoveDriveTrain();
@@ -134,7 +147,7 @@ public class DriveV2 extends LinearOpMode {
                 .build();
         if (gamepad1.dpad_right) {
             if (initial) {
-                S0.setPosition(.51);
+                S0.setPosition(.33);
                 target = 30;
                 Untilslide();
                 target = 2350;
@@ -182,9 +195,31 @@ public class DriveV2 extends LinearOpMode {
 
         //if (D0.getState() == true) S0.setPosition(.63);
 
-        if (gamepad1.left_bumper) S0.setPosition(0);
-        if (gamepad1.right_bumper) S0.setPosition(.51);
-        if((D1.getState() == true) && (gamepad1.left_bumper == false)) S0.setPosition(.51);
+        if (gamepad1.left_bumper) S0.setPosition(0.0);
+        if (gamepad1.right_bumper){
+            target = 5;
+            Untilslide();
+            S0.setPosition(0.3);
+            while(D0.getState() == false){
+                M0_2.setPower(-0.05);
+            }
+            M0_2.setDirection(DcMotor.Direction.FORWARD);
+            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+        if((target == 200) && (D1.getDistance(DistanceUnit.METER) <= .033)){
+            target = 5;
+            Untilslide();
+            S0.setPosition(0.3);
+            while(D0.getState() == false){
+                M0_2.setPower(-0.05);
+            }
+            M0_2.setDirection(DcMotor.Direction.FORWARD);
+            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
     }
     public void MoveDriveTrain(){
         //drive variables
@@ -195,7 +230,7 @@ public class DriveV2 extends LinearOpMode {
         //input to change variables
         yAxis = gamepad1.left_stick_y + gamepad1.right_stick_y/3;
         xAxis = gamepad1.left_stick_x + gamepad1.right_stick_x/3;
-        Rotate = -gamepad1.left_trigger+gamepad1.right_trigger;
+        Rotate = -gamepad1.left_trigger/3 + gamepad1.right_trigger/3;
 
 //dick
         //apply variables to motor
@@ -206,17 +241,17 @@ public class DriveV2 extends LinearOpMode {
 
         //dowm
         if (gamepad1.a) {
-            target = 0;
+            target = 200;
         }
         //up
         if(gamepad1.b) {
-            target = 2300;
+            target = 2350;
         }
         if(gamepad1.y) {
-            target = 1600;
+            target = 1750;
         }
         if(gamepad1.x) {
-            target = 950;
+            target = 1100;
         }
         if(D0.getState() && (target == 0)){
             M0_2.setDirection(DcMotor.Direction.FORWARD);
@@ -224,9 +259,6 @@ public class DriveV2 extends LinearOpMode {
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        if(target==0 && D0.getState() == false && M0_2.getCurrentPosition() <= 0){
-            M0_2.setPower(-0.05);}
-
 
         M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
 
@@ -234,15 +266,13 @@ public class DriveV2 extends LinearOpMode {
         telemetry.addData("delta", target - M0_2.getCurrentPosition());
         telemetry.addData("target",target);
         telemetry.addData("equation",-1 * ((1 - Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))));
-        telemetry.addData("clamp ",D1.getState());
         telemetry.addData("slide ",D0.getState());
         telemetry.addData("servo shit",S0.getPosition() );
-        telemetry.addData("red", C1.red());
-        telemetry.addData("green", C1.green());
-        telemetry.addData("blue", C1.blue());
+        telemetry.addData("distance",D1.getDistance(DistanceUnit.METER) );
+        //telemetry.addData("green", C1.green());
+      //  telemetry.addData("blue", C1.blue());
         telemetry.update();
         //dick
-
 
     }
 }
