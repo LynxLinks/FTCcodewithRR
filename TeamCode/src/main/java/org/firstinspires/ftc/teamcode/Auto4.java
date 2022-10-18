@@ -50,7 +50,7 @@ public class Auto4 extends LinearOpMode {
     public void runOpMode() {
         dashboard = FtcDashboard.getInstance();
         S0 = hardwareMap.get(Servo.class,"S0");
-        S0.setPosition(.51);
+        S0.setPosition(.3);
         C1 = hardwareMap.get(ColorSensor.class, "C1");
         M0_2 = hardwareMap.get(DcMotor.class, "M0_2");
         D1 = hardwareMap.get(DigitalChannel.class,"D1");
@@ -61,10 +61,8 @@ public class Auto4 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Trajectory start0 = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(sensedistance, 0, Math.toRadians(0)))
-                .build();
-        Trajectory start1 = drive.trajectoryBuilder(start0.end())
+
+        Trajectory start1 = drive.trajectoryBuilder(new Pose2d())
                 .lineToLinearHeading(new Pose2d(X1, 0, Math.toRadians(
                         180)))
                 .build();
@@ -109,32 +107,18 @@ public class Auto4 extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         if(isStopRequested()) return;
-        M0_2.setPower(slide1);
-        drive.followTrajectory(start0);
-        if  ((600 < C1.red() ) & (C1.red() < 950)){
-            telemetry.addData("1",C1.red());
-            zone = 1;
-        }
-        if  ((950 < C1.red())){
-            telemetry.addData("2",C1.red());
-            zone = 2;
-        }
-        if  (C1.red() < 600){
-            telemetry.addData("3",C1.red());
-            zone = 3;
-        }
-        telemetry.addData("red", C1.red());
-        telemetry.update();
 
+        M0_2.setPower(slide1);
 
         drive.followTrajectory(start1);
         drive.followTrajectory(start2);
 
-
         target = 2500;
+
         while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         }
+
         M0_2.setPower(0);
         drive.followTrajectory(loop1);
         S0.setPosition(0.0);
@@ -201,3 +185,5 @@ public class Auto4 extends LinearOpMode {
 
     }
 }
+
+
