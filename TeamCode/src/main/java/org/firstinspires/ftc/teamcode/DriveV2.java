@@ -42,6 +42,7 @@ public class DriveV2 extends LinearOpMode {
     Servo S0;
     DigitalChannel D0;
     DistanceSensor D1;
+    double yCord = 2;
     public static double x1 = -28;
     public static double y1 = 12;
     public boolean initial = true;
@@ -107,28 +108,8 @@ public class DriveV2 extends LinearOpMode {
     public void RoadRunner() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Trajectory left1i = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
-                .build();
-        Trajectory left2i = drive.trajectoryBuilder(left1i.end())
-                .forward(-y1)
-                .build();
-        Trajectory left3 = drive.trajectoryBuilder(new Pose2d())
-                .back(-y1)
-                .build();
-        Trajectory left4 = drive.trajectoryBuilder(left3.end())
-                .lineToLinearHeading(new Pose2d(y1, x1, Math.toRadians(270)))
-                .build();
-        Trajectory left1 = drive.trajectoryBuilder(left4.end())
-                .lineToLinearHeading(new Pose2d(y1, 0, Math.toRadians(0)))
-                .build();
-        Trajectory left2 = drive.trajectoryBuilder(left1.end())
-                .forward(-y1)
-                .build();
-
-
         Trajectory right1i = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(-135)))
+                .lineToLinearHeading(new Pose2d(-(5+24*(yCord-1)), 0, Math.toRadians(-135)))
                 .build();
         Trajectory right2i = drive.trajectoryBuilder(right1i.end())
                 .forward(y1)
@@ -136,9 +117,10 @@ public class DriveV2 extends LinearOpMode {
         Trajectory right3 = drive.trajectoryBuilder(new Pose2d())
                 .back(y1)
                 .build();
-        Trajectory right4 = drive.trajectoryBuilder(right3.end())
-                .lineToLinearHeading(new Pose2d(y1, -x1, Math.toRadians(135)))
+        Trajectory right4 = drive.trajectoryBuilder(right1i.end())
+                .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
                 .build();
+
         if (gamepad1.dpad_right) {
             if (initial) {
                 S0.setPosition(.33);
@@ -157,29 +139,6 @@ public class DriveV2 extends LinearOpMode {
                 M0_2.setPower(-.3);
                 drive.followTrajectory(right3);
                 drive.followTrajectory(right4);
-                Untilslide();
-                initial = true;
-
-
-            }
-        }
-        if (gamepad1.dpad_left) {
-            if (initial) {
-                S0.setPosition(.51);
-                target = 2350;
-                M0_2.setPower(.25);
-                drive.followTrajectory(left1i);
-                Untilslide();
-                M0_2.setPower(0);
-                drive.followTrajectory(left2i);
-                initial = false;
-            }
-            if (initial == false){
-                S0.setPosition(0);
-                target = 0;
-                M0_2.setPower(-.3);
-                drive.followTrajectory(left3);
-                drive.followTrajectory(left4);
                 Untilslide();
                 initial = true;
             }
@@ -214,6 +173,43 @@ public class DriveV2 extends LinearOpMode {
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
+    }
+
+    public void BuildTraject(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        Trajectory left1i = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
+                .build();
+        Trajectory left2i = drive.trajectoryBuilder(left1i.end())
+                .forward(-y1)
+                .build();
+        Trajectory left3 = drive.trajectoryBuilder(left2i.end())
+                .back(-y1)
+                .build();
+        Trajectory left4 = drive.trajectoryBuilder(left3.end())
+                .lineToLinearHeading(new Pose2d(y1, x1, Math.toRadians(270)))
+                .build();
+        Trajectory left1 = drive.trajectoryBuilder(left4.end())
+                .lineToLinearHeading(new Pose2d(y1, 0, Math.toRadians(0)))
+                .build();
+        Trajectory left2 = drive.trajectoryBuilder(left1.end())
+                .forward(-y1)
+                .build();
+
+
+        Trajectory right1i = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(6+24*yCord, 0, Math.toRadians(-135)))
+                .build();
+        Trajectory right2i = drive.trajectoryBuilder(right1i.end())
+                .forward(y1)
+                .build();
+        Trajectory right3 = drive.trajectoryBuilder(new Pose2d())
+                .back(y1)
+                .build();
+        Trajectory right4 = drive.trajectoryBuilder(right3.end())
+                .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
+                .build();
+
     }
     public void MoveDriveTrain(){
         //drive variables
@@ -265,9 +261,10 @@ public class DriveV2 extends LinearOpMode {
         telemetry.addData("servo shit",S0.getPosition() );
         telemetry.addData("distance",D1.getDistance(DistanceUnit.METER) );
         //telemetry.addData("green", C1.green());
-      //  telemetry.addData("blue", C1.blue());
+        //  telemetry.addData("blue", C1.blue());
         telemetry.update();
         //dick
 
     }
+
 }

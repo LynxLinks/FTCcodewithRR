@@ -43,22 +43,24 @@ public class DriveV3 extends LinearOpMode {
     Servo S0;
     DigitalChannel D0;
     DistanceSensor D1;
-    double yoffset = 5;  //constant added to all y positions
+    public static double yoffset = 5;  //constant added to all y positions
     int y = 0;   //y coordinate input
     int x = 0;   //x coordinate input
-    double d = 12;  //diagonal distance forward and backward
+    public static double d = 12;  //diagonal distance forward and backward
     double target; //slide target position
-    double vy = 0;  //vector roadrunner x value
-    double vx = 0;  //vector roadrunner y value
-    double vo = 0;  //target roadrunner theta
-    double xi = 0;  //initial robot position against wall in coordinate system, either .5 or -.5
-    int[] hdata = new int[]{200,1100,200,1100,200,1100, 1750, 2350, 1750, 1100, 200,1100,200,1100,200,
-            1100, 1750, 2350, 1750, 1100,
-            200,1100,200,1100,200};
+    double vy = 1;  //vector roadrunner x value
+    double vx = 1;  //vector roadrunner y value
+    double vo = 1;  //target roadrunner theta
+    double xi = 0.5;  //initial robot position against wall in coordinate system, either .5 or -.5
+    int[] hdata = new int[]{200,1100,200,1100,200,
+                           1100, 1750, 2350, 1750, 1100,
+                            200,2350,200,2350,200,
+                            1100,1750, 2350, 1750, 1100,
+                            200,1100,200,1100,200};
     boolean atwall = true; //used to know whether to run to or from
 
     boolean start = true; //used to wit untill side chosen
-    //used to setup flip flop
+    //used to setup fl
     boolean dup = false;
     boolean ddown = false;
     boolean dright = false;
@@ -97,7 +99,16 @@ public class DriveV3 extends LinearOpMode {
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        waitForStart();
+        while(isStarted() == false){
+                if (gamepad2.right_bumper){
+                    xi = .5;
+                }
+                if (gamepad2.left_bumper){
+                    xi = -.5;
+                }
+            telemetry.addData("xi",xi);
+            telemetry.update();
+        }
 
         while(D0.getState() == true){
             M0_2.setPower(.3);
@@ -105,16 +116,7 @@ public class DriveV3 extends LinearOpMode {
         while(D0.getState() == false){
             M0_2.setPower(-0.05);
         }
-        while (start){
-            if (gamepad1.dpad_right){
-                xi = .5;
-                start = false;
-            }
-            if (gamepad1.dpad_right){
-                xi = -.5;
-                start = false;
-            }
-        }
+        M0_2.setPower(0);
         M0_2.setDirection(DcMotor.Direction.FORWARD);
         M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -146,7 +148,12 @@ public class DriveV3 extends LinearOpMode {
         if (gamepad2.dpad_down) ddown = true;
         if (gamepad2.dpad_left) dleft = true;
         if (gamepad2.dpad_right) dright = true;
-
+        if (gamepad2.right_bumper){
+            xi = .5;
+        }
+        if (gamepad2.left_bumper){
+            xi = -.5;
+        }
         if ((!gamepad2.dpad_up) && dup) {
             dup = false;
             y += 1;
@@ -165,6 +172,7 @@ public class DriveV3 extends LinearOpMode {
         }
             telemetry.addData("x  ",x);
             telemetry.addData("y  ",y);
+            telemetry.addData("xi",xi);
             telemetry.update();
 
 
@@ -172,8 +180,8 @@ public class DriveV3 extends LinearOpMode {
         //vy
         vy = -(yoffset+24*(y-1));
         //vx
-        if (x > 0)  { vx = -24*Math.floor(Math.abs(x-xi));}
-        else        { vx = 24*Math.floor(Math.abs(x-xi));}
+        if (x > 0)  { vx = .1 + 24*Math.floor(Math.abs(x-xi));}
+        else        { vx = .1 - 24*Math.floor(Math.abs(x-xi));}
         //vo
         if (x>xi)   {vo = 135;}
         else        {vo = -135;}
@@ -203,7 +211,7 @@ public class DriveV3 extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(0, 0, 0))
                 .build();
         //move triggered by gamepad 1 a
-        if (gamepad1.a) {
+        if (gamepad1.left_stick_button) {
             //to junction
            if (atwall){
                //clamp already closed from distance sensor
@@ -214,8 +222,9 @@ public class DriveV3 extends LinearOpMode {
                //reset cordinates to (0,0)
                drive.followTrajectory(t1);
                drive.followTrajectory(t2);
-               target = hdata[(x + 5*y + 2)];
+               target = hdata[(int)(x + 5*(y-1) + 2)];
                Untilslide();
+               M0_2.setPower(0.0);
                drive.followTrajectory(t3);
 
                atwall = false;
@@ -242,26 +251,56 @@ public class DriveV3 extends LinearOpMode {
     }
     public void ServoClamp() {
         //automatic clamping if within distance
-        if((target == 200) && (D1.getDistance(DistanceUnit.METER) <= .033)){
+        if(gamepad1.left_bumper){
+            S0.setPosition(0.0);
+        }
+        if((target == 200) && (D1.getDistance(DistanceUnit.METER) <= .033) || gamepad1.right_bumper){
             target = 5;
             Untilslide();
             S0.setPosition(0.3);
-            while(D0.getState() == false){
+          /*  while(D0.getState() == false){
                 M0_2.setPower(-0.05);
             }
             M0_2.setDirection(DcMotor.Direction.FORWARD);
             M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+           */
         }
     }
     public void MoveDriveTrain(){
         double yAxis;
         double xAxis;
         double Rotate;
+
+        if (gamepad1.a) {
+            target = 200;
+            S0.setPosition(0.0);
+        }
+        //up
+        if(gamepad1.b) {
+            target = 2350;
+        }
+        if(gamepad1.y) {
+            target = 1750;
+        }
+        if(gamepad1.x) {
+            target = 1100;
+        }
+        if(D0.getState() && (target == 0)){
+            M0_2.setDirection(DcMotor.Direction.FORWARD);
+            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+
         yAxis = gamepad1.left_stick_y*.8 + gamepad1.right_stick_y/3;
         xAxis = gamepad1.left_stick_x*.8 + gamepad1.right_stick_x/3;
         Rotate = -gamepad1.left_trigger/2 + gamepad1.right_trigger/2;
+
         M0.setPower((Rotate + (-yAxis + xAxis)));
         M3.setPower((Rotate + (-yAxis - xAxis)));
         M1.setPower(-(Rotate + (yAxis + xAxis)));
