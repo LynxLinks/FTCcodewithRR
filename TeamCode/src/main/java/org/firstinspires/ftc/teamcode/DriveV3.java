@@ -58,6 +58,11 @@ public class DriveV3 extends LinearOpMode {
     boolean atwall = true; //used to know whether to run to or from
 
     boolean start = true; //used to wit untill side chosen
+    //used to setup flip flop
+    boolean dup = false;
+    boolean ddown = false;
+    boolean dright = false;
+    boolean dleft = false;
 
 
     //public static double x1 = -28;
@@ -137,10 +142,27 @@ public class DriveV3 extends LinearOpMode {
     }
     public void RoadRunner() {
     //change cordinates with gamepad 2
-            if (gamepad2.dpad_up) y += 1;
-            if (gamepad2.dpad_down) y -= 1;
-            if (gamepad2.dpad_left) x -= 1;
-            if (gamepad2.dpad_right) y += 1;
+        if (gamepad2.dpad_up) dup = true;
+        if (gamepad2.dpad_down) ddown = true;
+        if (gamepad2.dpad_left) dleft = true;
+        if (gamepad2.dpad_right) dright = true;
+
+        if ((!gamepad2.dpad_up) && dup) {
+            dup = false;
+            y += 1;
+        }
+        if ((!gamepad2.dpad_down) && ddown) {
+            ddown = false;
+            y -= 1;
+        }
+        if ((!gamepad2.dpad_right) && dright) {
+            dright = false;
+            x += 1;
+        }
+        if ((!gamepad2.dpad_left) && dleft) {
+            dleft = false;
+            x -= 1;
+        }
             telemetry.addData("x  ",x);
             telemetry.addData("y  ",y);
             telemetry.update();
