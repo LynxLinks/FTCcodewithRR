@@ -26,12 +26,14 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
+import java.lang.reflect.Array;
+
 //name and class
 @Config
 @TeleOp(name = "DriveV3", group="Linear Opmode")
 
 public class DriveV3 extends LinearOpMode {
-    double target;
+
     DcMotor M0;
     FtcDashboard dashboard;
     DcMotor M1;
@@ -41,10 +43,26 @@ public class DriveV3 extends LinearOpMode {
     Servo S0;
     DigitalChannel D0;
     DistanceSensor D1;
-    double yCord = 2;
-    public static double x1 = -28;
-    public static double y1 = 12;
-    public boolean initial = true;
+    double yoffset = 5;  //constant added to all y positions
+    int y = 0;   //y coordinate input
+    int x = 0;   //x coordinate input
+    double d = 12;  //diagonal distance forward and backward
+    double target; //slide target position
+    double vy = 0;  //vector roadrunner x value
+    double vx = 0;  //vector roadrunner y value
+    double vo = 0;  //target roadrunner theta
+    double xi = 0;  //initial robot position against wall in coordinate system, either .5 or -.5
+    int[] hdata = new int[]{200,1100,200,1100,200,1100, 1750, 2350, 1750, 1100, 200,1100,200,1100,200,
+            1100, 1750, 2350, 1750, 1100,
+            200,1100,200,1100,200};
+    boolean atwall = true; //used to know whether to run to or from
+
+    boolean start = true; //used to wit untill side chosen
+
+
+    //public static double x1 = -28;
+    //public static double y1 = 12;
+    //public boolean initial = true;
 
     public void runOpMode() {
         dashboard = FtcDashboard.getInstance();
@@ -82,6 +100,16 @@ public class DriveV3 extends LinearOpMode {
         while(D0.getState() == false){
             M0_2.setPower(-0.05);
         }
+        while (start){
+            if (gamepad1.dpad_right){
+                xi = .5;
+                start = false;
+            }
+            if (gamepad1.dpad_right){
+                xi = -.5;
+                start = false;
+            }
+        }
         M0_2.setDirection(DcMotor.Direction.FORWARD);
         M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -97,6 +125,9 @@ public class DriveV3 extends LinearOpMode {
             RoadRunner();
         }
     }
+    public void Cords(){
+
+    }
     public void Untilslide(){
         while (Math.abs(target - M0_2.getCurrentPosition()) > 10){
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
@@ -105,61 +136,90 @@ public class DriveV3 extends LinearOpMode {
         return;
     }
     public void RoadRunner() {
+    //change cordinates with gamepad 2
+            if (gamepad2.dpad_up) y += 1;
+            if (gamepad2.dpad_down) y -= 1;
+            if (gamepad2.dpad_left) x -= 1;
+            if (gamepad2.dpad_right) y += 1;
+            telemetry.addData("x  ",x);
+            telemetry.addData("y  ",y);
+            telemetry.update();
+
+
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        //vy
+        vy = -(yoffset+24*(y-1));
+        //vx
+        if (x > 0)  { vx = -24*Math.floor(Math.abs(x-xi));}
+        else        { vx = 24*Math.floor(Math.abs(x-xi));}
+        //vo
+        if (x>xi)   {vo = 135;}
+        else        {vo = -135;}
 
-        Trajectory right1i = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(-(5+24*(yCord-1)), 0, Math.toRadians(-135)))
+        //move to y position and theta
+        Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(vo)))
                 .build();
-        Trajectory right2i = drive.trajectoryBuilder(right1i.end())
-                .forward(y1)
+        //move to x position
+        Trajectory t2 = drive.trajectoryBuilder(t1.end())
+                .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
                 .build();
-        Trajectory right3 = drive.trajectoryBuilder(new Pose2d())
-                .back(y1)
+        //move diagonal forwards to target junction
+        Trajectory t3 = drive.trajectoryBuilder(t2.end())
+                .forward(d)
                 .build();
-        Trajectory right4 = drive.trajectoryBuilder(right1i.end())
-                .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
+        //move diagonal backwards to center of tile
+        Trajectory f1 = drive.trajectoryBuilder(t3.end())
+                .back(d)
                 .build();
+        //move to 0 x and 0 theta
+        Trajectory f2 = drive.trajectoryBuilder(f1.end())
+                .lineToLinearHeading(new Pose2d(vy, 0, 0))  //might have to be Math.toRadians(vo)
+                .build();
+        //move to 0 y
+        Trajectory f3 = drive.trajectoryBuilder(f2.end())
+                .lineToLinearHeading(new Pose2d(0, 0, 0))
+                .build();
+        //move triggered by gamepad 1 a
+        if (gamepad1.a) {
+            //to junction
+           if (atwall){
+               //clamp already closed from distance sensor
+               //move to y position and theta
+               //move to x position
+               //set slide height
+               //move diagonal to junction
+               //reset cordinates to (0,0)
+               drive.followTrajectory(t1);
+               drive.followTrajectory(t2);
+               target = hdata[(x + 5*y + 2)];
+               Untilslide();
+               drive.followTrajectory(t3);
 
-        if (gamepad1.dpad_right) {
-            if (initial) {
-                S0.setPosition(.33);
-                target = 30;
-                Untilslide();
-                target = 2350;
-                M0_2.setPower(.25);
-                drive.followTrajectory(right1i);
-                Untilslide();
-                M0_2.setPower(0);
-                drive.followTrajectory(right2i);
-                initial = false;
-            } else {
-                S0.setPosition(0);
-                target = 0;
-                M0_2.setPower(-.3);
-                drive.followTrajectory(right3);
-                drive.followTrajectory(right4);
-                Untilslide();
-                initial = true;
-            }
+               atwall = false;
+               y = 0;
+               x = 0;
+
+           }
+           //from junction
+           else{
+               //drop cone
+               //move diagonal back to center of tile
+               //move to 0 x
+               //lower slide
+               //move to 0 y and 0 theta
+               S0.setPosition(0.0);
+               drive.followTrajectory(f1);
+               drive.followTrajectory(f2);
+               target = 200;
+               Untilslide();
+               drive.followTrajectory(f3);
+                atwall = true;
+           }
         }
     }
     public void ServoClamp() {
-
-        //if (D0.getState() == true) S0.setPosition(.63);
-
-        if (gamepad1.left_bumper) S0.setPosition(0.0);
-        if (gamepad1.right_bumper){
-            target = 5;
-            Untilslide();
-            S0.setPosition(0.3);
-            while(D0.getState() == false){
-                M0_2.setPower(-0.05);
-            }
-            M0_2.setDirection(DcMotor.Direction.FORWARD);
-            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
+        //automatic clamping if within distance
         if((target == 200) && (D1.getDistance(DistanceUnit.METER) <= .033)){
             target = 5;
             Untilslide();
@@ -173,95 +233,16 @@ public class DriveV3 extends LinearOpMode {
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
-    public void BuildTraject(){
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Trajectory left1i = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(x1, 0, Math.toRadians(90)))
-                .build();
-        Trajectory left2i = drive.trajectoryBuilder(left1i.end())
-                .forward(-y1)
-                .build();
-        Trajectory left3 = drive.trajectoryBuilder(left2i.end())
-                .back(-y1)
-                .build();
-        Trajectory left4 = drive.trajectoryBuilder(left3.end())
-                .lineToLinearHeading(new Pose2d(y1, x1, Math.toRadians(270)))
-                .build();
-        Trajectory left1 = drive.trajectoryBuilder(left4.end())
-                .lineToLinearHeading(new Pose2d(y1, 0, Math.toRadians(0)))
-                .build();
-        Trajectory left2 = drive.trajectoryBuilder(left1.end())
-                .forward(-y1)
-                .build();
-
-
-        Trajectory right1i = drive.trajectoryBuilder(new Pose2d())
-                .lineToLinearHeading(new Pose2d(6+24*yCord, 0, Math.toRadians(-135)))
-                .build();
-        Trajectory right2i = drive.trajectoryBuilder(right1i.end())
-                .forward(y1)
-                .build();
-        Trajectory right3 = drive.trajectoryBuilder(new Pose2d())
-                .back(y1)
-                .build();
-        Trajectory right4 = drive.trajectoryBuilder(right3.end())
-                .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
-                .build();
-
-    }
     public void MoveDriveTrain(){
-        //drive variables
         double yAxis;
         double xAxis;
         double Rotate;
-
-        //input to change variables
         yAxis = gamepad1.left_stick_y*.8 + gamepad1.right_stick_y/3;
         xAxis = gamepad1.left_stick_x*.8 + gamepad1.right_stick_x/3;
         Rotate = -gamepad1.left_trigger/2 + gamepad1.right_trigger/2;
-
-//dick
-        //apply variables to motor
         M0.setPower((Rotate + (-yAxis + xAxis)));
         M3.setPower((Rotate + (-yAxis - xAxis)));
         M1.setPower(-(Rotate + (yAxis + xAxis)));
         M2.setPower(-(Rotate + (yAxis - xAxis)));
-
-        //dowm
-        if (gamepad1.a) {
-            target = 200;
-            S0.setPosition(0.0);
-        }
-        //up
-        if(gamepad1.b) {
-            target = 2350;
-        }
-        if(gamepad1.y) {
-            target = 1750;
-        }
-        if(gamepad1.x) {
-            target = 1100;
-        }
-        if(D0.getState() && (target == 0)){
-            M0_2.setDirection(DcMotor.Direction.FORWARD);
-            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-
-        telemetry.addData("current ",M0_2.getCurrentPosition());
-        telemetry.addData("delta", target - M0_2.getCurrentPosition());
-        telemetry.addData("target",target);
-        telemetry.addData("equation",-1 * ((1 - Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))/(1 + Math.pow( 10,((target - M0_2.getCurrentPosition())/500)))));
-        telemetry.addData("slide ",D0.getState());
-        telemetry.addData("servo shit",S0.getPosition() );
-        telemetry.addData("distance",D1.getDistance(DistanceUnit.METER) );
-        //telemetry.addData("green", C1.green());
-        //  telemetry.addData("blue", C1.blue());
-        telemetry.update();
-        //dick
-
     }
 }
