@@ -52,10 +52,10 @@ public class DriveV4 extends LinearOpMode {
     double vo = 1;  //target roadrunner theta
     double xi = 0;  //initial robot position against wall in coordinate system, either .5 or -.5
     int[] hdata = new int[]{200, 1100, 200, 1100, 200,
-                            1100, 1750, 2350, 1750, 1100,
-                            200, 2350, 200, 2350, 200,
-                            1100, 1750, 2350, 1750, 1100,
-                            200, 1100, 200, 1100, 200};
+            1100, 1750, 2350, 1750, 1100,
+            200, 2350, 200, 2350, 200,
+            1100, 1750, 2350, 1750, 1100,
+            200, 1100, 200, 1100, 200};
     boolean atwall = true; //used to know whether to run to or from
     boolean dup = false;
     boolean ddown = false;
@@ -131,6 +131,7 @@ public class DriveV4 extends LinearOpMode {
             S0.setPosition(0.3);
         }
     }
+
     public void Slide() {
         M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         if (gamepad1.a) {
@@ -163,16 +164,22 @@ public class DriveV4 extends LinearOpMode {
 
         if (gamepad1.right_stick_button) {
             if (atwall) {
-                vy = -(yoffset+24*(y-1));
-                if (x > 0)  {vx = .1 + 24*Math.floor(Math.abs(x-xi));}
-                else        {vx = .1 - 24*Math.floor(Math.abs(x-xi));}
-                if (x>xi)   {vo = 135;}
-                else        {vo = -135;}
+                vy = -(yoffset + 24 * (y - 1));
+                if (x > 0) {
+                    vx = .1 + 24 * Math.floor(Math.abs(x - xi));
+                } else {
+                    vx = .1 - 24 * Math.floor(Math.abs(x - xi));
+                }
+                if (x > xi) {
+                    vo = 135;
+                } else {
+                    vo = -135;
+                }
 
                 Trajectory t12 = drive.trajectoryBuilder(new Pose2d())
-                        .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)), Math.toRadians(vo/2))
+                        .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)), Math.toRadians(0))
                         .splineToSplineHeading(new Pose2d(vy, vx, Math.toRadians(vo)), Math.toRadians(vo))
-                        .splineToSplineHeading(new Pose2d(vy-(d*Math.cos(Math.toRadians(vo))), vx-(d*Math.sin(Math.toRadians(vo))), Math.toRadians(vo)), Math.toRadians(vo))
+                        .splineToSplineHeading(new Pose2d(vy - (d * Math.cos(Math.toRadians(vo))), vx - (d * Math.sin(Math.toRadians(vo))), Math.toRadians(vo)), Math.toRadians(vo))
                         .build();
                 Trajectory f12 = drive.trajectoryBuilder(t12.end())
                         .splineToSplineHeading(new Pose2d(vy, vx, Math.toRadians(vo)), Math.toRadians(vo))
@@ -181,76 +188,78 @@ public class DriveV4 extends LinearOpMode {
                         .build();
                 drive.followTrajectoryAsync(t12);
                 drive.update();
-                while(!gamepad1.dpad_up && drive.isBusy()) {
+                //while(!gamepad1.dpad_up && drive.isBusy()) {
+                //drive.update();
+                //Slide();
+            //}
+                while (Math.abs(gamepad1.left_stick_x) < .5
+                        && Math.abs(gamepad1.left_stick_y) < .5
+                        && Math.abs(gamepad1.right_stick_x) < .5
+                        && Math.abs(gamepad1.right_stick_y) < .5) {
                     drive.update();
                     Slide();
+                    while (gamepad1.right_stick_button) ;
                 }
+                atwall = false;
 
             }
             if (atwall == false) {
                 S0.setPosition(0);
                 target = 200;
                 drive.followTrajectoryAsync(f12);
+                drive.update();
+                //while(!gamepad1.dpad_up && drive.isBusy()) {
+                //drive.update();
+                //Slide();
+                //}
+                while (Math.abs(gamepad1.left_stick_x) < .5
+                        && Math.abs(gamepad1.left_stick_y) < .5
+                        && Math.abs(gamepad1.right_stick_x) < .5
+                        && Math.abs(gamepad1.right_stick_y) < .5) {
+                    drive.update();
+                    Slide();
+                    while (gamepad1.right_stick_button) ;
+                }
+                atwall = true;
             }
+
         }
 
     }
+        public void Coordinates () {
+            if (gamepad2.dpad_up) dup = true;
+            if (gamepad2.dpad_down) ddown = true;
+            if (gamepad2.dpad_left) dleft = true;
+            if (gamepad2.dpad_right) dright = true;
+            if (gamepad2.right_bumper) {
+                xi = .5;
+            }
+            if (gamepad2.left_bumper) {
+                xi = -.5;
+            }
+            if ((!gamepad2.dpad_up) && dup) {
+                dup = false;
+                y += 1;
+            }
+            if ((!gamepad2.dpad_down) && ddown) {
+                ddown = false;
+                y -= 1;
+            }
+            if ((!gamepad2.dpad_right) && dright) {
+                dright = false;
+                x += 1;
+            }
+            if ((!gamepad2.dpad_left) && dleft) {
+                dleft = false;
+                x -= 1;
+            }
+            telemetry.addData("xi", xi);
+            telemetry.addData("x", x);
+            telemetry.addData("y", y);
 
-    public void TrajUpdate() {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        drive.update();
-        vy = -(yoffset+24*(y-1));
-        if (x > 0)  {vx = .1 + 24*Math.floor(Math.abs(x-xi));}
-        else        {vx = .1 - 24*Math.floor(Math.abs(x-xi));}
-        if (x>xi)   {vo = 135;}
-        else        {vo = -135;}
+            telemetry.update();
 
-        Trajectory t12 = drive.trajectoryBuilder(new Pose2d())
-                .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(vy, vx, Math.toRadians(vo)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(vy-(d*Math.cos(Math.toRadians(vo))), vx-(d*Math.sin(Math.toRadians(vo))), Math.toRadians(vo)), Math.toRadians(0))
-                .build();
-        Trajectory f12 = drive.trajectoryBuilder(t12.end())
-                .splineToSplineHeading(new Pose2d(vy, vx, Math.toRadians(vo)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(0, 0, Math.toRadians(vo)), Math.toRadians(0))
-                .build();
 
+        }
     }
 
-    public void Coordinates() {
-        if (gamepad2.dpad_up) dup = true;
-        if (gamepad2.dpad_down) ddown = true;
-        if (gamepad2.dpad_left) dleft = true;
-        if (gamepad2.dpad_right) dright = true;
-        if (gamepad2.right_bumper){
-            xi = .5;
-        }
-        if (gamepad2.left_bumper){
-            xi = -.5;
-        }
-        if ((!gamepad2.dpad_up) && dup) {
-            dup = false;
-            y += 1;
-        }
-        if ((!gamepad2.dpad_down) && ddown) {
-            ddown = false;
-            y -= 1;
-        }
-        if ((!gamepad2.dpad_right) && dright) {
-            dright = false;
-            x += 1;
-        }
-        if ((!gamepad2.dpad_left) && dleft) {
-            dleft = false;
-            x -= 1;
-        }
-        telemetry.addData("xi", xi);
-        telemetry.addData("x",x);
-        telemetry.addData("y",y);
-
-        telemetry.update();
-
-
-    }
-}
