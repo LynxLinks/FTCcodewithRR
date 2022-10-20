@@ -201,7 +201,7 @@ public class DriveV4 extends LinearOpMode {
                     while (gamepad1.right_stick_button) ;
                 }
                 atwall = false;
-
+//
             }
             if (atwall == false) {
                 S0.setPosition(0);
