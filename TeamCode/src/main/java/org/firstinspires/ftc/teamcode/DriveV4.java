@@ -117,6 +117,7 @@ public class DriveV4 extends LinearOpMode {
             if (!gamepad1.right_stick_button) drive.update();
         }
     }
+
     public void ServoClamp() {
         //automatic clamping if within distance
         if (gamepad1.left_bumper) {
