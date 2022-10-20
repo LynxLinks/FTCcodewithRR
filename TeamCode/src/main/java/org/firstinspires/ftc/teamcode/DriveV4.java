@@ -43,19 +43,19 @@ public class DriveV4 extends LinearOpMode {
     DigitalChannel D0;
     DistanceSensor D1;
     public static double yoffset = 5;  //constant added to all y positions
-    int y = 0;   //y coordinate input
-    int x = 0;   //x coordinate input
     public static double d = 12;  //diagonal distance forward and backward
+    int y = 1;   //y coordinate input
+    int x = 0;   //x coordinate input
     double target; //slide target position
-    double vy = 1;  //vector roadrunner x value
-    double vx = 1;  //vector roadrunner y value
-    double vo = 1;  //target roadrunner theta
-    double xi = -0.5;  //initial robot position against wall in coordinate system, either .5 or -.5
+    double vy = 0;  //vector roadrunner x value
+    double vx = 0;  //vector roadrunner y value
+    double vo = 0;  //target roadrunner theta
+    double xi = 0;  //initial robot position against wall in coordinate system, either .5 or -.5
     int[] hdata = new int[]{200, 1100, 200, 1100, 200,
-            1100, 1750, 2350, 1750, 1100,
-            200, 2350, 200, 2350, 200,
-            1100, 1750, 2350, 1750, 1100,
-            200, 1100, 200, 1100, 200};
+                            1100, 1750, 2350, 1750, 1100,
+                            200, 2350, 200, 2350, 200,
+                            1100, 1750, 2350, 1750, 1100,
+                            200, 1100, 200, 1100, 200};
     boolean atwall = true; //used to know whether to run to or from
     boolean dup = false;
     boolean ddown = false;
@@ -93,16 +93,7 @@ public class DriveV4 extends LinearOpMode {
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        while (isStarted() == false) {
-            if (gamepad2.right_bumper) {
-                xi = .5;
-            }
-            if (gamepad2.left_bumper) {
-                xi = -.5;
-            }
-            telemetry.addData("xi", xi);
-            telemetry.update();
-        }
+
         while (D0.getState() == true) {
             M0_2.setPower(.3);
         }
@@ -134,7 +125,7 @@ public class DriveV4 extends LinearOpMode {
         if ((target == 200) && (D1.getDistance(DistanceUnit.METER) <= .033) || gamepad1.right_bumper) {
             target = 5;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-                Slide();
+                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
             }
             S0.setPosition(0.3);
         }
@@ -170,10 +161,12 @@ public class DriveV4 extends LinearOpMode {
 
         if (gamepad1.left_stick_button) {
             if (atwall) {
-               TrajUpdate();
+                target = hdata[(x + 5*(y-1) + 2)];
+                TrajUpdate();
                 drive.followTrajectoryAsync(t);
             }
             if (atwall == false) {
+                target = 200;
                 drive.followTrajectoryAsync(f);
             }
            // while (drive.isBusy()) {
@@ -185,16 +178,15 @@ public class DriveV4 extends LinearOpMode {
 
     public void TrajUpdate() {
         vy = -(yoffset+24*(y-1));
-        //vx
-        if (x > 0)  { vx = .01 + 24*Math.floor(Math.abs(x-xi));}
-        else        { vx = .01 - 24*Math.floor(Math.abs(x-xi));}
-        //vo
+        if (x > 0)  {vx = .01 + 24*Math.floor(Math.abs(x-xi));}
+        else        {vx = .01 - 24*Math.floor(Math.abs(x-xi));}
         if (x>xi)   {vo = 135;}
         else        {vo = -135;}
+
         Trajectory t = drive.trajectoryBuilder(new Pose2d(0, 0, 0))
                 .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)), Math.toRadians(0))
                 .splineToSplineHeading(new Pose2d(vy, vx, Math.toRadians(vo)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(vy+(d/Math.sqrt(2)), vx+(d*Math.sin(vo)), Math.toRadians(vo)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(vy+(d*Math.cos(vo)), vx+(d*Math.sin(vo)), Math.toRadians(vo)), Math.toRadians(0))
                 .build();
         Trajectory f = drive.trajectoryBuilder(t.end())
                 .splineToSplineHeading(new Pose2d(vy, vx, Math.toRadians(vo)), Math.toRadians(0))
@@ -204,10 +196,10 @@ public class DriveV4 extends LinearOpMode {
     }
 
     public void Coordinates() {
-        if (gamepad2.dpad_up) dup = true;
-        if (gamepad2.dpad_down) ddown = true;
-        if (gamepad2.dpad_left) dleft = true;
-        if (gamepad2.dpad_right) dright = true;
+        if (gamepad2.dpad_up  && y <5) dup = true;
+        if (gamepad2.dpad_down  && y >1) ddown = true;
+        if (gamepad2.dpad_left && x > -2) dleft = true;
+        if (gamepad2.dpad_right && x < 2) dright = true;
 
         if ((!gamepad2.dpad_up) && dup) dup = false;y += 1;
         if ((!gamepad2.dpad_down) && ddown) ddown = false;y -= 1;
@@ -216,6 +208,11 @@ public class DriveV4 extends LinearOpMode {
 
         if (gamepad2.right_bumper) xi = .5;
         if (gamepad2.left_bumper) xi = -.5;
+        telemetry.addData("xi", xi);
+        telemetry.addData("x",x);
+        telemetry.addData("y",y);
+
+        telemetry.update();
 
 
     }
