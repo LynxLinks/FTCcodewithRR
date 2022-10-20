@@ -132,9 +132,7 @@ public class DriveV3 extends LinearOpMode {
             RoadRunner();
         }
     }
-    public void Cords(){
 
-    }
     public void Untilslide(){
         while (Math.abs(target - M0_2.getCurrentPosition()) > 10){
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
@@ -170,14 +168,20 @@ public class DriveV3 extends LinearOpMode {
             dleft = false;
             x -= 1;
         }
-            telemetry.addData("x  ",x);
-            telemetry.addData("y  ",y);
-            telemetry.addData("xi",xi);
-            telemetry.update();
+
 
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //vy
+        Pose2d poseEstimate = drive.getPoseEstimate();
+        telemetry.addData("x  ",x);
+        telemetry.addData("y  ",y);
+        telemetry.addData("xi",xi);
+        telemetry.addData("x", poseEstimate.getX());
+        telemetry.addData("y", poseEstimate.getY());
+        telemetry.addData("heading", poseEstimate.getHeading());
+        telemetry.update();
+
         vy = -(yoffset+24*(y-1));
         //vx
         if (x > 0)  { vx = .1 + 24*Math.floor(Math.abs(x-xi));}
@@ -228,8 +232,6 @@ public class DriveV3 extends LinearOpMode {
                drive.followTrajectory(t3);
 
                atwall = false;
-               y = 0;
-               x = 0;
 
            }
            //from junction
@@ -245,6 +247,8 @@ public class DriveV3 extends LinearOpMode {
                target = 200;
                Untilslide();
                drive.followTrajectory(f3);
+               y = 0;
+               x = 0;
                 atwall = true;
            }
         }
