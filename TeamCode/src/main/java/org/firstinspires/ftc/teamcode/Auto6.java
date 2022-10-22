@@ -31,7 +31,7 @@ import java.lang.reflect.Array;
 
 //name and class
 @Config
-@Autonomous(name = "Auto6", group="Auto")
+@Autonomous(name = "Red", group="Auto")
 
 public class Auto6 extends LinearOpMode {
     DcMotor M0;
@@ -51,7 +51,10 @@ public class Auto6 extends LinearOpMode {
     public static double y1 = 53;
     public static double h = 800; //starting stack height
     public static double i = 50; //layer height
+    public static boolean red = true;
+    public static int cycles = 5;
 
+    double o1 = 0;
     int y = 2;   //y coordinate input
     int x = 0;   //x coordinate input
     double target; //slide target position
@@ -74,8 +77,8 @@ public class Auto6 extends LinearOpMode {
     boolean atwall = true; //used to know whether to run to or from
     boolean slidecalibrated = false;
     boolean slidecalfiller = true;
+    boolean audienceside = true;
     int loop = 0; //variable for number of cycles
-
     //distance vars
     double p = 0;   //position
     double t = -12; //target
@@ -88,6 +91,13 @@ public class Auto6 extends LinearOpMode {
     Trajectory f1;
     Trajectory f2;
     Trajectory f3;
+    Trajectory i1;
+    Trajectory i2;
+    Trajectory i3;
+    Trajectory i4;
+    Trajectory p1;
+    Trajectory p2;
+    Trajectory p3;
 
     public void runOpMode() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -118,50 +128,103 @@ public class Auto6 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d())
-                .strafeLeft(D4.getDistance(DistanceUnit.INCH) - x1)
-                .build();
-        Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
-                .splineToSplineHeading(new Pose2d(-y1, -(D4.getDistance(DistanceUnit.INCH) - x1), Math.toRadians(90)), Math.toRadians(0))
-                .build();
-        Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
-                .forward(x1)
-                .build();
+
+
         S0.setPosition(0.3);
+        if (red){
+            if (D2.getDistance(DistanceUnit.INCH) < f / 2) {                                            //red left
+                x1 = -(D2.getDistance(DistanceUnit.INCH)-x1);
+                y1 = - y1;
+                xi = .5;
+                o1 = -90;
+                audienceside = true;
+            }
+            else {                                                                              //red right
+                y1 = - y1;
+                o1 = -135;
+                x1 = (D4.getDistance(DistanceUnit.INCH));
+                xi = -.5;
+                audienceside = false;
+            }
+        }
+        else{
+            if (D2.getDistance(DistanceUnit.INCH) < f / 2){                                             //blue left
+                y1 = - y1;
+                o1 = 135;
+                x1 = (D2.getDistance(DistanceUnit.INCH));
+                xi = .5;
+                audienceside = false;
+            }
+            else {                                                                              //blue right
+                x1 = (D4.getDistance(DistanceUnit.INCH)-x1);
+                y1 = - y1;
+                xi = -.5;
+                o1 = 90;
+                audienceside = true;
+            }
+
+
+        }
+
 
         waitForStart();
         if (isStopRequested()) return;
         //vuforia
         //zone = based on vuforia
-        if (D4.getDistance(DistanceUnit.INCH) < f / 2) {
-            //right
-            //drive to parking zone, calibrate slide, raise slide to 200
-            drive.followTrajectoryAsync(traj1);
-            DriveUpdate();
-            //unclamp, set slide 800, move to in front of cone stack
-            S0.setPosition(0);
-            target = h;
-            drive.followTrajectoryAsync(traj2);
-            DriveUpdate();
-            //move to cone stack then center and set slide to to level
-            drive.followTrajectoryAsync(traj3);
-            DriveUpdate();
-            Cycle();
-            Park();
+
+
+        Setup();
+        Cycle();
+        Park();
+    }
+
+    public void Setup(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        if (audienceside ){
+
+
+            Trajectory i1 = drive.trajectoryBuilder(new Pose2d())
+                    .strafeLeft(x1)
+                    .addDisplacementMarker(() -> {
+                        drive.followTrajectoryAsync(i2);
+                        S0.setPosition(0);
+                        target = h;
+                    })
+                    .build();
+            Trajectory i2 = drive.trajectoryBuilder(i1.end())
+                    .splineToSplineHeading(new Pose2d(y1, x1, Math.toRadians(o1)), Math.toRadians(o1))
+                    .addDisplacementMarker(() -> drive.followTrajectoryAsync(i3))
+                    .build();
+            Trajectory i3 = drive.trajectoryBuilder(i2.end())
+                    .forward(x1)
+                    .build();
+
         }
         else{
-            //left
+            Trajectory i1 = drive.trajectoryBuilder(new Pose2d())
+                    .splineToSplineHeading(new Pose2d(y1, 0, Math.toRadians(o1)), Math.toRadians(o1))
+                    .addDisplacementMarker(() -> drive.followTrajectoryAsync(i2))
+                    .build();
+            Trajectory i2 = drive.trajectoryBuilder(i1.end())
+                    .forward(d)
+                    .addDisplacementMarker(() -> drive.followTrajectoryAsync(i3))
+                    .build();
+            Trajectory i3 = drive.trajectoryBuilder(i1.end())
+                    .back(d)
+                    .addDisplacementMarker(() -> drive.followTrajectoryAsync(i4))
+                    .build();
+            Trajectory i4 = drive.trajectoryBuilder(i3.end())
+                    .lineToLinearHeading(new Pose2d(y1, x1, 2*vo))
+                    .build();
+
         }
-    }
-    public void DriveUpdate(){
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        while (drive.isBusy()) {
-            drive.update();
-            Slide();
-        }
+        drive.followTrajectoryAsync(i1);
+        drive.update();
+        DriveUpdate();
+
     }
     public void Cycle(){
-        while (loop < 5);{
+        while (loop < cycles);{
             target = h - (i*loop);
             Center(); //cetner using distance sensors
             UntilSlide(); //way faster slide speed but will wait until value is hit
@@ -172,18 +235,31 @@ public class Auto6 extends LinearOpMode {
             y = cords[2*loop + 1];
             Drive(); //to
             S0.setPosition(0);
-            if (loop < 4)Drive(); //from if its not the last cycle
-            loop += 1;}
+            if (loop < (cycles - 1))Drive(); //from if its not the last cycle
+            loop += 1;
+        }
     }
     public void Park(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Trajectory traj3 = drive.trajectoryBuilder(t1.end())
                 .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
-                .splineToConstantHeading(new Vector2d(vy + (24* (zone-2) + .1), vx), Math.toRadians(vo))
+                .splineToConstantHeading(new Vector2d(vy + ((xi/Math.abs(xi))*(24* (zone-2) + .1)), vx), Math.toRadians(vo))  //if xi = .5 then add (zone-2)*24 to y   // if xi = -.5 then subtract (zone-2)*24 from y
                 .build();
+        drive.followTrajectoryAsync(traj3);
+        drive.update();
         DriveUpdate();
 
     }
+
+    public void DriveUpdate(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        while (drive.isBusy()) {
+            drive.update();
+            Slide();
+        }
+    }
+
+
     public void UntilSlide() {
         while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
             M0_2.setPower(-.7 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
@@ -219,18 +295,14 @@ public class Auto6 extends LinearOpMode {
     public void Center(){
         //d2 = right
         //d4 = left
-
-        while (gamepad2.dpad_up) {
-            Slide();
-            p = (D2.getDistance(DistanceUnit.INCH) - (f - D4.getDistance(DistanceUnit.INCH)));
-            s = (-1 * ((1 - Math.pow(10, ((25*p) / 100))) / (1 + Math.pow(10, ((25*p) / 100)))));
-            M0.setPower(-.7*s);
-            M1.setPower(s);
-            M2.setPower(-s);
-            M3.setPower(.7*s);
-
-
-        }
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        p = (D2.getDistance(DistanceUnit.INCH) - (f - D4.getDistance(DistanceUnit.INCH)));
+        Trajectory c1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                .lineToLinearHeading(new Pose2d(0, (24*xi)-p, Math.toRadians(0)))
+                .build();
+        drive.followTrajectoryAsync(c1);
+        drive.update();
+        DriveUpdate();
 
     }
 
@@ -269,7 +341,7 @@ public class Auto6 extends LinearOpMode {
                         .build();
                 //move to 0 x and 0 theta
                 Trajectory f2 = drive.trajectoryBuilder(f1.end())
-                        .lineToLinearHeading(new Pose2d(vy, 0, 0))  //might have to be Math.toRadians(vo)
+                        .lineToLinearHeading(new Pose2d(vy, 0, 0))
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
                         .build();
                 //move to 0 y
@@ -279,16 +351,7 @@ public class Auto6 extends LinearOpMode {
 
                 drive.followTrajectoryAsync(t1);
                 drive.update();
-                while (drive.isBusy()) {
-                    drive.update();
-                    Slide();
-                    while (gamepad1.right_stick_button){
-                        M0.setPower(0);
-                        M3.setPower(0);
-                        M1.setPower(0);
-                        M2.setPower(0);
-                    }
-                }
+                DriveUpdate();
                 atwall = false;
 //
             }
@@ -298,11 +361,7 @@ public class Auto6 extends LinearOpMode {
                 drive.followTrajectoryAsync(f1);
                 drive.update();
 
-                while (drive.isBusy()) {
-                    drive.update();
-                    Slide();
-
-                }
+                DriveUpdate();
                 atwall = true;
             }
     }
