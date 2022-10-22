@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.google.gson.annotations.Until;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -30,9 +31,9 @@ import java.lang.reflect.Array;
 
 //name and class
 @Config
-@TeleOp(name = "DriveV4", group="Linear Opmode")
+@Autonomous(name = "Auto6", group="Auto")
 
-public class DriveV4 extends LinearOpMode {
+public class Auto6 extends LinearOpMode {
     DcMotor M0;
     FtcDashboard dashboard;
     DcMotor M1;
@@ -43,7 +44,6 @@ public class DriveV4 extends LinearOpMode {
     DigitalChannel D0;
     DistanceSensor D1;
     DistanceSensor D2;
-    DistanceSensor D3;
     DistanceSensor D4;
     public static double yoffset = 5;  //constant added to all y positions
     public static double d = 12;  //diagonal distance forward and backward
@@ -89,9 +89,8 @@ public class DriveV4 extends LinearOpMode {
         S0 = hardwareMap.get(Servo.class, "S0");
         D0 = hardwareMap.get(DigitalChannel.class, "D0");
         D1 = hardwareMap.get(DistanceSensor.class, "D1");
-        D2 = hardwareMap.get(DistanceSensor.class, "D2");
+        D2 = hardwareMap.get(DistanceSensor.class, "D3");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
-        D3 = hardwareMap.get(DistanceSensor.class, "D3");
 
 
         //Set Motors
@@ -125,21 +124,19 @@ public class DriveV4 extends LinearOpMode {
 
         S0.setPosition(0.0);
         waitForStart();
+        if(isStopRequested()) return;
+
+
+        //vuforia
+        //
+
         target = 200;
-        while (opModeIsActive()) {
+        /*while (opModeIsActive()) {
             Drive();
             ServoClamp();
             Slide();
             Coordinates();
-            Center();
-            telemetry.addData("xi", xi);
-            telemetry.addData("x", x);
-            telemetry.addData("y", y);
-            telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
-            telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
-
-            telemetry.update();
-        }
+        }*/
     }
 
     public void ServoClamp() {
@@ -147,7 +144,7 @@ public class DriveV4 extends LinearOpMode {
         if (gamepad1.left_bumper) {
             S0.setPosition(0.0);
         }
-        if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= .033) || gamepad1.right_bumper) {
+        if ((target == 200) && (D1.getDistance(DistanceUnit.METER) <= .033) || gamepad1.right_bumper) {
             target = 5;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
@@ -180,12 +177,12 @@ public class DriveV4 extends LinearOpMode {
 
         while (gamepad2.dpad_up) {
 
-            p = (D2.getDistance(DistanceUnit.MM) + (f - D4.getDistance(DistanceUnit.MM))) / 2;
+            p = (D2.getDistance(DistanceUnit.METER) + (f - D4.getDistance(DistanceUnit.METER))) / 2;
             s = (-1 * ((1 - Math.pow(10, (((t+f/2) - p) / 100))) / (1 + Math.pow(10, (((t+f/2) - p) / 100)))));
-            M0.setPower(-.7*s);
+            M0.setPower(.7*s);
             M1.setPower(s);
             M2.setPower(-s);
-            M3.setPower(.7*s);
+            M3.setPower(-.7*s);
 
 
         }
@@ -327,6 +324,12 @@ public class DriveV4 extends LinearOpMode {
             dleft = false;
             x -= 1;
         }
+        telemetry.addData("xi", xi);
+        telemetry.addData("x", x);
+        telemetry.addData("y", y);
+
+        telemetry.update();
+
 
     }
 }
