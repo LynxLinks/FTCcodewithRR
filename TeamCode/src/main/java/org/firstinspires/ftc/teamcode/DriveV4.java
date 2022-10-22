@@ -225,8 +225,8 @@ public class DriveV4 extends LinearOpMode {
                         .splineToConstantHeading(new Vector2d(vy + (d * Math.cos(Math.toRadians(vo))), vx + (d * Math.sin(Math.toRadians(vo)))), Math.toRadians(vo))
                         .build();
                 Trajectory f1 = drive.trajectoryBuilder(t1.end())
-                        .splineToSplineHeading(new Pose2d(vy, vx, Math.toRadians(vo)), Math.toRadians(vo))
-                        .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)), Math.toRadians(vo))
+                        .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
+                        .splineToConstantHeading(new Vector2d(vy, 0), Math.toRadians(vo))
                         .splineToSplineHeading(new Pose2d(0, 0, Math.toRadians(0)), Math.toRadians(0))
                         .build();
                 /*Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
