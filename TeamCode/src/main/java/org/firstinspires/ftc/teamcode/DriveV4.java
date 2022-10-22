@@ -219,18 +219,9 @@ public class DriveV4 extends LinearOpMode {
                     vo = -135;
                 }
 
-                Trajectory t1 = drive.trajectoryBuilder(new Pose2d())
-                        .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)),Math.toRadians(0))
-                        .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
-                        .splineToConstantHeading(new Vector2d(vy + (d * Math.cos(Math.toRadians(vo))), vx + (d * Math.sin(Math.toRadians(vo)))), Math.toRadians(vo))
-                        .build();
-                Trajectory f1 = drive.trajectoryBuilder(t1.end())
-                        .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
-                        .splineToConstantHeading(new Vector2d(vy, 0), Math.toRadians(vo))
-                        .splineToSplineHeading(new Pose2d(0, 0, Math.toRadians(0)), Math.toRadians(0))
-                        .build();
-                /*Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                        .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(vo)))
+
+                Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                        .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t2))
                         .build();
                 //move to x position
@@ -255,7 +246,7 @@ public class DriveV4 extends LinearOpMode {
                 //move to 0 y
                 Trajectory f3 = drive.trajectoryBuilder(f2.end())
                         .lineToLinearHeading(new Pose2d(0, 0, 0))
-                        .build();*/
+                        .build();
 
                 target = hdata[x + 5*(y-1)-2];
                 drive.followTrajectoryAsync(t1);
@@ -282,17 +273,18 @@ public class DriveV4 extends LinearOpMode {
                 target = 200;
                 drive.followTrajectoryAsync(f1);
                 drive.update();
-                //while(!gamepad1.dpad_up && drive.isBusy()) {
-                //drive.update();
-                //Slide();
-                //}
                 while (Math.abs(gamepad1.left_stick_x) < .5
                         && Math.abs(gamepad1.left_stick_y) < .5
                         && Math.abs(gamepad1.right_stick_x) < .5
                         && Math.abs(gamepad1.right_stick_y) < .5) {
                     drive.update();
                     Slide();
-                    while (gamepad1.right_stick_button) ;
+                    while (gamepad1.right_stick_button){
+                        M0.setPower(0);
+                        M3.setPower(0);
+                        M1.setPower(0);
+                        M2.setPower(0);
+                    }
                 }
                 atwall = true;
             }

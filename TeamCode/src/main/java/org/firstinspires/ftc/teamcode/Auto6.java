@@ -83,7 +83,11 @@ public class Auto6 extends LinearOpMode {
     double f = 141; //field size
     int zone = 1;
     Trajectory t1;
+    Trajectory t2;
+    Trajectory t3;
     Trajectory f1;
+    Trajectory f2;
+    Trajectory f3;
 
     public void runOpMode() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -157,8 +161,8 @@ public class Auto6 extends LinearOpMode {
         }
     }
     public void Cycle(){
-        while (loop < 5);
-            target = h - i*loop;
+        while (loop < 5);{
+            target = h - (i*loop);
             Center(); //cetner using distance sensors
             UntilSlide(); //way faster slide speed but will wait until value is hit
             S0.setPosition(0.3); //clamp
@@ -169,7 +173,7 @@ public class Auto6 extends LinearOpMode {
             Drive(); //to
             S0.setPosition(0);
             if (loop < 4)Drive(); //from if its not the last cycle
-            loop += 1;
+            loop += 1;}
     }
     public void Park(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -218,12 +222,12 @@ public class Auto6 extends LinearOpMode {
 
         while (gamepad2.dpad_up) {
             Slide();
-            p = (D2.getDistance(DistanceUnit.INCH) + (f - D4.getDistance(DistanceUnit.INCH))) / 2;
+            p = (D2.getDistance(DistanceUnit.MM) + (f - D4.getDistance(DistanceUnit.MM))) / 2;
             s = (-1 * ((1 - Math.pow(10, (((t+f/2) - p) / 100))) / (1 + Math.pow(10, (((t+f/2) - p) / 100)))));
-            M0.setPower(.7*s);
+            M0.setPower(-.7*s);
             M1.setPower(s);
             M2.setPower(-s);
-            M3.setPower(-.7*s);
+            M3.setPower(.7*s);
 
 
         }
@@ -245,15 +249,32 @@ public class Auto6 extends LinearOpMode {
                     vo = -135;
                 }
                 target = hdata[x + 5*(y-1)-2];
-                Trajectory t1 = drive.trajectoryBuilder(new Pose2d())
-                        .splineToSplineHeading(new Pose2d(vy, 0, Math.toRadians(vo)),Math.toRadians(0))
-                        .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
-                        .splineToConstantHeading(new Vector2d(vy + (d * Math.cos(Math.toRadians(vo))), vx + (d * Math.sin(Math.toRadians(vo)))), Math.toRadians(vo))
+                Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                        .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
+                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t2))
                         .build();
-                Trajectory f1 = drive.trajectoryBuilder(t1.end())
-                        .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
-                        .splineToConstantHeading(new Vector2d(vy, 0), Math.toRadians(vo))
-                        .splineToSplineHeading(new Pose2d(0, 0, Math.toRadians(0)), Math.toRadians(0))
+                //move to x position
+                Trajectory t2 = drive.trajectoryBuilder(t1.end())
+                        .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
+                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
+                        .build();
+                //move diagonal forwards to target junction
+                Trajectory t3 = drive.trajectoryBuilder(t2.end())
+                        .forward(d)
+                        .build();
+                //move diagonal backwards to center of tile
+                Trajectory f1 = drive.trajectoryBuilder(t3.end())
+                        .back(d)
+                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
+                        .build();
+                //move to 0 x and 0 theta
+                Trajectory f2 = drive.trajectoryBuilder(f1.end())
+                        .lineToLinearHeading(new Pose2d(vy, 0, 0))  //might have to be Math.toRadians(vo)
+                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
+                        .build();
+                //move to 0 y
+                Trajectory f3 = drive.trajectoryBuilder(f2.end())
+                        .lineToLinearHeading(new Pose2d(0, 0, 0))
                         .build();
 
                 drive.followTrajectoryAsync(t1);
