@@ -222,8 +222,8 @@ public class Auto6 extends LinearOpMode {
 
         while (gamepad2.dpad_up) {
             Slide();
-            p = (D2.getDistance(DistanceUnit.MM) + (f - D4.getDistance(DistanceUnit.MM))) / 2;
-            s = (-1 * ((1 - Math.pow(10, (((t+f/2) - p) / 100))) / (1 + Math.pow(10, (((t+f/2) - p) / 100)))));
+            p = (D2.getDistance(DistanceUnit.INCH) - (f - D4.getDistance(DistanceUnit.INCH)));
+            s = (-1 * ((1 - Math.pow(10, ((25*p) / 100))) / (1 + Math.pow(10, ((25*p) / 100)))));
             M0.setPower(-.7*s);
             M1.setPower(s);
             M2.setPower(-s);

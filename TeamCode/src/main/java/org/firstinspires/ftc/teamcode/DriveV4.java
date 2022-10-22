@@ -67,9 +67,9 @@ public class DriveV4 extends LinearOpMode {
 
     //distance vars
     double p = 0;   //position
-    double t = 0; //target
+    double t = -12; //target
     double s = 0; //speed
-    double f = 3590; //field size
+    double f = 141; //field size
     Trajectory t1;
     Trajectory t2;
     Trajectory t3;
@@ -180,8 +180,8 @@ public class DriveV4 extends LinearOpMode {
 
         while (gamepad2.dpad_up) {
 
-            p = (D2.getDistance(DistanceUnit.MM) + (f - D4.getDistance(DistanceUnit.MM))) / 2;
-            s = (-1 * ((1 - Math.pow(10, (((t+f/2) - p) / 100))) / (1 + Math.pow(10, (((t+f/2) - p) / 100)))));
+            p = (D2.getDistance(DistanceUnit.INCH) - (f - D4.getDistance(DistanceUnit.INCH)));
+            s = (-1 * ((1 - Math.pow(10, ((25*p) / 100))) / (1 + Math.pow(10, ((25*p) / 100)))));
             M0.setPower(-.7*s);
             M1.setPower(s);
             M2.setPower(-s);
