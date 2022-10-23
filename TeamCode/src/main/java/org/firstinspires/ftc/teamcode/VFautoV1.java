@@ -38,7 +38,6 @@ public class VFautoV1 extends LinearOpMode {
 
     public void runOpMode() {
         dashboard = FtcDashboard.getInstance();
-        sleep(2500);
 
         initVuforia();
         initTfod();
