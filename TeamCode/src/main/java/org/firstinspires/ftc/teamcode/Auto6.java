@@ -172,7 +172,6 @@ public class Auto6 extends LinearOpMode {
         //vuforia
         //zone = based on vuforia
 
-
         Setup();
         Cycle();
         Park();
