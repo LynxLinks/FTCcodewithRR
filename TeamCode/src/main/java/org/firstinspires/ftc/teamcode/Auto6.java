@@ -47,13 +47,15 @@ public class Auto6 extends LinearOpMode {
     DistanceSensor D4;
     public static double yoffset = 5;  //constant added to all y positions
     public static double d = 12;  //diagonal distance forward and backward
-    public static double x1 = 4;
-    public static double y1 = 53;
+    public static double x1i = 4;
+    public static double y1i = 53;
     public static double h = 800; //starting stack height
     public static double i = 50; //layer height
     public static boolean red = true;
     public static int cycles = 5;
 
+    double y1 = 0;
+    double x1 = 0;
     double o1 = 0;
     int y = 2;   //y coordinate input
     int x = 0;   //x coordinate input
@@ -100,7 +102,6 @@ public class Auto6 extends LinearOpMode {
     Trajectory p3;
 
     public void runOpMode() {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         dashboard = FtcDashboard.getInstance();
         M0 = hardwareMap.get(DcMotor.class, "M0");
         M1 = hardwareMap.get(DcMotor.class, "M1");
@@ -110,7 +111,7 @@ public class Auto6 extends LinearOpMode {
         S0 = hardwareMap.get(Servo.class, "S0");
         D0 = hardwareMap.get(DigitalChannel.class, "D0");
         D1 = hardwareMap.get(DistanceSensor.class, "D1");
-        D2 = hardwareMap.get(DistanceSensor.class, "D3");
+        D2 = hardwareMap.get(DistanceSensor.class, "D2");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
         M0.setDirection(DcMotor.Direction.FORWARD);
         M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -133,14 +134,14 @@ public class Auto6 extends LinearOpMode {
         S0.setPosition(0.3);
         if (red){
             if (D2.getDistance(DistanceUnit.INCH) < f / 2) {                                            //red left
-                x1 = -(D2.getDistance(DistanceUnit.INCH)-x1);
-                y1 = - y1;
+                x1 = -(D2.getDistance(DistanceUnit.INCH)-x1i);
+                y1 = - y1i;
                 xi = .5;
                 o1 = -90;
                 audienceside = true;
             }
             else {                                                                              //red right
-                y1 = - y1;
+                y1 = - y1i;
                 o1 = -135;
                 x1 = (D4.getDistance(DistanceUnit.INCH));
                 xi = -.5;
@@ -149,15 +150,15 @@ public class Auto6 extends LinearOpMode {
         }
         else{
             if (D2.getDistance(DistanceUnit.INCH) < f / 2){                                             //blue left
-                y1 = - y1;
+                y1 = - y1i;
                 o1 = 135;
                 x1 = (D2.getDistance(DistanceUnit.INCH));
                 xi = .5;
                 audienceside = false;
             }
             else {                                                                              //blue right
-                x1 = (D4.getDistance(DistanceUnit.INCH)-x1);
-                y1 = - y1;
+                x1 = (D4.getDistance(DistanceUnit.INCH)-x1i);
+                y1 = - y1i;
                 xi = -.5;
                 o1 = 90;
                 audienceside = true;
@@ -165,27 +166,43 @@ public class Auto6 extends LinearOpMode {
 
 
         }
+        while(!isStarted()) {
+            telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+            telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+            telemetry.addData("x1", x1);
+            telemetry.addData("y1", y1);
+            telemetry.addData("o1", o1);
+            telemetry.addData("xi", xi);
+            telemetry.addData("audience side",audienceside );
+            telemetry.update();
+        }
 
-
-        waitForStart();
         if (isStopRequested()) return;
+
         //vuforia
         //zone = based on vuforia
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Setup();
-        Cycle();
-        Park();
+        Trajectory i1 = drive.trajectoryBuilder(new Pose2d())
+                .lineToLinearHeading(new Pose2d(-30, 0, Math.toRadians(o1)))
+                .build();
+
+        drive.followTrajectoryAsync(i1);
+
+        drive.update();
+        while (drive.isBusy()) {
+            drive.update();
+        }
     }
 
     public void Setup(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         if (audienceside ){
 
-
             Trajectory i1 = drive.trajectoryBuilder(new Pose2d())
                     .strafeLeft(x1)
                     .addDisplacementMarker(() -> {
-                        drive.followTrajectoryAsync(i2);
+                        //drive.followTrajectoryAsync(i2);
                         S0.setPosition(0);
                         target = h;
                     })
@@ -197,14 +214,16 @@ public class Auto6 extends LinearOpMode {
             Trajectory i3 = drive.trajectoryBuilder(i2.end())
                     .forward(x1)
                     .build();
+            drive.followTrajectoryAsync(i1);
+            drive.update();
 
         }
         else{
             Trajectory i1 = drive.trajectoryBuilder(new Pose2d())
                     .splineToSplineHeading(new Pose2d(y1, 0, Math.toRadians(o1)), Math.toRadians(o1))
-                    .addDisplacementMarker(() -> drive.followTrajectoryAsync(i2))
+                    //.addDisplacementMarker(() -> drive.followTrajectoryAsync(i2))
                     .build();
-            Trajectory i2 = drive.trajectoryBuilder(i1.end())
+            /*Trajectory i2 = drive.trajectoryBuilder(i1.end())
                     .forward(d)
                     .addDisplacementMarker(() -> drive.followTrajectoryAsync(i3))
                     .build();
@@ -214,12 +233,13 @@ public class Auto6 extends LinearOpMode {
                     .build();
             Trajectory i4 = drive.trajectoryBuilder(i3.end())
                     .lineToLinearHeading(new Pose2d(y1, x1, 2*vo))
-                    .build();
-
+                    .build();*/
+            drive.followTrajectoryAsync(i1);
+            drive.update();
+            DriveUpdate();
         }
-        drive.followTrajectoryAsync(i1);
-        drive.update();
-        DriveUpdate();
+
+
 
     }
     public void Cycle(){

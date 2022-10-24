@@ -153,7 +153,7 @@ public class DriveV4 extends LinearOpMode {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
             }
             M0_2.setPower(0);
-            S0.setPosition(0.3);
+            S0.setPosition(0.2);
         }
     }
 
