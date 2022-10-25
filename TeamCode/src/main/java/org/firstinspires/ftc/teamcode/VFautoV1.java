@@ -71,7 +71,6 @@ public class VFautoV1 extends LinearOpMode {
         telemetry.addData("Zone",zone);
         telemetry.update();
 
-        sleep(10000);
 
     }
 

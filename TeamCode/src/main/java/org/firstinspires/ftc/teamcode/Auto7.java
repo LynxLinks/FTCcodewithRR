@@ -68,18 +68,17 @@ public class Auto7 extends LinearOpMode {
     int debug = 0;
     double x0 = 26;
 
-    double y1;
-    double x1;
-    double o1;
-    double d1;
-    double d2;
-    int y;   //y coordinate input
-    int x;   //x coordinate input
+    double y1 = 0;
+    double x1 = 0;
+    double o1 = 0;
+    double o2 = 0;
+    int y = 2;   //y coordinate input
+    int x = 0;   //x coordinate input
     double target; //slide target position
-    double vy;  //vector roadrunner x value
-    double vx;  //vector roadrunner y value
-    double vo;  //target roadrunner theta
-    double xi;  //initial robot position against wall in coordinate system, either .5 or -.5
+    double vy = 1;  //vector roadrunner x value
+    double vx = 1;  //vector roadrunner y value
+    double vo = 1;  //target roadrunner theta
+    double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
     int[] hdata = new int[]{200, 1100, 200, 1100, 200,
             1100, 1750, 2350, 1750, 1100,
             200, 2350, 200, 2350, 200,
@@ -96,10 +95,11 @@ public class Auto7 extends LinearOpMode {
     boolean slidecalibrated = false;
     boolean slidecalfiller = true;
     boolean audienceside = true;
-    Pose2d endpose;
     int loop = 0; //variable for number of cycles
     //distance vars
-    double p;   //position
+    double p = 0;   //position
+    double t = -12; //target
+    double s = 0; //speed
     double f = 141; //field size
     int zone = 1;
     Trajectory t1;
@@ -108,13 +108,14 @@ public class Auto7 extends LinearOpMode {
     Trajectory f1;
     Trajectory f2;
     Trajectory f3;
-    Trajectory i0;
     Trajectory i1;
     Trajectory i2;
     Trajectory i3;
     Trajectory i4;
     Trajectory i5;
-
+    Trajectory i2a;
+    Trajectory i3a;
+    Trajectory i4a;
 
     public void runOpMode() {
         dashboard = FtcDashboard.getInstance();
@@ -146,12 +147,13 @@ public class Auto7 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        S0.setPosition(0.3);
+        S0.setPosition(0.0);
 
 
         while (!isStarted()) {
             telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
             telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+            telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
             telemetry.addData("x1", x1);
             telemetry.addData("y1", y1);
             telemetry.addData("o1", o1);
@@ -162,6 +164,8 @@ public class Auto7 extends LinearOpMode {
         }
 
         if (isStopRequested()) return;
+        S0.setPosition(0.3);
+
         if (red) {
             if (D4.getDistance(DistanceUnit.INCH) > f / 2) {                                            //red left
                 x1 = -(D2.getDistance(DistanceUnit.INCH) - x1i);
@@ -170,27 +174,26 @@ public class Auto7 extends LinearOpMode {
                 o1 = -90;
                 audienceside = true;
                 debug = 1;
-                d1 = D2.getDistance(DistanceUnit.INCH);
             } else {                                                                              //red right
                 y1 = -y1i;
-                o1 = -135;
+                o1 = -180;
+                o2 = -135;
                 x1 = (D4.getDistance(DistanceUnit.INCH)-x1i);
                 xi = -.5;
                 audienceside = false;
                 debug = 2;
                 x0 = ( D4.getDistance(DistanceUnit.INCH) - xstart);
-                d1 = D2.getDistance(DistanceUnit.INCH);
             }
         } else {
             if (D4.getDistance(DistanceUnit.INCH) > f / 2) {                                             //blue left
                 y1 = -y1i;
-                o1 = 135;
+                o1 = 125;
+                o2 = 135;
                 x1 = ((D2.getDistance(DistanceUnit.INCH))-x1i);
                 xi = .5;
                 audienceside = false;
                 debug = 3;
                 x0 = ( xstart - D4.getDistance(DistanceUnit.INCH) );
-                d1 = D4.getDistance(DistanceUnit.INCH)
             } else {                                                                              //blue right
                 x1 = ((D2.getDistance(DistanceUnit.INCH)) - x1i);
                 y1 = -y1i;
@@ -198,7 +201,6 @@ public class Auto7 extends LinearOpMode {
                 o1 = 90;
                 audienceside = true;
                 debug = 4;
-                d1 = (D2.getDistance(DistanceUnit.INCH);
             }
         }
         Setup();
@@ -231,20 +233,25 @@ public class Auto7 extends LinearOpMode {
 
         }
         else{
-            i0 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                    .lineToLinearHeading(new Pose2d(vy/3, 0, Math.toRadians(0)))
-                    .addDisplacementMarker(() -> {
-                        drive.followTrajectoryAsync(t1);
-
-                        endpose = ()
-
-                    })
-                    .build();
             i1 = drive.trajectoryBuilder(new Pose2d())
                     .lineToLinearHeading(new Pose2d(y1, x0, Math.toRadians(o1)))
                     .addDisplacementMarker(() -> {
-                        drive.followTrajectoryAsync(i2);
-
+                        while(D4.getDistance(DistanceUnit.INCH) >= 15){
+                            M0.setPower(xi/2);
+                            M1.setPower(xi/2);
+                            M2.setPower(xi/2);
+                            M3.setPower(xi/2);
+                            telemetry.addData("d",d);
+                            telemetry.update();
+                        }
+                        M0.setPower(0);
+                        M1.setPower(0);
+                        M2.setPower(0);
+                        M3.setPower(0);
+                        d = D4.getDistance(DistanceUnit.INCH);
+                        telemetry.addData("d",d);
+                        telemetry.update();
+                        //drive.followTrajectoryAsync(i2);
                     })
                     .build();
             i2 = drive.trajectoryBuilder(i1.end())
@@ -262,7 +269,7 @@ public class Auto7 extends LinearOpMode {
                     })
                     .build();
             i4 = drive.trajectoryBuilder(i3.end())
-                    .lineToLinearHeading(new Pose2d(y1, x1, Math.toRadians(o1*2)))
+                    .lineToLinearHeading(new Pose2d(y1, x1, Math.toRadians(o2*2)))
                     .addDisplacementMarker(() -> {
                     drive.followTrajectoryAsync(i5);
                      })
@@ -280,8 +287,6 @@ public class Auto7 extends LinearOpMode {
             drive.update();
             Slide();
         }
-
-
 
     }
 
@@ -398,7 +403,6 @@ public class Auto7 extends LinearOpMode {
                 vo = -135;
             }
             target = hdata[x + 5*(y-1)+2];
-
             t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
                     .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
                     .addDisplacementMarker(() -> drive.followTrajectoryAsync(t2))

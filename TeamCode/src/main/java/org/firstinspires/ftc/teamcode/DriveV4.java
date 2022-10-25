@@ -45,8 +45,8 @@ public class DriveV4 extends LinearOpMode {
     DistanceSensor D2;
     DistanceSensor D3;
     DistanceSensor D4;
-    public static double yoffset = 5;  //constant added to all y positions
-    public static double d = 12;  //diagonal distance forward and backward
+    public static double yoffset = 4.5;  //constant added to all y positions
+    public static double d = 11.5;  //diagonal distance forward and backward
     int y = 2;   //y coordinate input
     int x = 0;   //x coordinate input
     double target; //slide target position
@@ -124,6 +124,7 @@ public class DriveV4 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         S0.setPosition(0.0);
+
         waitForStart();
         target = 200;
         while (opModeIsActive()) {
@@ -131,7 +132,7 @@ public class DriveV4 extends LinearOpMode {
             ServoClamp();
             Slide();
             Coordinates();
-            Center();
+
             telemetry.addData("xi", xi);
             telemetry.addData("x", x);
             telemetry.addData("y", y);
@@ -147,13 +148,13 @@ public class DriveV4 extends LinearOpMode {
         if (gamepad1.left_bumper) {
             S0.setPosition(0.0);
         }
-        if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= .033) || gamepad1.right_bumper) {
-            target = 5;
+        if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 33) || gamepad1.right_bumper) {
+            target = 0;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
             }
             M0_2.setPower(0);
-            S0.setPosition(0.2);
+            S0.setPosition(0.25);
         }
     }
 
@@ -174,23 +175,7 @@ public class DriveV4 extends LinearOpMode {
         }
     }
 
-    public void Center(){
-        //d2 = right
-        //d4 = left
 
-        while (gamepad2.dpad_up) {
-
-            p = (D2.getDistance(DistanceUnit.INCH) - (f - D4.getDistance(DistanceUnit.INCH)));
-            s = (-1 * ((1 - Math.pow(10, ((25*p) / 100))) / (1 + Math.pow(10, ((25*p) / 100)))));
-            M0.setPower(-.7*s);
-            M1.setPower(s);
-            M2.setPower(-s);
-            M3.setPower(.7*s);
-
-
-        }
-
-    }
 
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -220,41 +205,48 @@ public class DriveV4 extends LinearOpMode {
                 }
 
 
-                Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
                         .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t2))
                         .build();
                 //move to x position
-                Trajectory t2 = drive.trajectoryBuilder(t1.end())
+                t2 = drive.trajectoryBuilder(t1.end())
                         .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
                         .build();
                 //move diagonal forwards to target junction
-                Trajectory t3 = drive.trajectoryBuilder(t2.end())
+                t3 = drive.trajectoryBuilder(t2.end())
                         .forward(d)
                         .build();
                 //move diagonal backwards to center of tile
-                Trajectory f1 = drive.trajectoryBuilder(t3.end())
+                //f1 = drive.trajectoryBuilder(new Pose2d((vy - d*Math.sqrt(2)/2),(vx + d * Math.sin(Math.toRadians(vo))),Math.toRadians(vo)))
+
+                f1 = drive.trajectoryBuilder(new Pose2d(-38.5,8.5,Math.toRadians(135)))
                         .back(d)
-                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
+                        .addDisplacementMarker(
+                                () -> {
+                                    drive.followTrajectoryAsync(f2);
+                                    target = 200;
+                                })
                         .build();
                 //move to 0 x and 0 theta
-                Trajectory f2 = drive.trajectoryBuilder(f1.end())
+                f2 = drive.trajectoryBuilder(f1.end())
                         .lineToLinearHeading(new Pose2d(vy, 0, 0))  //might have to be Math.toRadians(vo)
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
                         .build();
                 //move to 0 y
-                Trajectory f3 = drive.trajectoryBuilder(f2.end())
+                f3 = drive.trajectoryBuilder(f2.end())
                         .lineToLinearHeading(new Pose2d(0, 0, 0))
                         .build();
-
-                target = hdata[x + 5*(y-1)-2];
+                S0.setPosition(.3);
+                target = hdata[x + 5*(y-1)+2];
                 drive.followTrajectoryAsync(t1);
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
                         && Math.abs(gamepad1.left_stick_y) < .5
                         && Math.abs(gamepad1.right_stick_x) < .5
                         && Math.abs(gamepad1.right_stick_y) < .5
+                        && drive.isBusy()
                 ) {
                     drive.update();
                     Slide();
@@ -266,17 +258,17 @@ public class DriveV4 extends LinearOpMode {
                     }
                 }
                 atwall = false;
-//
             }
-            if (atwall == false) {
+            else {
                 S0.setPosition(0);
-                target = 200;
                 drive.followTrajectoryAsync(f1);
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
                         && Math.abs(gamepad1.left_stick_y) < .5
                         && Math.abs(gamepad1.right_stick_x) < .5
-                        && Math.abs(gamepad1.right_stick_y) < .5) {
+                        && Math.abs(gamepad1.right_stick_y) < .5
+                         && drive.isBusy())
+                {
                     drive.update();
                     Slide();
                     while (gamepad1.right_stick_button){
