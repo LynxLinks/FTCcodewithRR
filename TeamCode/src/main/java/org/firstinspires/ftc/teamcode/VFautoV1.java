@@ -70,6 +70,15 @@ public class VFautoV1 extends LinearOpMode {
 
         telemetry.addData("Zone",zone);
         telemetry.update();
+        if(zone == "1"){
+
+        }
+        if(zone == "2"){
+
+        }
+        if(zone == "3"){
+
+        }
 
 
     }
