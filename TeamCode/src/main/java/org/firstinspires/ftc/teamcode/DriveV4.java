@@ -221,7 +221,7 @@ public class DriveV4 extends LinearOpMode {
                 //move diagonal backwards to center of tile
                 //f1 = drive.trajectoryBuilder(new Pose2d((vy - d*Math.sqrt(2)/2),(vx + d * Math.sin(Math.toRadians(vo))),Math.toRadians(vo)))
 
-                f1 = drive.trajectoryBuilder(new Pose2d(-38.5,8.5,Math.toRadians(135)))
+                f1 = drive.trajectoryBuilder(new Pose2d())
                         .back(d)
                         .addDisplacementMarker(
                                 () -> {
@@ -231,12 +231,12 @@ public class DriveV4 extends LinearOpMode {
                         .build();
                 //move to 0 x and 0 theta
                 f2 = drive.trajectoryBuilder(f1.end())
-                        .lineToLinearHeading(new Pose2d(vy, 0, 0))  //might have to be Math.toRadians(vo)
+                        .lineToLinearHeading(new Pose2d(vx*Math.cos(vo), vx*Math.sin(vo), Math.toRadians(-vo)))  //might have to be Math.toRadians(vo)
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
                         .build();
                 //move to 0 y
                 f3 = drive.trajectoryBuilder(f2.end())
-                        .lineToLinearHeading(new Pose2d(0, 0, 0))
+                        .lineToLinearHeading(new Pose2d(vy*Math.cos(vo), -vy*Math.sin(vo), Math.toRadians(-vo)))
                         .build();
                 S0.setPosition(.3);
                 target = hdata[x + 5*(y-1)+2];
