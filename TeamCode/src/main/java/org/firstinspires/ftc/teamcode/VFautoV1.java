@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -10,6 +11,12 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+
 
 import java.util.List;
 
@@ -17,7 +24,7 @@ import java.util.List;
 @Autonomous(name="VFautoV1", group="Linear Opmode")
 
 public class VFautoV1 extends LinearOpMode {
-
+    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
     String zone = null;
     FtcDashboard dashboard;
 
@@ -70,14 +77,23 @@ public class VFautoV1 extends LinearOpMode {
 
         telemetry.addData("Zone",zone);
         telemetry.update();
+        Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                .back(30)
+                .build();
+        Trajectory tleft = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                .strafeLeft(24)
+                .build();
+        Trajectory tright = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                .strafeRight(24)
+                .build();
+        drive.followTrajectory(t1);
         if(zone == "1"){
 
-        }
-        if(zone == "2"){
-
+            drive.followTrajectory(tright);
         }
         if(zone == "3"){
 
+            drive.followTrajectory(tleft);
         }
 
 
