@@ -49,6 +49,8 @@ public class DriveV4 extends LinearOpMode {
     public static double d = 11.5;  //diagonal distance forward and backward
     int y = 2;   //y coordinate input
     int x = 0;   //x coordinate input
+    int ycord = 2;
+    int xcord = 0;
     double target; //slide target position
     double vy = 1;  //vector roadrunner x value
     double vx = 1;  //vector roadrunner y value
@@ -133,11 +135,13 @@ public class DriveV4 extends LinearOpMode {
             Slide();
             Coordinates();
 
+
+            telemetry.addData("x", xcord);
+            telemetry.addData("y", ycord);
             telemetry.addData("xi", xi);
-            telemetry.addData("x", x);
-            telemetry.addData("y", y);
-            telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
-            telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
+            telemetry.addData("atwall", atwall);
+            //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
+            //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
 
             telemetry.update();
         }
@@ -192,6 +196,8 @@ public class DriveV4 extends LinearOpMode {
 
         if (gamepad1.right_stick_button) {
             if (atwall) {
+                y = ycord;
+                x = xcord;
                 vy = -(yoffset + 24 * (y - 1));
                 if (x > 0) {
                     vx = .1 + 24 * Math.floor(Math.abs(x - xi));
@@ -221,23 +227,7 @@ public class DriveV4 extends LinearOpMode {
                 //move diagonal backwards to center of tile
                 //f1 = drive.trajectoryBuilder(new Pose2d((vy - d*Math.sqrt(2)/2),(vx + d * Math.sin(Math.toRadians(vo))),Math.toRadians(vo)))
 
-                f1 = drive.trajectoryBuilder(new Pose2d())
-                        .back(d)
-                        .addDisplacementMarker(
-                                () -> {
-                                    drive.followTrajectoryAsync(f2);
-                                    target = 200;
-                                })
-                        .build();
-                //move to 0 x and 0 theta
-                f2 = drive.trajectoryBuilder(f1.end())
-                        .lineToLinearHeading(new Pose2d(vx*Math.cos(vo), vx*Math.sin(vo), Math.toRadians(-vo)))  //might have to be Math.toRadians(vo)
-                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
-                        .build();
-                //move to 0 y
-                f3 = drive.trajectoryBuilder(f2.end())
-                        .lineToLinearHeading(new Pose2d(vy*Math.cos(vo), -vy*Math.sin(vo), Math.toRadians(-vo)))
-                        .build();
+
                 S0.setPosition(.3);
                 target = hdata[x + 5*(y-1)+2];
                 drive.followTrajectoryAsync(t1);
@@ -260,6 +250,22 @@ public class DriveV4 extends LinearOpMode {
                 atwall = false;
             }
             else {
+                f1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                        .back(d)
+                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
+                        .build();
+                //move to x position
+                f2 = drive.trajectoryBuilder(f1.end())
+                        .lineToLinearHeading(new Pose2d(Math.abs(vx)*Math.cos(Math.toRadians(vo))-d, -vx*Math.cos(Math.toRadians(vo)), Math.toRadians(-vo)))
+                        .addDisplacementMarker(() -> {
+                            target = 200;
+                            drive.followTrajectoryAsync(f3);
+                        })
+                        .build();
+                //move diagonal forwards to target junction
+                f3 = drive.trajectoryBuilder(f2.end())
+                        .lineToLinearHeading(new Pose2d(-vy*Math.cos(Math.toRadians(vo))-d + Math.abs(vx)*Math.cos(Math.toRadians(vo)), vy*Math.sin(Math.toRadians(vo))-vx*Math.cos(Math.toRadians(vo)), Math.toRadians(-vo)))
+                        .build();
                 S0.setPosition(0);
                 drive.followTrajectoryAsync(f1);
                 drive.update();
@@ -297,20 +303,24 @@ public class DriveV4 extends LinearOpMode {
         }
         if ((!gamepad2.dpad_up) && dup) {
             dup = false;
-            y += 1;
+            ycord += 1;
         }
         if ((!gamepad2.dpad_down) && ddown) {
             ddown = false;
-            y -= 1;
+            ycord -= 1;
         }
         if ((!gamepad2.dpad_right) && dright) {
             dright = false;
-            x += 1;
+            xcord += 1;
         }
         if ((!gamepad2.dpad_left) && dleft) {
             dleft = false;
-            x -= 1;
+            xcord -= 1;
         }
+        if (gamepad2.x); atwall = true;
+        if (gamepad2.y); atwall = false;
+
+
 
     }
 }

@@ -21,12 +21,12 @@ public class VFautoV1 extends LinearOpMode {
     String zone = null;
     FtcDashboard dashboard;
 
-    private static final String TFOD_MODEL_ASSET = "PowerPlay.tflite";
+    private static final String TFOD_MODEL_ASSET = "Custom1.tflite";
 
     private static final String[] LABELS = {
-            "1 Bolt",
-            "2 Bulb",
-            "3 Panel"
+            "1",
+            "2",
+            "3"
     };
 
     private static final String VUFORIA_KEY =
@@ -98,7 +98,7 @@ public class VFautoV1 extends LinearOpMode {
 
         // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
         // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
+        tfod.loadModelFromFile(TFOD_MODEL_ASSET, LABELS);
         // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
     }
 }
