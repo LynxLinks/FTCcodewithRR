@@ -45,7 +45,7 @@ public class DriveV4 extends LinearOpMode {
     DistanceSensor D2;
     DistanceSensor D3;
     DistanceSensor D4;
-    public static double yoffset = 4.5;  //constant added to all y positions
+    public static double yoffset = 1;  //constant added to all y positions
     public static double d = 11.5;  //diagonal distance forward and backward
     int y = 2;   //y coordinate input
     int x = 0;   //x coordinate input
@@ -128,7 +128,7 @@ public class DriveV4 extends LinearOpMode {
         S0.setPosition(0.0);
 
         waitForStart();
-        target = 200;
+        target = 0;
         while (opModeIsActive()) {
             Drive();
             ServoClamp();
@@ -150,7 +150,7 @@ public class DriveV4 extends LinearOpMode {
     public void ServoClamp() {
         //automatic clamping if within distance
         if (gamepad1.left_bumper) {
-            S0.setPosition(0.0);
+            S0.setPosition(0.05);
         }
         if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 33) || gamepad1.right_bumper) {
             target = 0;
@@ -166,7 +166,7 @@ public class DriveV4 extends LinearOpMode {
         M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         if (gamepad1.a) {
             target = 200;
-            S0.setPosition(0.0);
+            S0.setPosition(0.05);
         }
         if (gamepad1.b) target = 2350;
         if (gamepad1.y) target = 1750;
@@ -317,9 +317,6 @@ public class DriveV4 extends LinearOpMode {
             dleft = false;
             xcord -= 1;
         }
-        if (gamepad2.x); atwall = true;
-        if (gamepad2.y); atwall = false;
-
 
 
     }

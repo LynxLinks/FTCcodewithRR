@@ -24,11 +24,11 @@ import java.util.List;
 @Autonomous(name="VFautoV1", group="Linear Opmode")
 
 public class VFautoV1 extends LinearOpMode {
-    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-    String zone = null;
+
+    String zone = "3";
     FtcDashboard dashboard;
 
-    private static final String TFOD_MODEL_ASSET = "Custom1.tflite";
+    private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
 
     private static final String[] LABELS = {
             "1",
@@ -73,20 +73,24 @@ public class VFautoV1 extends LinearOpMode {
             }
 
         }
+
         if(isStopRequested()) return;
 
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         telemetry.addData("Zone",zone);
         telemetry.update();
         Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                .back(30)
+                .back(28)
                 .build();
-        Trajectory tleft = drive.trajectoryBuilder(new Pose2d(0,0,0))
+        Trajectory tleft = drive.trajectoryBuilder(t1.end())
                 .strafeLeft(24)
                 .build();
-        Trajectory tright = drive.trajectoryBuilder(new Pose2d(0,0,0))
+        Trajectory tright = drive.trajectoryBuilder(t1.end())
                 .strafeRight(24)
                 .build();
+
         drive.followTrajectory(t1);
+
         if(zone == "1"){
 
             drive.followTrajectory(tright);
@@ -116,9 +120,9 @@ public class VFautoV1 extends LinearOpMode {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.75f;
+        tfodParameters.minResultConfidence = 0.1f;
         tfodParameters.isModelTensorFlow2 = true;
-        tfodParameters.inputSize = 300;
+        tfodParameters.inputSize = 330;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
 
         // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
