@@ -1,34 +1,22 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.Auto4.X1;
-import static org.firstinspires.ftc.teamcode.Auto4.X2;
-import static org.firstinspires.ftc.teamcode.Auto4.Y1;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.google.gson.annotations.Until;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-import java.lang.reflect.Array;
-
 //name and class
+@Disabled
 @Config
 @TeleOp(name = "DriveV3", group="Linear Opmode")
 
@@ -43,7 +31,7 @@ public class DriveV3 extends LinearOpMode {
     Servo S0;
     DigitalChannel D0;
     DistanceSensor D1;
-    public static double yoffset = 5;  //constant added to all y positions
+    public static double yoffset = 4.5;  //constant added to all y positions
     int y = 0;   //y coordinate input
     int x = 0;   //x coordinate input
     public static double d = 12;  //diagonal distance forward and backward

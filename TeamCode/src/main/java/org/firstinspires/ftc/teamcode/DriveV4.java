@@ -1,32 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.Auto4.X1;
-import static org.firstinspires.ftc.teamcode.Auto4.X2;
-import static org.firstinspires.ftc.teamcode.Auto4.Y1;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.google.gson.annotations.Until;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.configuration.DeviceConfiguration;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-
-import java.lang.reflect.Array;
 
 //name and class
 @Config
@@ -128,7 +114,7 @@ public class DriveV4 extends LinearOpMode {
         S0.setPosition(0.0);
 
         waitForStart();
-        target = 0;
+        target = 200;
         while (opModeIsActive()) {
             Drive();
             ServoClamp();
@@ -136,14 +122,7 @@ public class DriveV4 extends LinearOpMode {
             Coordinates();
 
 
-            telemetry.addData("x", xcord);
-            telemetry.addData("y", ycord);
-            telemetry.addData("xi", xi);
-            telemetry.addData("atwall", atwall);
-            //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
-            //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
 
-            telemetry.update();
         }
     }
 
@@ -240,6 +219,7 @@ public class DriveV4 extends LinearOpMode {
                 ) {
                     drive.update();
                     Slide();
+                    Coordinates();
                     while (gamepad1.right_stick_button){
                         M0.setPower(0);
                         M3.setPower(0);
@@ -277,6 +257,7 @@ public class DriveV4 extends LinearOpMode {
                 {
                     drive.update();
                     Slide();
+                    Coordinates();
                     while (gamepad1.right_stick_button){
                         M0.setPower(0);
                         M3.setPower(0);
@@ -317,7 +298,14 @@ public class DriveV4 extends LinearOpMode {
             dleft = false;
             xcord -= 1;
         }
+        telemetry.addData("x", xcord);
+        telemetry.addData("y", ycord);
+        telemetry.addData("xi", xi);
+        telemetry.addData("atwall", atwall);
+        //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
+        //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
 
+        telemetry.update();
 
     }
 }
