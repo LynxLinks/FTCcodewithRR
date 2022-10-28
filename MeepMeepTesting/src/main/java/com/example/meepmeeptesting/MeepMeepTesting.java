@@ -53,17 +53,17 @@ public class MeepMeepTesting {
                 .setColorScheme(new ColorSchemeBlueDark())
                 .setConstraints(30, 20, Math.toRadians(100), Math.toRadians(100), 6.7)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(xstart, ystart, Math.toRadians(ostart)))
+                        drive.trajectorySequenceBuilder(new Pose2d(xstart, - ystart, Math.toRadians(ostart)))
                                 .strafeLeft(d4 - xoffset)
-                                .lineToLinearHeading(new Pose2d(xstart+(d4-xoffset), ystart+y1, Math.toRadians(0)))
+                                .lineToLinearHeading(new Pose2d(xstart+(d4-xoffset), -ystart+y1, Math.toRadians(0)))
                                 .forward(xoffset)
 
-                                .lineToLinearHeading(new Pose2d(finalVx,ywallstart , Math.toRadians(0)))
-                                .lineToLinearHeading(new Pose2d(finalVx, finalVy, Math.toRadians(finalVo)))
-                                .lineToLinearHeading(new Pose2d(finalVx + (d * Math.sin(Math.toRadians(finalVo))), finalVy + (d * Math.cos(Math.toRadians(finalVo))), Math.toRadians(finalVo)))
-                                .lineToLinearHeading(new Pose2d(finalVx, finalVy, Math.toRadians(finalVo)))
-                                .lineToLinearHeading(new Pose2d(finalVx, ywallstart, Math.toRadians(owallstart)))
-                                .lineToLinearHeading(new Pose2d(xwallstart, ywallstart, Math.toRadians(owallstart)))
+                                .lineToLinearHeading(new Pose2d(finalVx-ywallstart , Math.toRadians(0)))
+                                .lineToLinearHeading(new Pose2d(finalVx, -finalVy, Math.toRadians(finalVo)))
+                                .lineToLinearHeading(new Pose2d(finalVx + (d * Math.sin(Math.toRadians(finalVo))), -(finalVy + (d * Math.cos(Math.toRadians(finalVo)))), Math.toRadians(finalVo)))
+                                .lineToLinearHeading(new Pose2d(finalVx,- finalVy, Math.toRadians(finalVo)))
+                                .lineToLinearHeading(new Pose2d(finalVx,- ywallstart, Math.toRadians(owallstart)))
+                                .lineToLinearHeading(new Pose2d(xwallstart, -ywallstart, Math.toRadians(owallstart)))
                                 .build()
 
 
