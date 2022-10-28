@@ -32,7 +32,9 @@ public class DriveV4 extends LinearOpMode {
     DistanceSensor D3;
     DistanceSensor D4;
     public static double yoffset = 1;  //constant added to all y positions
-    public static double d = 11.5;  //diagonal distance forward and backward
+    public static double d = 11.5;
+    public static double Sset = 200;
+    //diagonal distance forward and backward
     int y = 2;   //y coordinate input
     int x = 0;   //x coordinate input
     int ycord = 2;
@@ -52,6 +54,7 @@ public class DriveV4 extends LinearOpMode {
     boolean ddown = false;
     boolean dright = false;
     boolean dleft = false;
+    boolean dslide = false;
 
     //distance vars
     double p = 0;   //position
@@ -120,9 +123,6 @@ public class DriveV4 extends LinearOpMode {
             ServoClamp();
             Slide();
             Coordinates();
-
-
-
         }
     }
 
@@ -155,6 +155,11 @@ public class DriveV4 extends LinearOpMode {
             M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+        if (gamepad1.dpad_down) dslide = true;
+        if ((!gamepad1.dpad_down) && dslide) {
+            dslide = false;
+            target = target - Sset;
         }
     }
 
@@ -302,6 +307,8 @@ public class DriveV4 extends LinearOpMode {
         telemetry.addData("y", ycord);
         telemetry.addData("xi", xi);
         telemetry.addData("atwall", atwall);
+        telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+
         //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
         //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
 
