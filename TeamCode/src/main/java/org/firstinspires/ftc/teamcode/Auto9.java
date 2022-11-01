@@ -20,13 +20,31 @@ import java.util.List;
 public class Auto9 extends LinearOpMode {
     //Variables
     String zone = "3";
+    double xstart = 65;
+    double ystart = 36;
     int park = 10; 
-    int x[] ={32,46,park};
+    int x[] ={
+
+
+
+
+            32,46,park
+
+
+    };
     int y[] ={32,46,0};
     int o[] ={0,0,0};
 
+    boolean audience = false;
+    boolean red = true;
+
+    //
+    Pose2d start = new Pose2d(0,0,0);
+    //
+
     //Road Runner Variables
-    Pose2d end = new Pose2d(0,0,0);
+
+
 
 
     //Dashboard Variables
@@ -78,10 +96,25 @@ public class Auto9 extends LinearOpMode {
         if(isStopRequested()) return;
         //RR import
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
+        if (audience){
+            if (red) {
+                start = new Pose2d(xstart, -ystart, 0);
+            }
+            else{
+                start = new Pose2d(-xstart, -ystart, 180);
+            }
+        }
+        else{
+            if (red){
+                start = new Pose2d(xstart, ystart, 0);
+            }
+            else{
+                start = new Pose2d(-xstart, ystart, 180);
+            }
+        }
         for( int i = 0; i < 10;i++) {
             int istuff = i;
-            Trajectory main = drive.trajectoryBuilder(end)
+            Trajectory main = drive.trajectoryBuilder(start)
                     .lineToLinearHeading(new Pose2d(x[i], y[i],Math.toRadians(o[i])))
                     .addDisplacementMarker(() -> {
                         if(istuff == 1) {
@@ -94,7 +127,7 @@ public class Auto9 extends LinearOpMode {
 
                     })
                     .build();
-            end = main.end();
+            start = main.end();
             drive.followTrajectoryAsync(main);
             drive.update();
             while (drive.isBusy()) {
