@@ -308,6 +308,8 @@ public class DriveV4 extends LinearOpMode {
         telemetry.addData("xi", xi);
         telemetry.addData("atwall", atwall);
         telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+        telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
 
         //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
         //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));

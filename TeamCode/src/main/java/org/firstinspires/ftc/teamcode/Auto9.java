@@ -20,7 +20,7 @@ import java.util.List;
 public class Auto9 extends LinearOpMode {
     //Variables
     String zone = "3";
-    int park = 10;
+    int park = 10; 
     int x[] ={32,46,park};
     int y[] ={32,46};
     int o[] ={32,46};
@@ -64,15 +64,15 @@ public class Auto9 extends LinearOpMode {
         while(!isStarted()){
             //detects and save zone
             IdentifyVuforia();
-            if(zone == "1"){
-                park = 15;
-            }
-            if(zone == "2"){
-                park = 30;
-            }
-            if(zone == "3"){
-                park = 45;
-            }
+        }
+        if(zone == "1"){
+            park = 15;
+        }
+        if(zone == "2"){
+            park = 30;
+        }
+        if(zone == "3"){
+            park = 45;
         }
 
         if(isStopRequested()) return;
