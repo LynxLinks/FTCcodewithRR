@@ -23,7 +23,7 @@ public class Auto9 extends LinearOpMode {
     double xstart = 65;
     double ystart = 36;
     int park = 10; 
-    int x[] ={
+    int [] ={
 
 
 
