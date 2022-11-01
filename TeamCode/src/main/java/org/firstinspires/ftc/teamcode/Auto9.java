@@ -23,18 +23,10 @@ public class Auto9 extends LinearOpMode {
     double xstart = 65;
     double ystart = 36;
     int park = 10; 
-    int [] ={
-
-
-
-
-            32,46,park
-
-
+    int [][] cord = {
+            {32,46,180},
+            {34,46,180}
     };
-    int y[] ={32,46,0};
-    int o[] ={0,0,0};
-
     boolean audience = false;
     boolean red = true;
 
@@ -115,7 +107,7 @@ public class Auto9 extends LinearOpMode {
         for( int i = 0; i < 10;i++) {
             int istuff = i;
             Trajectory main = drive.trajectoryBuilder(start)
-                    .lineToLinearHeading(new Pose2d(x[i], y[i],Math.toRadians(o[i])))
+                    .lineToLinearHeading(new Pose2d(cord[i][0], cord[i][1],Math.toRadians(cord[i][2])))
                     .addDisplacementMarker(() -> {
                         if(istuff == 1) {
                            //clamp
