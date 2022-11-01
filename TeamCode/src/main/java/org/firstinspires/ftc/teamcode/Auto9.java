@@ -22,8 +22,8 @@ public class Auto9 extends LinearOpMode {
     String zone = "3";
     int park = 10; 
     int x[] ={32,46,park};
-    int y[] ={32,46};
-    int o[] ={32,46};
+    int y[] ={32,46,0};
+    int o[] ={0,0,0};
 
     //Road Runner Variables
     Pose2d end = new Pose2d(0,0,0);
@@ -82,7 +82,7 @@ public class Auto9 extends LinearOpMode {
         for( int i = 0; i < 10;i++) {
             int istuff = i;
             Trajectory main = drive.trajectoryBuilder(end)
-                    .lineToLinearHeading(new Pose2d(x[i], y[i], o[i]))
+                    .lineToLinearHeading(new Pose2d(x[i], y[i],Math.toRadians(o[i])))
                     .addDisplacementMarker(() -> {
                         if(istuff == 1) {
                            //clamp
