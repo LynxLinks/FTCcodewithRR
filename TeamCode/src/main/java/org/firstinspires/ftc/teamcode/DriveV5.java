@@ -32,7 +32,7 @@ public class DriveV5 extends LinearOpMode {
     DistanceSensor D3;
     DistanceSensor D4;
     public static double yoffset = 1;  //constant added to all y positions
-    public static double d = 11.5;
+    public static double d = 8.5;
     public static double Sset = 200;
     //diagonal distance forward and backward
     int y = 2;   //y coordinate input
@@ -64,6 +64,7 @@ public class DriveV5 extends LinearOpMode {
     Trajectory t1;
     Trajectory t2;
     Trajectory t3;
+    Trajectory t4;
     Trajectory f1;
     Trajectory f2;
     Trajectory f3;
@@ -184,14 +185,20 @@ public class DriveV5 extends LinearOpMode {
                 x = xcord;
                 vy = -(yoffset + 24 * (y - 1));
                 if (x > 0) {
-                    vx = .1 + 24 * Math.floor(Math.abs(x - xi));
+                    vx =  24 * Math.floor(Math.abs(x - xi));
                 } else {
-                    vx = .1 - 24 * Math.floor(Math.abs(x - xi));
+                    vx = - 24 * Math.floor(Math.abs(x - xi));
                 }
                 if (x > xi) {
-                    vo = 135;
+                    vo = 90;
+                    d = d;
                 } else {
-                    vo = -135;
+                    vo = -90;
+                    d = -d;
+                }
+                if (vx != 0){
+                    vo = 180;
+                    d = -d;
                 }
 
 
@@ -206,6 +213,10 @@ public class DriveV5 extends LinearOpMode {
                         .build();
                 //move diagonal forwards to target junction
                 t3 = drive.trajectoryBuilder(t2.end())
+                        .strafeLeft(d)
+                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t4))
+                        .build();
+                t4 = drive.trajectoryBuilder(t3.end())
                         .forward(d)
                         .build();
                 //move diagonal backwards to center of tile
