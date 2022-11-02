@@ -5,6 +5,10 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -20,18 +24,70 @@ import java.util.List;
 public class Auto9 extends LinearOpMode {
     //Variables
     String zone = "3";
-    double xstart = 65;
-    double ystart = 36;
-    int park = 10; 
-    int [][] cord = {
-            {32,46,180},
-            {34,46,180}
+    DcMotor M0;
+    FtcDashboard dashboard;
+    DcMotor M1;
+    DcMotor M2;
+    DcMotor M3;
+    DcMotor M0_2;
+    Servo S0;
+    DigitalChannel D0;
+    DistanceSensor D1;
+    DistanceSensor D2;
+    DistanceSensor D4;
+    public static double xstart = 65;
+    public static double ystart = 36;
+    double ostart = 0;
+    public static double y1 = 60;
+    public static double y2 = 65;
+    public static double x1 = 12;
+    public static double d = 11.5;
+    public static double slidei = 550;
+    public static double slided = -50;
+    double o1 = 90;
+    double o2 = -135;
+    int i = 0;
+    int imax;
+
+    double target;
+
+    boolean atwall = true; //used to know whether to run to or from
+    boolean slidecalibrated = false;
+    boolean slidecalfiller = true;
+    boolean audienceside = true;
+
+    int park = 10;
+    double [][] cord;
+    double [][] audiencecords = {
+
+            {xstart,y1,ostart},
+            {x1,y1,ostart},
+            {x1,y2,o1},
+            //absolute value of teleop cords
+
+            {1,1},
+            {1,2},
+            {1,3},
+            {0,3}
+
     };
-    boolean audience = false;
-    boolean red = true;
+    double [][] nonaudiencecords = {
+            // absoluate balue roadrunner cords
+            {x1,ystart,o1},
+            {x1-(Math.sqrt(2)*d),ystart-(Math.sqrt(2)*d),o1},
+            {x1,ystart,o1},
+            {x1,y2,o2},
+            //absolute value of teleop cords
+            {1,3},
+            {0,3},
+            {0,2},
+            {0,1}
+    };
+    public boolean audience = false;
+    public boolean red = true;
 
     //
-    Pose2d start = new Pose2d(0,0,0);
+
     //
 
     //Road Runner Variables
@@ -40,7 +96,7 @@ public class Auto9 extends LinearOpMode {
 
 
     //Dashboard Variables
-    FtcDashboard dashboard;
+
 
     //viewforia Variables
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
@@ -55,7 +111,34 @@ public class Auto9 extends LinearOpMode {
     private TFObjectDetector tfod;
 
     public void runOpMode() {
-
+        dashboard = FtcDashboard.getInstance();
+        M0 = hardwareMap.get(DcMotor.class, "M0");
+        M1 = hardwareMap.get(DcMotor.class, "M1");
+        M2 = hardwareMap.get(DcMotor.class, "M2");
+        M3 = hardwareMap.get(DcMotor.class, "M3");
+        M0_2 = hardwareMap.get(DcMotor.class, "M0_2");
+        S0 = hardwareMap.get(Servo.class, "S0");
+        D0 = hardwareMap.get(DigitalChannel.class, "D0");
+        D1 = hardwareMap.get(DistanceSensor.class, "D1");
+        D2 = hardwareMap.get(DistanceSensor.class, "D2");
+        D4 = hardwareMap.get(DistanceSensor.class, "D4");
+        M0.setDirection(DcMotor.Direction.FORWARD);
+        M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        M1.setDirection(DcMotor.Direction.FORWARD);
+        M1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        M2.setDirection(DcMotor.Direction.FORWARD);
+        M2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        M3.setDirection(DcMotor.Direction.FORWARD);
+        M3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        M0_2.setDirection(DcMotor.Direction.FORWARD);
+        M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        M0_2.setDirection(DcMotor.Direction.FORWARD);
+        M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //Sync Dashboard
         dashboard = FtcDashboard.getInstance();
 
@@ -87,50 +170,92 @@ public class Auto9 extends LinearOpMode {
 
         if(isStopRequested()) return;
         //RR import
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
         if (audience){
+            imax = 3;
+            cord = nonaudiencecords;
             if (red) {
-                start = new Pose2d(xstart, -ystart, 0);
+                ystart = -ystart;
             }
             else{
-                start = new Pose2d(-xstart, -ystart, 180);
+                xstart = -xstart;
+                ystart = -ystart;
+                ostart = 180;
             }
         }
         else{
+            imax = 4;
+            cord = nonaudiencecords;
             if (red){
-                start = new Pose2d(xstart, ystart, 0);
+
+
             }
             else{
-                start = new Pose2d(-xstart, ystart, 180);
+
+                xstart = -xstart;
+                ostart = 180;
+
             }
         }
-        for( int i = 0; i < 10;i++) {
-            int istuff = i;
-            Trajectory main = drive.trajectoryBuilder(start)
-                    .lineToLinearHeading(new Pose2d(cord[i][0], cord[i][1],Math.toRadians(cord[i][2])))
-                    .addDisplacementMarker(() -> {
-                        if(istuff == 1) {
-                           //clamp
-                           //sleep for clamp
-                        }
-                        if(istuff == 1) {
-                            //slide target
-                        }
+        Pose2d start = new Pose2d(xstart,ystart,ostart);
 
+        Actions();
+        while(i<=imax) {
+            i += 1;
+            Trajectory main = drive.trajectoryBuilder(start)
+                    .lineToLinearHeading(new Pose2d((xstart/Math.abs(xstart))*cord[i][0], (ystart/Math.abs(ystart))*cord[i][1],(xstart/Math.abs(xstart))*Math.toRadians(cord[i][2])))
+                    .addDisplacementMarker(() -> {
+                        Actions();
                     })
                     .build();
             start = main.end();
             drive.followTrajectoryAsync(main);
             drive.update();
             while (drive.isBusy()) {
-                //slide stuff
                 drive.update();
+                Slide();
+
+            }
+
+        }
+
+
+    }
+    public void Actions(){
+        if (audience){
+            if(i == 0){
+                target = 200;
+            }
+            if (i == 1){
+                S0.setPosition(0);
+                target = slidei;
+            }
+            if (i == 2){
+
+            }
+            if (i == 3){
+
+            }
+
+        }
+        else {
+            if (i == 0){
+                target = 2350;
+            }
+            if (i == 1){
+
+            }
+            if (i == 2){
+                S0.setPosition(0);
+            }
+            if (i == 3){
+                target = slidei;
+            }
+            if (i == 4){
 
             }
         }
-
     }
-
     public void IdentifyVuforia(){
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
@@ -145,6 +270,38 @@ public class Auto9 extends LinearOpMode {
                 telemetry.addLine("working");
                 telemetry.update();
             }
+        }
+    }
+    public void Slide () {
+        if (!slidecalibrated) {
+            if (D0.getState() == true && slidecalfiller) {
+                M0_2.setPower(.3);
+            }
+            if (D0.getState() == false) {
+                M0_2.setPower(-0.3);
+                slidecalfiller = false;
+
+            }
+            if (D0.getState() == true && !slidecalfiller) {
+                slidecalibrated = true;
+                if (audienceside) {
+                    target = 200;
+
+                }
+                else{
+                    target = 2350;
+                }
+            }
+        }
+
+
+        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+
+        if (D0.getState() && (target == 0)) {
+            M0_2.setDirection(DcMotor.Direction.FORWARD);
+            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
     private void initVuforia() {
