@@ -32,8 +32,8 @@ public class DriveV5 extends LinearOpMode {
     DistanceSensor D3;
     DistanceSensor D4;
     public static double yoffset = 1;  //constant added to all y positions
-    public static double d = 12;
-    public static double d2 = -4.5;
+    public static double d = 8.5;
+    public static double d2 = 12;
     public static double Sset = 200;
     //diagonal distance forward and backward
     int y = 2;   //y coordinate input
@@ -69,6 +69,7 @@ public class DriveV5 extends LinearOpMode {
     Trajectory f1;
     Trajectory f2;
     Trajectory f3;
+    Pose2d pole;
 
     public void runOpMode() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -192,14 +193,14 @@ public class DriveV5 extends LinearOpMode {
                 }
                 if (x > xi) {
                     vo = 90;
-                    d = d;
+                    d2 = d2;
                 } else {
                     vo = -90;
-                    d = -d;
+                    d2 = -d2;
                 }
                 if (vx != .1){
                     vo = 180;
-                    d = -d;
+                    d2 = -d2;
                 }
 
 
@@ -226,15 +227,14 @@ public class DriveV5 extends LinearOpMode {
                 }
                 //move diagonal forwards to target junction
                 t3 = drive.trajectoryBuilder(t3start)
-                        .strafeLeft(d)
+                        .strafeLeft(d2)
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t4))
                         .build();
                 t4 = drive.trajectoryBuilder(t3.end())
                         .forward(d)
                         .build();
                 //move diagonal backwards to center of tile
-                //f1 = drive.trajectoryBuilder(new Pose2d((vy - d*Math.sqrt(2)/2),(vx + d * Math.sin(Math.toRadians(vo))),Math.toRadians(vo)))
-
+                pole = t4.end();
 
                 S0.setPosition(.3);
                 target = hdata[x + 5*(y-1)+2];
@@ -259,23 +259,28 @@ public class DriveV5 extends LinearOpMode {
                 atwall = false;
             }
             else {
-                f1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                f1 = drive.trajectoryBuilder(pole)
                         .back(d)
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
                         .build();
                 //move to x position
-                f2 = drive.trajectoryBuilder(f1.end())
-                        .lineToLinearHeading(new Pose2d(Math.abs(vx)*Math.cos(Math.toRadians(vo))-d, -vx*Math.cos(Math.toRadians(vo)), Math.toRadians(-vo)))
-                        .addDisplacementMarker(() -> {
-                            target = 200;
-                            drive.followTrajectoryAsync(f3);
-                        })
-                        .build();
+                Pose2d f3start = f1.end();
+                if(vx != .1) {
+                    f2 = drive.trajectoryBuilder(f1.end())
+                            .lineToLinearHeading(new Pose2d(vy, 0, 0))
+                            .addDisplacementMarker(() -> {
+                                target = 200;
+                                drive.followTrajectoryAsync(f3);
+                            })
+                            .build();
+                    f3start = f2.end();
+                }
                 //move diagonal forwards to target junction
-                f3 = drive.trajectoryBuilder(f2.end())
-                        .lineToLinearHeading(new Pose2d(-vy*Math.cos(Math.toRadians(vo))-d + Math.abs(vx)*Math.cos(Math.toRadians(vo)), vy*Math.sin(Math.toRadians(vo))-vx*Math.cos(Math.toRadians(vo)), Math.toRadians(-vo)))
+                f3 = drive.trajectoryBuilder(f3start)
+                        .lineToLinearHeading(new Pose2d(0,0,0))
                         .build();
                 S0.setPosition(0);
+
                 drive.followTrajectoryAsync(f1);
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
