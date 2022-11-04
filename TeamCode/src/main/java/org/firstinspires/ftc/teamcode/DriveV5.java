@@ -205,28 +205,19 @@ public class DriveV5 extends LinearOpMode {
 
 
                 t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                        .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
+                        .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(vo)))
                         .addDisplacementMarker(() -> {
-                            if(vx != .1){
-                                drive.followTrajectoryAsync(t2);
-                            }
-                            else{
-                                drive.followTrajectoryAsync(t3);
-                            }
+                            drive.followTrajectoryAsync(t2);
                         })
                         .build();
-                Pose2d t3start = t1.end();
                 //move to x position
-                if(vx != .1) {
+                t2 = drive.trajectoryBuilder(t1.end())
+                        .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
+                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
+                        .build();
 
-                    t2 = drive.trajectoryBuilder(t1.end())
-                            .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
-                            .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
-                            .build();
-                    t3start = t2.end();
-                }
                 //move diagonal forwards to target junction
-                t3 = drive.trajectoryBuilder(t3start)
+                t3 = drive.trajectoryBuilder(t2.end())
                         .strafeLeft(d2)
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(t4))
                         .build();
@@ -259,24 +250,22 @@ public class DriveV5 extends LinearOpMode {
                 atwall = false;
             }
             else {
+                drive.setPoseEstimate(pole);
                 f1 = drive.trajectoryBuilder(pole)
                         .back(d)
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
                         .build();
                 //move to x position
-                Pose2d f3start = f1.end();
-                if(vx != .1) {
-                    f2 = drive.trajectoryBuilder(f1.end())
-                            .lineToLinearHeading(new Pose2d(vy, 0, 0))
-                            .addDisplacementMarker(() -> {
-                                target = 200;
-                                drive.followTrajectoryAsync(f3);
-                            })
-                            .build();
-                    f3start = f2.end();
-                }
+
+                f2 = drive.trajectoryBuilder(f1.end())
+                        .lineToLinearHeading(new Pose2d(vy, 0, 0))
+                        .addDisplacementMarker(() -> {
+                            target = 200;
+                            drive.followTrajectoryAsync(f3);
+                        })
+                        .build();
                 //move diagonal forwards to target junction
-                f3 = drive.trajectoryBuilder(f3start)
+                f3 = drive.trajectoryBuilder(f2.end())
                         .lineToLinearHeading(new Pose2d(0,0,0))
                         .build();
                 S0.setPosition(0);
