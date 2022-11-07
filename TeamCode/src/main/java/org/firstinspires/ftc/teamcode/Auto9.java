@@ -129,18 +129,18 @@ public class Auto9 extends LinearOpMode {
     };
     int[] cycle;
     int[] audiencecycle = new int[]{
-            -1, 1,
+            1, 1,
             0, 1,
-            -1, 2,
+            1, 2,
             0, 2,
             0, 2,
     };
     int[] nonaudiencecycle = new int[]{
-            -1, 1,
-            0, 1,
-            -1, 2,
-            0, 2,
-            0, 2,
+            1, 2,
+            1, 3,
+            0, 3,
+            0, 4,
+            1, 4,
     };
     int[] hdata = new int[]{200, 1100, 200, 1100, 200,
             1100, 1750, 2350, 1750, 1100,
@@ -235,7 +235,8 @@ public class Auto9 extends LinearOpMode {
 
         if (audience){
             imax = 3;
-            init = nonaudienceinit;
+            init = audienceinit;
+            cycle = audiencecycle;
             if (red) {
                 ystart = -ystart;
             }
@@ -248,6 +249,7 @@ public class Auto9 extends LinearOpMode {
         else{
             imax = 4;
             init = nonaudienceinit;
+            cycle = nonaudiencecycle;
             if (red){
 
 
