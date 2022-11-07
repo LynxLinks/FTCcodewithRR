@@ -38,64 +38,59 @@ public class Auto9 extends LinearOpMode {
     DistanceSensor D2;
     DistanceSensor D4;
 
-    public static double yoffset_ = 5;  //constant added to all y positions
-    public static double d_ = 13;  //diagonal distance forward and backward
-    public static double x1i_ = 4;
-    public static double y1i_ = 51.5;
-    public static double h_ = 600; //starting stack height
-    public static boolean red_ = true;
-    public static int cycles_ = 5;
 
-
-    double yoffset = yoffset_;  //constant added to all y positions
-    double d = d_;  //diagonal distance forward and backward
-    double x1i = x1i_;
-    double y1i = y1i_;
-    double h = h_; //starting stack height
-    boolean red = red_;
-    int cycles = cycles_;
-
-    int i;
-
+    //public statics
+    //global
+    public static boolean audience = false;
+    public static boolean red = true;
     public static double xstart = 65;
     public static double ystart = 36;
-    double ostart = 0;
+
+    //init
     public static double y1 = 60;
     public static double y2 = 65;
     public static double x1 = 12;
+
+    //cycle
     public static double slidei = 550;
     public static double slided = -50;
+    public static int cycles = 5;
+    public static double yoffset = 5;  //constant added to all y positions
+    public static double d = 13;  //diagonal distance forward and backward
+    //park
+    public static int park = 10;
 
-    public static boolean audience = false;
+
+
+
+
+
+
+
+    //constants
+    double ostart;
+    int i;
     double o1 = 90;
     double o2 = -135;
     int imax;
-
-    double vy = 1;  //vector roadrunner x value
-    double vx = 1;  //vector roadrunner y value
-    double vo = 1;  //target roadrunner theta
-    double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
-
+    double vy;  //vector roadrunner x value
+    double vx;  //vector roadrunner y value
+    double vo;  //target roadrunner theta
+    double xi = .5;  //initial robot position against wall in coordinate system, either .5 or -.5
     double target;
-    int x;
-    int y;
-
+    double x;
+    double y;
     boolean atwall = true; //used to know whether to run to or from
     boolean slidecalibrated = false;
     boolean slidecalfiller = true;
     boolean audienceside = true;
-
-
-    int loop = 0; //variable for number of cycles
+    int loop; //variable for number of cycles
     //distance vars
     double p = 0;   //position
     double t = -12; //target
     double s = 0; //speed
     double f = 141; //field size
-
     int zonenumber;
-
-    int park = 10;
     Trajectory t1;
     Trajectory t2;
     Trajectory t3;
@@ -103,9 +98,11 @@ public class Auto9 extends LinearOpMode {
     Trajectory f1;
     Trajectory f2;
     Trajectory f3;
-    Pose2d start = new Pose2d(xstart,ystart,ostart);
-    double [][] cord;
-    double [][] audiencecords = {
+
+    //cord lists
+
+    double[][] init;
+    double [][] audienceinit = {
 
             {xstart,y1,ostart},
             {x1,y1,ostart},
@@ -118,7 +115,7 @@ public class Auto9 extends LinearOpMode {
             {0,3}
 
     };
-    double [][] nonaudiencecords = {
+    double [][] nonaudienceinit = {
             // absoluate balue roadrunner cords
             {x1,ystart,o1},
             {x1-(Math.sqrt(2)*d),ystart-(Math.sqrt(2)*d),o1},
@@ -130,18 +127,26 @@ public class Auto9 extends LinearOpMode {
             {0,2},
             {0,1}
     };
-    int[] hdata = new int[]{200, 1100, 200, 1100, 200,
-            1100, 1750, 2350, 1750, 1100,
-            200, 2350, 200, 2350, 200,
-            1100, 1750, 2350, 1750, 1100,
-            200, 1100, 200, 1100, 200};
-    int[] cords = new int[]{
+    int[] cycle;
+    int[] audiencecycle = new int[]{
             -1, 1,
             0, 1,
             -1, 2,
             0, 2,
             0, 2,
     };
+    int[] nonaudiencecycle = new int[]{
+            -1, 1,
+            0, 1,
+            -1, 2,
+            0, 2,
+            0, 2,
+    };
+    int[] hdata = new int[]{200, 1100, 200, 1100, 200,
+            1100, 1750, 2350, 1750, 1100,
+            200, 2350, 200, 2350, 200,
+            1100, 1750, 2350, 1750, 1100,
+            200, 1100, 200, 1100, 200};
 
 
     //
@@ -157,6 +162,7 @@ public class Auto9 extends LinearOpMode {
 
 
     //viewforia Variables
+    Pose2d start = new Pose2d(xstart,ystart,ostart);
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
     private static final String[] LABELS = {
             "1",
@@ -196,8 +202,6 @@ public class Auto9 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        //Sync Dashboard
         dashboard = FtcDashboard.getInstance();
 
         //start viewforia
@@ -231,7 +235,7 @@ public class Auto9 extends LinearOpMode {
 
         if (audience){
             imax = 3;
-            cord = nonaudiencecords;
+            init = nonaudienceinit;
             if (red) {
                 ystart = -ystart;
             }
@@ -243,7 +247,7 @@ public class Auto9 extends LinearOpMode {
         }
         else{
             imax = 4;
-            cord = nonaudiencecords;
+            init = nonaudienceinit;
             if (red){
 
 
@@ -255,22 +259,28 @@ public class Auto9 extends LinearOpMode {
 
             }
         }
+        //if bottom right flip y
+        //if bottom left flip x and y
+        //if top right
+        //if top left flip x
+
         start = new Pose2d(xstart,ystart,ostart);
+        //push start as initial robot position
+
         Init();
         Cycle();
         Park();
-
-
-
+        //run sequences
 
     }
     public void Init(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Actions();
+        //run number 0 action
         while(i<=imax) {
             i += 1;
             Trajectory main = drive.trajectoryBuilder(start)
-                    .lineToLinearHeading(new Pose2d((xstart/Math.abs(xstart))*cord[i][0], (ystart/Math.abs(ystart))*cord[i][1],(xstart/Math.abs(xstart))*Math.toRadians(cord[i][2])))
+                    .lineToLinearHeading(new Pose2d((xstart/Math.abs(xstart))*init[i][0], (ystart/Math.abs(ystart))*init[i][1],(xstart/Math.abs(xstart))*Math.toRadians(init[i][2])))
                     .addDisplacementMarker(() -> {
                         Actions();
                     })
@@ -283,54 +293,43 @@ public class Auto9 extends LinearOpMode {
                 Slide();
 
             }
-
+            Actions();
+            //run actions once movement is done
         }
     }
-    public void Actions(){
-        if (audience){
-            if(i == 0){
+
+    public void Actions() {
+        if (audience) {
+            if (i == 0) {
                 S0.setPosition(0.3);
                 target = 200;
                 //raise cone off ground
             }
-            if (i == 1){
+            if (i == 1) {
                 S0.setPosition(0);
                 target = slidei;
-            }
-            if (i == 2){
 
-            }
-            if (i == 3){
-
-            }
-
-        }
-        else {
-            if (i == 0){
-                S0.setPosition(.3);
-                target = 2350;
-                //set the slide to high junction before moving
-            }
-            if (i == 1){
-
-            }
-            if (i == 2){
-                target = 2000;
-                UntilSlide();
-                S0.setPosition(0);
-                //put slide down so cup on junction. Wait for slide to finish then drop cone
-            }
-            if (i == 3){
-                target = slidei;
-                //set slide to top of stack height
-            }
-            if (i == 4){
-
+            } else {
+                if (i == 0) {
+                    S0.setPosition(.3);
+                    target = 2350;
+                    //set the slide to high junction before moving
+                }
+                if (i == 2) {
+                    target = 2000;
+                    UntilSlide();
+                    S0.setPosition(0);
+                    //put slide down so cup on junction. Wait for slide to finish then drop cone
+                }
+                if (i == 3) {
+                    target = slidei;
+                    //set slide to top of stack height
+                }
             }
         }
     }
 
-    public void Slide () {
+    public void Slide() {
         if (!slidecalibrated) {
             if (D0.getState() == true && slidecalfiller) {
                 M0_2.setPower(.3);
@@ -363,15 +362,16 @@ public class Auto9 extends LinearOpMode {
     }
 
    public void Cycle(){
+        xi = xi*(xstart/Math.abs(xstart));
         while (loop < cycles){
-            target = h - (i*loop)-300;
-            //Center(); //cetner using distance sensors
-            UntilSlide(); //way faster slide speed but will wait until value is hit
+            target = slidei - (slidei*loop)-300;
+            //Center(); //center using distance sensors
+            UntilSlide(); //wait til slide height is hit
             S0.setPosition(0.3); //clamp
-            target = h - i*loop ; //set slide to lift cone above stack
+            target = slidei - (slided*loop) ; //set slide to lift cone above stack
             UntilSlide();   //wait for slide to go up
-            x = cords[2*loop];  //set new cords based on preset cords list
-            y = cords[2*loop + 1];
+            x = cycle[2*loop];  //set new cords based on preset cords list
+            y = cycle[2*loop + 1];
             Drive(); //to
             S0.setPosition(0);
             if (loop < (cycles - 1))Drive(); //from if its not the last cycle
@@ -384,12 +384,8 @@ public class Auto9 extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
                 .splineToConstantHeading(new Vector2d(vy + ((xi/Math.abs(xi))*(24* (zonenumber-2) + .1)), vx), Math.toRadians(vo))  //if xi = .5 then add (zone-2)*24 to y   // if xi = -.5 then subtract (zone-2)*24 from y
                 .build();
-        drive.followTrajectoryAsync(traj3);
-        drive.update();
-        while (drive.isBusy()) {
-            drive.update();
-            Slide();
-        }
+        drive.followTrajectory(traj3);
+
 
     }
     public void UntilSlide() {
@@ -406,7 +402,6 @@ public class Auto9 extends LinearOpMode {
                 //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
             }
         }
-
         M0_2.setPower(0);
     }
 
@@ -430,6 +425,7 @@ public class Auto9 extends LinearOpMode {
 
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        x = (Math.abs(xi)/xi)*x;
         if (atwall) {
             vy = -(yoffset + 24 * (y - 1));
             if (x > 0) {
@@ -442,7 +438,7 @@ public class Auto9 extends LinearOpMode {
             } else {
                 vo = -135;
             }
-            target = hdata[x + 5*(y-1)+2];
+            target = hdata[(int)(x + 5*(y-1)+2)];
             t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
                     .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
                     .addDisplacementMarker(() -> drive.followTrajectoryAsync(t2))
