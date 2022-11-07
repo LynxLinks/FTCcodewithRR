@@ -24,8 +24,6 @@ import java.util.List;
 @Autonomous(name="Auto9", group="Linear Opmode")
 
 public class Auto9 extends LinearOpMode {
-    //Variables
-    String zone = "3";
     DcMotor M0;
     FtcDashboard dashboard;
     DcMotor M1;
@@ -60,7 +58,16 @@ public class Auto9 extends LinearOpMode {
     //park
     public static int park = 10;
 
-
+    //viewforia Variables
+    private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
+    private static final String[] LABELS = {
+            "1",
+            "2",
+            "3"
+    };
+    private static final String VUFORIA_KEY = "AW9YHO7/////AAABmac9s9LxrUDQuPRw+qlK4+1ZyAszPO7ouIyCLjm98NVZSbtunzGw0u8sSmhuTWNKjpGUxGCkMqV1mVUxgl9h4/J0GxK6120V5SfAcPH2XO17MGzFAm421Lcixendmv2WpyNU3HqERp0Og+sWFVwQTMM5f9rPnzsGiOVSOJ3xgZ9vltV2yHIrYxq1X95szieyo3xGab+kyy4mP5gWgu4VYwqffKb+nhXQ28jTzYhkqTbmE1saub+9juGnkNbqolX3A82q6/jrpIq1a/Nx5Egebwv1ItuABv0lq0gQJ4MiAGOf6czB9FnreVCYxSA4bUvCEZYxUG9RPgbczmU6eW85/wDskT3+1vMYR+BoqqwSa0mr";
+    private VuforiaLocalizer vuforia;
+    private TFObjectDetector tfod;
 
 
 
@@ -68,6 +75,7 @@ public class Auto9 extends LinearOpMode {
 
 
     //constants
+    String zone = "3";
     double ostart;
     int i;
     double o1 = 90;
@@ -100,21 +108,12 @@ public class Auto9 extends LinearOpMode {
     Trajectory f3;
 
     //cord lists
-
     double[][] init;
     double [][] audienceinit = {
 
             {xstart,y1,ostart},
             {x1,y1,ostart},
-            {x1,y2,o1},
-            //absolute value of teleop cords
-
-            {1,1},
-            {1,2},
-            {1,3},
-            {0,3}
-
-    };
+            {x1,y2,o1}};
     double [][] nonaudienceinit = {
             // absoluate balue roadrunner cords
             {x1,ystart,o1},
@@ -125,54 +124,27 @@ public class Auto9 extends LinearOpMode {
             {1,3},
             {0,3},
             {0,2},
-            {0,1}
-    };
+            {0,1}};
     int[] cycle;
     int[] audiencecycle = new int[]{
             1, 1,
             0, 1,
             1, 2,
             0, 2,
-            0, 2,
-    };
+            0, 2,};
     int[] nonaudiencecycle = new int[]{
             1, 2,
             1, 3,
             0, 3,
             0, 4,
-            1, 4,
-    };
+            1, 4,};
     int[] hdata = new int[]{200, 1100, 200, 1100, 200,
             1100, 1750, 2350, 1750, 1100,
             200, 2350, 200, 2350, 200,
             1100, 1750, 2350, 1750, 1100,
             200, 1100, 200, 1100, 200};
-
-
-    //
-
-    //
-
-    //Road Runner Variables
-
-
-
-
-    //Dashboard Variables
-
-
-    //viewforia Variables
     Pose2d start = new Pose2d(xstart,ystart,ostart);
-    private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
-    private static final String[] LABELS = {
-            "1",
-            "2",
-            "3"
-    };
-    private static final String VUFORIA_KEY =
-            "AW9YHO7/////AAABmac9s9LxrUDQuPRw+qlK4+1ZyAszPO7ouIyCLjm98NVZSbtunzGw0u8sSmhuTWNKjpGUxGCkMqV1mVUxgl9h4/J0GxK6120V5SfAcPH2XO17MGzFAm421Lcixendmv2WpyNU3HqERp0Og+sWFVwQTMM5f9rPnzsGiOVSOJ3xgZ9vltV2yHIrYxq1X95szieyo3xGab+kyy4mP5gWgu4VYwqffKb+nhXQ28jTzYhkqTbmE1saub+9juGnkNbqolX3A82q6/jrpIq1a/Nx5Egebwv1ItuABv0lq0gQJ4MiAGOf6czB9FnreVCYxSA4bUvCEZYxUG9RPgbczmU6eW85/wDskT3+1vMYR+BoqqwSa0mr";
-    private VuforiaLocalizer vuforia;
-    private TFObjectDetector tfod;
+
 
     public void runOpMode() {
         dashboard = FtcDashboard.getInstance();
@@ -204,43 +176,28 @@ public class Auto9 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         dashboard = FtcDashboard.getInstance();
 
-        //start viewforia
         initVuforia();
         initTfod();
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1.0, 16.0/12.0);
         }
-
-        //stream viewforia Camera to dashboard
         FtcDashboard.getInstance().startCameraStream(tfod, 0);
-
-        //init loop
         while(!isStarted()){
-            //detects and save zone
             IdentifyVuforia();
         }
-        if(zone == "1"){
-            park = 15;
-        }
-        if(zone == "2"){
-            park = 30;
-        }
-        if(zone == "3"){
-            park = 45;
-        }
-
+        if(zone == "1")zonenumber = 1;
+        if(zone == "2")zonenumber = 2;
+        if(zone == "3")zonenumber = 3;
         if(isStopRequested()) return;
-        //RR import
-
         if (audience){
             imax = 3;
             init = audienceinit;
             cycle = audiencecycle;
-            if (red) {
+            if (red) {//bottom right
                 ystart = -ystart;
             }
-            else{
+            else{//bottom left
                 xstart = -xstart;
                 ystart = -ystart;
                 ostart = 180;
@@ -250,35 +207,21 @@ public class Auto9 extends LinearOpMode {
             imax = 4;
             init = nonaudienceinit;
             cycle = nonaudiencecycle;
-            if (red){
-
-
-            }
-            else{
-
+            if (red);//top right
+            else{//top left
                 xstart = -xstart;
                 ostart = 180;
-
             }
         }
-        //if bottom right flip y
-        //if bottom left flip x and y
-        //if top right
-        //if top left flip x
-
-        start = new Pose2d(xstart,ystart,ostart);
-        //push start as initial robot position
+        start = new Pose2d(xstart,ystart,ostart);//push start as initial robot position
 
         Init();
         Cycle();
         Park();
-        //run sequences
-
     }
     public void Init(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Actions();
-        //run number 0 action
+        Actions();//run number 0 action
         while(i<=imax) {
             i += 1;
             Trajectory main = drive.trajectoryBuilder(start)
@@ -293,39 +236,32 @@ public class Auto9 extends LinearOpMode {
             while (drive.isBusy()) {
                 drive.update();
                 Slide();
-
             }
-            Actions();
-            //run actions once movement is done
+            Actions();//run actions once movement is done
         }
     }
 
     public void Actions() {
         if (audience) {
             if (i == 0) {
-                S0.setPosition(0.3);
-                target = 200;
-                //raise cone off ground
+                S0.setPosition(0.3);//clamp
+                target = 200;  //raise cone off ground
             }
             if (i == 1) {
-                S0.setPosition(0);
-                target = slidei;
-
+                S0.setPosition(0);//drop cone in corner
+                target = slidei;//set slide to top of stack
             } else {
                 if (i == 0) {
-                    S0.setPosition(.3);
-                    target = 2350;
-                    //set the slide to high junction before moving
+                    S0.setPosition(.3);//clamp
+                    target = 2350;//set the slide to high junction before moving
                 }
                 if (i == 2) {
                     target = 2000;
                     UntilSlide();
-                    S0.setPosition(0);
-                    //put slide down so cup on junction. Wait for slide to finish then drop cone
+                    S0.setPosition(0);  //put slide down so cup on junction. Wait for slide to finish then drop cone
                 }
                 if (i == 3) {
-                    target = slidei;
-                    //set slide to top of stack height
+                    target = slidei; //set slide to top of stack height
                 }
             }
         }
@@ -333,22 +269,16 @@ public class Auto9 extends LinearOpMode {
 
     public void Slide() {
         if (!slidecalibrated) {
-            if (D0.getState() == true && slidecalfiller) {
+            if (D0.getState() == true && slidecalfiller) { //if slide is on limit swtich
                 M0_2.setPower(.3);
             }
-            if (D0.getState() == false) {
+            if (D0.getState() == false) { //if slide is above limit
                 M0_2.setPower(-0.3);
                 slidecalfiller = false;
 
             }
-            if (D0.getState() == true && !slidecalfiller) {
+            if (D0.getState() == true && !slidecalfiller) { //if slide is on limit and calibrated
                 slidecalibrated = true;
-                if (audienceside) {
-                    target = 200;
-
-                } else {
-                    target = 2350;
-                }
             }
         }
 
@@ -366,9 +296,8 @@ public class Auto9 extends LinearOpMode {
    public void Cycle(){
         xi = xi*(xstart/Math.abs(xstart));
         while (loop < cycles){
-            target = slidei - (slidei*loop)-300;
-            //Center(); //center using distance sensors
-            UntilSlide(); //wait til slide height is hit
+            target = slidei - (slidei*loop)-300; //set slide to level to grab top cone
+            UntilSlide(); //wait until slide height is hit
             S0.setPosition(0.3); //clamp
             target = slidei - (slided*loop) ; //set slide to lift cone above stack
             UntilSlide();   //wait for slide to go up
@@ -376,58 +305,38 @@ public class Auto9 extends LinearOpMode {
             y = cycle[2*loop + 1];
             Drive(); //to
             S0.setPosition(0);
-            if (loop < (cycles - 1))Drive(); //from if its not the last cycle
+            if (loop < (cycles - 1)) Drive(); //from if its not the last cycle
             loop += 1;
         }
     }
     public void Park(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Trajectory traj3 = drive.trajectoryBuilder(t1.end())
+        drive.setPoseEstimate(new Pose2d());
+        Trajectory traj3 = drive.trajectoryBuilder(new Pose2d())
                 .splineToConstantHeading(new Vector2d(vy, vx), Math.toRadians(vo))
                 .splineToConstantHeading(new Vector2d(vy + ((xi/Math.abs(xi))*(24* (zonenumber-2) + .1)), vx), Math.toRadians(vo))  //if xi = .5 then add (zone-2)*24 to y   // if xi = -.5 then subtract (zone-2)*24 from y
                 .build();
         drive.followTrajectory(traj3);
-
-
     }
     public void UntilSlide() {
         if ((target - M0_2.getCurrentPosition()) > 0)
         {
             M0_2.setPower(.1);
-            while (target > M0_2.getCurrentPosition()) {
+            while (target > M0_2.getCurrentPosition()) { //faster slide algo
                 //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
             }
         }
         else{
             M0_2.setPower(-.1 );
-            while (target < M0_2.getCurrentPosition()) {
+            while (target < M0_2.getCurrentPosition()) { //faster slide algo
                 //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
             }
         }
         M0_2.setPower(0);
     }
-
-
-    public void Center(){
-        //d2 = right
-        //d4 = left
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        p = (D2.getDistance(DistanceUnit.INCH) - (f - D4.getDistance(DistanceUnit.INCH)));
-        Trajectory c1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                .lineToLinearHeading(new Pose2d(0, (24*xi)-p, Math.toRadians(0)))
-                .build();
-        drive.followTrajectoryAsync(c1);
-        drive.update();
-        while (drive.isBusy()) {
-            drive.update();
-            Slide();
-        }
-
-    }
-
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        x = (Math.abs(xi)/xi)*x;
+        x = (Math.abs(xi)/xi)*x; //abs x into desired x
         if (atwall) {
             vy = -(yoffset + 24 * (y - 1));
             if (x > 0) {
@@ -498,27 +407,18 @@ public class Auto9 extends LinearOpMode {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
                 telemetry.addData("# Objects Detected", updatedRecognitions.size());
-                // step through the list of recognitions and display image position/size information for each one
-                // Note: "Image number" refers to the randomized image orientation/number
                 for (Recognition recognition : updatedRecognitions) {
                     telemetry.addData("GoTo", recognition.getLabel(), recognition.getConfidence() * 100 );
-                    zone = recognition.getLabel();
-                }
+                    zone = recognition.getLabel();}
                 telemetry.addLine("working");
                 telemetry.update();
             }
         }
     }
     private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
     }
 
@@ -530,10 +430,6 @@ public class Auto9 extends LinearOpMode {
         tfodParameters.isModelTensorFlow2 = true;
         tfodParameters.inputSize = 330;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-
-        // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
-        // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
         tfod.loadModelFromFile(TFOD_MODEL_ASSET, LABELS);
-        // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
     }
 }
