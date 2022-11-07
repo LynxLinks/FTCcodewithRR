@@ -16,9 +16,9 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 //name and class
 @Config
-@TeleOp(name = "DriveV5", group="Linear Opmode")
+@TeleOp(name = "DriveV6", group="Linear Opmode")
 
-public class DriveV5 extends LinearOpMode {
+public class DriveV6 extends LinearOpMode {
     DcMotor M0;
     FtcDashboard dashboard;
     DcMotor M1;
@@ -33,7 +33,7 @@ public class DriveV5 extends LinearOpMode {
     DistanceSensor D4;
     public static double yoffset = 1;  //constant added to all y positions
     public static double d = 8.5;
-    public static double d2 = 12;
+    public static double d2 = 14;
     public static double Sset = 200;
     //diagonal distance forward and backward
     int y = 2;   //y coordinate input
@@ -188,9 +188,9 @@ public class DriveV5 extends LinearOpMode {
                 vy = -(yoffset + 24 * (y - 1));
                 d2 = Math.abs(d2);
                 if (x > 0) {
-                    vx =  .1 + 24 * Math.floor(Math.abs(x - xi));
+                    vx =  24 * Math.floor(Math.abs(x - xi));
                 } else {
-                    vx = .1 - 24 * Math.floor(Math.abs(x - xi));
+                    vx =  -24 * Math.floor(Math.abs(x - xi));
                 }
                 if (x > xi) {
                     vo = 90;
@@ -199,39 +199,85 @@ public class DriveV5 extends LinearOpMode {
                     vo = -90;
                     d2 = -d2;
                 }
-                if (vx != .1){
+                if (vx != 0){
                     vo = 180;
                     d2 = -d2;
                 }
 
-
-                t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                        .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(vo)))
-                        .addDisplacementMarker(() -> {
-                            drive.followTrajectoryAsync(t2);
-                        })
+                if(x == 0){
+                    t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                            .lineToLinearHeading(new Pose2d(vy - Math.abs(d2/2), 0, Math.toRadians(vo)))
+                            .build();
+                }
+                else{
+                    t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                            .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(vo)))
+                            .addDisplacementMarker(() -> {
+                                drive.followTrajectoryAsync(t2);
+                            })
+                            .build();
+                    //move to x position
+                    t2 = drive.trajectoryBuilder(t1.end())
+                            .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
+                            .build();
+                    //move diagonal forwards to target junction
+                    //move diagonal backwards to center of tile
+                }
+                t3 = drive.trajectoryBuilder(t1.end())
+                        .strafeLeft(d2/2)
                         .build();
-                //move to x position
-                t2 = drive.trajectoryBuilder(t1.end())
-                        .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
-                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t3))
-                        .build();
-
-                //move diagonal forwards to target junction
-                t3 = drive.trajectoryBuilder(t2.end())
-                        .strafeLeft(d2)
-                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(t4))
-                        .build();
-                t4 = drive.trajectoryBuilder(t3.end())
-                        .forward(d)
-                        .build();
-                //move diagonal backwards to center of tile
-                pole = t4.end();
-                //dick
 
                 S0.setPosition(.3);
                 target = hdata[x + 5*(y-1)+2];
+
                 drive.followTrajectoryAsync(t1);
+                drive.update();
+                while (Math.abs(gamepad1.left_stick_x) < .5
+                        && Math.abs(gamepad1.left_stick_y) < .5
+                        && Math.abs(gamepad1.right_stick_x) < .5
+                        && Math.abs(gamepad1.right_stick_y) < .5
+                        && drive.isBusy()
+                ) {
+                    drive.update();
+                    Slide();
+                    Coordinates();
+                    while (gamepad1.right_stick_button){
+                        M0.setPower(0);
+                        M3.setPower(0);
+                        M1.setPower(0);
+                        M2.setPower(0);
+                    }
+                }
+                drive.followTrajectoryAsync(t3);
+                drive.update();
+                while (Math.abs(gamepad1.left_stick_x) < .5
+                        && Math.abs(gamepad1.left_stick_y) < .5
+                        && Math.abs(gamepad1.right_stick_x) < .5
+                        && Math.abs(gamepad1.right_stick_y) < .5
+                        && drive.isBusy()
+                ) {
+                    d = D1.getDistance(DistanceUnit.INCH);
+                    if(d <= 15 && d >= 5){
+                        break;
+                    }
+                    drive.update();
+                    Slide();
+                    Coordinates();
+                    while (gamepad1.right_stick_button){
+                        M0.setPower(0);
+                        M3.setPower(0);
+                        M1.setPower(0);
+                        M2.setPower(0);
+                    }
+                }
+                if(d >= 20) d = 10;
+                drive.setPoseEstimate(new Pose2d());
+                t4 = drive.trajectoryBuilder(new Pose2d())
+                        .forward(d - 1)
+                        .build();
+                pole = t4.end();
+
+                drive.followTrajectoryAsync(t4);
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
                         && Math.abs(gamepad1.left_stick_y) < .5
@@ -252,24 +298,41 @@ public class DriveV5 extends LinearOpMode {
                 atwall = false;
             }
             else {
-                drive.setPoseEstimate(pole);
-                f1 = drive.trajectoryBuilder(pole)
-                        .back(d)
-                        .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
-                        .build();
-                //move to x position
+                if(x == 0){
+                    drive.setPoseEstimate(pole);
+                    f1 = drive.trajectoryBuilder(pole)
+                            .back(d)
+                            .addDisplacementMarker(() -> drive.followTrajectoryAsync(f3))
+                            .build();
+                    //move to x position
+                    f3 = drive.trajectoryBuilder(f1.end())
+                            .lineToLinearHeading(new Pose2d(0,0,0))
+                            .addDisplacementMarker(() -> {
+                                target = 200;
+                            })
+                            .build();
+                }
+                else{
+                    drive.setPoseEstimate(pole);
+                    f1 = drive.trajectoryBuilder(pole)
+                            .back(d)
+                            .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
+                            .build();
+                    //move to x position
 
-                f2 = drive.trajectoryBuilder(f1.end())
-                        .lineToLinearHeading(new Pose2d(vy, 0, 0))
-                        .addDisplacementMarker(() -> {
-                            target = 200;
-                            drive.followTrajectoryAsync(f3);
-                        })
-                        .build();
-                //move diagonal forwards to target junction
-                f3 = drive.trajectoryBuilder(f2.end())
-                        .lineToLinearHeading(new Pose2d(0,0,0))
-                        .build();
+                    f2 = drive.trajectoryBuilder(f1.end())
+                            .lineToLinearHeading(new Pose2d(vy, 0, 0))
+                            .addDisplacementMarker(() -> {
+                                target = 200;
+                                drive.followTrajectoryAsync(f3);
+                            })
+                            .build();
+                    //move diagonal forwards to target junction
+                    f3 = drive.trajectoryBuilder(f2.end())
+                            .lineToLinearHeading(new Pose2d(0,0,0))
+                            .build();
+
+                }
                 S0.setPosition(0);
 
                 drive.followTrajectoryAsync(f1);
@@ -330,6 +393,7 @@ public class DriveV5 extends LinearOpMode {
         telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+        telemetry.addData("d",d);
 
         //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
         //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
