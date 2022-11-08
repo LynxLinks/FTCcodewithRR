@@ -213,7 +213,7 @@ public class Auto9 extends LinearOpMode {
                 ostart = 180;
             }
         }
-        start = new Pose2d(xstart,ystart,ostart);//push start as initial robot position
+         start = new Pose2d(xstart,ystart,ostart);//push start as initial robot position
 
         Init();
         Cycle();

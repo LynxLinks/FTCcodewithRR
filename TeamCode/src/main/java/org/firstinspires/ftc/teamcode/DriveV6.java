@@ -32,9 +32,17 @@ public class DriveV6 extends LinearOpMode {
     DistanceSensor D3;
     DistanceSensor D4;
     public static double yoffset = 1;  //constant added to all y positions
-    public static double d = 8.5;
+    // distance to cone update from sensor
+    double d = 8.5;
+    //distance strafe at pole but get interupted
     public static double d2 = 14;
+    //distance come back off of pole
+    public static double d3 = 11;
+    //y offset when coming back
+    public static double d4 = 14;
     public static double Sset = 200;
+    // average distance
+    double d5 ;
     //diagonal distance forward and backward
     int y = 2;   //y coordinate input
     int x = 0;   //x coordinate input
@@ -204,7 +212,7 @@ public class DriveV6 extends LinearOpMode {
                     d2 = -d2;
                 }
 
-                if(x == 0){
+                if(vx == 0){
                     t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
                             .lineToLinearHeading(new Pose2d(vy - Math.abs(d2/2), 0, Math.toRadians(vo)))
                             .build();
@@ -257,8 +265,14 @@ public class DriveV6 extends LinearOpMode {
                         && drive.isBusy()
                 ) {
                     d = D1.getDistance(DistanceUnit.INCH);
-                    if(d <= 15 && d >= 5){
+                    if(d <= 12&& d >= 5){
+                        d5 = 0;
+                        for(int i = 0; i < 5; i++){
+                            d5 += D1.getDistance(DistanceUnit.INCH);
+                        }
+                        d = d5/5;
                         break;
+
                     }
                     drive.update();
                     Slide();
@@ -270,10 +284,9 @@ public class DriveV6 extends LinearOpMode {
                         M2.setPower(0);
                     }
                 }
-                if(d >= 20) d = 10;
                 drive.setPoseEstimate(new Pose2d());
                 t4 = drive.trajectoryBuilder(new Pose2d())
-                        .forward(d - 1)
+                        .forward(d - 2)
                         .build();
                 pole = t4.end();
 
@@ -298,28 +311,21 @@ public class DriveV6 extends LinearOpMode {
                 atwall = false;
             }
             else {
-                if(x == 0){
-                    drive.setPoseEstimate(pole);
-                    f1 = drive.trajectoryBuilder(pole)
-                            .back(d)
-                            .addDisplacementMarker(() -> drive.followTrajectoryAsync(f3))
-                            .build();
-                    //move to x position
-                    f3 = drive.trajectoryBuilder(f1.end())
+                pole = new Pose2d(vy - d4,vx + Math.sin(vo)*d3 ,Math.toRadians(vo));
+                drive.setPoseEstimate(pole);
+                f1 = drive.trajectoryBuilder(pole)
+                        .back(d3)
+                        .addDisplacementMarker(() -> {
+                            target = 200;
+                            drive.followTrajectoryAsync(f2);
+                        })
+                        .build();
+                if(vx == 0){
+                    f2 = drive.trajectoryBuilder(f1.end())
                             .lineToLinearHeading(new Pose2d(0,0,0))
-                            .addDisplacementMarker(() -> {
-                                target = 200;
-                            })
                             .build();
                 }
                 else{
-                    drive.setPoseEstimate(pole);
-                    f1 = drive.trajectoryBuilder(pole)
-                            .back(d)
-                            .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
-                            .build();
-                    //move to x position
-
                     f2 = drive.trajectoryBuilder(f1.end())
                             .lineToLinearHeading(new Pose2d(vy, 0, 0))
                             .addDisplacementMarker(() -> {
@@ -393,7 +399,7 @@ public class DriveV6 extends LinearOpMode {
         telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-        telemetry.addData("d",d);
+        telemetry.addData("d5",d5);
 
         //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
         //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
