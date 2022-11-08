@@ -36,7 +36,7 @@ public class DriveV7 extends LinearOpMode {
     // distance to cone update from sensor
     double d = 8.5;
     //distance strafe at pole but get interupted
-    public static double d2 = 14;
+    public static double d2 = 30;
     //distance come back off of pole
     public static double d3 = 11;
     //y offset when coming back
@@ -217,7 +217,7 @@ public class DriveV7 extends LinearOpMode {
                 if(vx == 0){
                     t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
                             .back(-(vy-d2))
-                            .addDisplacementMarker(-vy,() ->{
+                            .addDisplacementMarker(Math.abs(vy),() ->{
                                 track = true;
                             })
                             .build();
@@ -248,7 +248,7 @@ public class DriveV7 extends LinearOpMode {
                         && drive.isBusy()
                 ) {
                     d = D4.getDistance(DistanceUnit.INCH);
-                    if(d <= 12 && d >= 5 && track){
+                    if(d <= 10 && d >=1 && track){
                         break;
                     }
                     drive.update();
@@ -262,17 +262,12 @@ public class DriveV7 extends LinearOpMode {
                     }
                 }
                 drive.setPoseEstimate(new Pose2d());
-                TrajectorySequence turn = drive.trajectorySequenceBuilder(new Pose2d())
-                        .turn(Math.toRadians(90))
-                        .addDisplacementMarker(()-> drive.followTrajectoryAsync(t4))
+                t4 = drive.trajectoryBuilder(new Pose2d(2,0,Math.toRadians(vo)))
+                        .lineToLinearHeading(new Pose2d(2,d+2,Math.toRadians(vo)))
                         .build();
 
-                t4 = drive.trajectoryBuilder(turn.end())
-                        .forward(d - 2)
-                        .build();
 
-                drive.followTrajectorySequenceAsync(turn);
-
+                drive.followTrajectoryAsync(t4);
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
                         && Math.abs(gamepad1.left_stick_y) < .5
@@ -381,7 +376,8 @@ public class DriveV7 extends LinearOpMode {
         telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-        telemetry.addData("d5",d5);
+        telemetry.addData("d",d);
+        telemetry.addData("track",track);
 
         //telemetry.addData("right", D2.getDistance(DistanceUnit.MM));
         //telemetry.addData("left", D4.getDistance(DistanceUnit.MM));
