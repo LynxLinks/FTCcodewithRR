@@ -36,13 +36,13 @@ public class DriveV7 extends LinearOpMode {
     DistanceSensor D4; // left
 
     //public statics
-    public static double d2 = 30; //distance strafe at pole but get interupted
-    public static double d3 = 11; //distance come back off of pole
-    public static double d4 = 14; //y offset when coming back
-    public static double yoffset = 1;
+    public static double d2 = 17; //distance strafe at pole but get interupted
+    public static double d3 = 7; //distance come back off of pole
+    public static double d4 = 1; //y offset when coming back
+    public static double yoffset = 4;
     public static double Sset = 200; //test drop distance
-    public static double dxoffset = 2;
-    public static double dyoffset = 2;
+    public static double dxoffset = 2.5;
+    public static double dyoffset = -.5;
 
     //constants
     double d; // distance to pole update from sensor
@@ -72,6 +72,7 @@ public class DriveV7 extends LinearOpMode {
     Trajectory t3;
     Trajectory t4;
     Trajectory f1;
+    TrajectorySequence f15;
     Trajectory f2;
     Trajectory f3;
     Pose2d pole;
@@ -202,11 +203,11 @@ public class DriveV7 extends LinearOpMode {
 
             //going to pole movement
             if (atwall) {
-
+                track = false;
                 //set varibles based off of cordinates
                 y = ycord;
                 x = xcord;
-                vy = -(yoffset + 24 * (y - 1));
+                vy = yoffset + 24 * (y - 1);
                 //d2 = Math.abs(d2);
                 if (x > 0) {
                     vx =  24 * Math.floor(Math.abs(x - xi));
@@ -215,16 +216,15 @@ public class DriveV7 extends LinearOpMode {
                 }
                 if (x > xi) {
                     vo = 90;
-                    d2 = d2;
                 } else {
                     vo = -90;
-                    d2 = -d2;
                 }
+
 
                 //build non x translation
                 if(vx == 0){
                     t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                            .back(-(vy-d2))
+                            .back(vy + d2)
                             .addDisplacementMarker(Math.abs(vy),() ->{
                                 track = true;
                             })
@@ -233,16 +233,20 @@ public class DriveV7 extends LinearOpMode {
 
                 //build with x translation
                 else{
+                    d2 = Math.abs(d2);
                     vo = 180;
+                    if (x < xi){
+                        d2 = -d2;
+                    }
                     t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                            .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
+                            .back(vy)
                             .addDisplacementMarker(() -> {
                                 drive.followTrajectoryAsync(t2);
                             })
                             .build();
                     t2 = drive.trajectoryBuilder(t1.end())
-                            .lineToLinearHeading(new Pose2d(vy, (vx+d2), Math.toRadians(0)))
-                            .addDisplacementMarker(Math.abs(vy + vx),() ->{
+                            .strafeLeft(vx+d2)
+                            .addDisplacementMarker(Math.abs(vx),() ->{
                                 track = true;
                             })
                             .build();
@@ -263,8 +267,16 @@ public class DriveV7 extends LinearOpMode {
                         && Math.abs(gamepad1.right_stick_y) < .5
                         && drive.isBusy()
                 ) {
-                    d = D4.getDistance(DistanceUnit.INCH);
-                    if(d <= 10 && d >=1 && track){
+                    if(D4.getDistance(DistanceUnit.INCH) <= 10 && D4.getDistance(DistanceUnit.INCH) >=1 && track && vo == 90){
+                        d = D4.getDistance(DistanceUnit.INCH);
+                        break;
+                    }
+                    if(D2.getDistance(DistanceUnit.INCH) <= 10 && D2.getDistance(DistanceUnit.INCH) >=1 && track && vo == -90){
+                        d = D2.getDistance(DistanceUnit.INCH);
+                        break;
+                    }
+                    if(D3.getDistance(DistanceUnit.INCH) <= 10 && D3.getDistance(DistanceUnit.INCH) >=1 && track && vo == 180){
+                        d = D3.getDistance(DistanceUnit.INCH);
                         break;
                     }
                     drive.update();
@@ -280,8 +292,13 @@ public class DriveV7 extends LinearOpMode {
 
                 //movement 2 build
                 drive.setPoseEstimate(new Pose2d());
-                t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,dxoffset,Math.toRadians(vo)))
-                        .lineToLinearHeading(new Pose2d(dyoffset,d+dxoffset,Math.toRadians(vo)))
+                if(d >= 10 || d <= 1){
+                    d = 5;
+                }
+                t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,(dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
+                        .lineToLinearHeading(new Pose2d(dyoffset,(d+dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
+                        .addDisplacementMarker(() ->{
+                        })
                         .build();
 
                 //movement 2 onto pole
@@ -303,31 +320,42 @@ public class DriveV7 extends LinearOpMode {
                         M2.setPower(0);
                     }
                 }
+                target = target - 250;
+                S0.setPosition(0);
                 atwall = false;
             }
 
             //movement returning to wall
             else {
                 //set pose at
-                pole = new Pose2d(vy - d4,vx + Math.sin(vo)*d3 ,Math.toRadians(vo));
+                pole = new Pose2d(-vy - 12,vx + Math.sin(Math.toRadians(vo))*d3 ,Math.toRadians(vo));
                 drive.setPoseEstimate(pole);
-
-                //neeeeeeds to be fixed but build back
                 f1 = drive.trajectoryBuilder(pole)
                         .back(d3)
                         .addDisplacementMarker(() -> {
                             target = 200;
-                            drive.followTrajectoryAsync(f2);
+                            drive.followTrajectorySequence(f15);
                         })
                         .build();
+                f15 = drive.trajectorySequenceBuilder(f1.end())
+                        .turn(Math.toRadians(-vo))
+                        .addDisplacementMarker(() -> {
+                              drive.followTrajectoryAsync(f2);
+                        })
+                        .build();
+
+                //neeeeeeds to be fixed but build back
                 if(vx == 0){
-                    f2 = drive.trajectoryBuilder(f1.end())
-                            .lineToLinearHeading(new Pose2d(0,0,0))
+                    f2 = drive.trajectoryBuilder(f15.end())
+                            .addDisplacementMarker(() -> {
+                                target = 200;
+                            })
+                            .lineToLinearHeading(new Pose2d(d4,0,0))
                             .build();
                 }
                 else{
-                    f2 = drive.trajectoryBuilder(f1.end())
-                            .lineToLinearHeading(new Pose2d(vy, 0, 0))
+                    f2 = drive.trajectoryBuilder(f15.end())
+                            .lineToLinearHeading(new Pose2d(-vy, 0, 0))
                             .addDisplacementMarker(() -> {
                                 target = 200;
                                 drive.followTrajectoryAsync(f3);
@@ -335,7 +363,7 @@ public class DriveV7 extends LinearOpMode {
                             .build();
                     //move diagonal forwards to target junction
                     f3 = drive.trajectoryBuilder(f2.end())
-                            .lineToLinearHeading(new Pose2d(0,0,0))
+                            .lineToLinearHeading(new Pose2d(d4,0,0))
                             .build();
 
                 }
@@ -413,6 +441,7 @@ public class DriveV7 extends LinearOpMode {
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
         telemetry.addData("d",d);
         telemetry.addData("track",track);
+        telemetry.addData("vy",vy);
         telemetry.update();
 
     }
