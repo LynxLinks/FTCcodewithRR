@@ -38,11 +38,12 @@ public class DriveV7 extends LinearOpMode {
     //public statics
     public static double d2 = 17; //distance strafe at pole but get interupted
     public static double d3 = 7; //distance come back off of pole
-    public static double d4 = 1; //y offset when coming back
-    public static double yoffset = 4;
+    public static double d4 = 3; //y offset when coming back
     public static double Sset = 200; //test drop distance
     public static double dxoffset = 2.5;
     public static double dyoffset = -.5;
+    public static double yoffset = 4;
+    public static int slamtime = 10;
 
     //constants
     double d; // distance to pole update from sensor
@@ -50,6 +51,8 @@ public class DriveV7 extends LinearOpMode {
     boolean track = false; //update d yes or no
     int y;   // y finallized when built
     int x;   // x finallized when built
+    int i;
+    boolean fillerbool = true;
     double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
     double vy;  //vector roadrunner x value
     double vx;  //vector roadrunner y value
@@ -143,7 +146,7 @@ public class DriveV7 extends LinearOpMode {
         }
 
         //automatic clamping if within distance
-        if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 40) || gamepad1.right_bumper) {
+        if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 45) || gamepad1.right_bumper) {
             target = 0;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
@@ -333,31 +336,31 @@ public class DriveV7 extends LinearOpMode {
                 f1 = drive.trajectoryBuilder(pole)
                         .back(d3)
                         .addDisplacementMarker(() -> {
-                            target = 200;
                             drive.followTrajectorySequence(f15);
+                            target = 200;
                         })
                         .build();
                 f15 = drive.trajectorySequenceBuilder(f1.end())
                         .turn(Math.toRadians(-vo))
                         .addDisplacementMarker(() -> {
-                              drive.followTrajectoryAsync(f2);
+                            target = 200;
+                            drive.followTrajectoryAsync(f2);
                         })
                         .build();
 
                 //neeeeeeds to be fixed but build back
                 if(vx == 0){
                     f2 = drive.trajectoryBuilder(f15.end())
-                            .addDisplacementMarker(() -> {
-                                target = 200;
-                            })
-                            .lineToLinearHeading(new Pose2d(d4,0,0))
+
+                            .forward(vy + d4 + 12)
+                            //.lineToLinearHeading(new Pose2d(d4,0,0))
+                            //.addDisplacementMarker(((vy + d4 + 10)) ->
                             .build();
-                }
+                    }
                 else{
                     f2 = drive.trajectoryBuilder(f15.end())
                             .lineToLinearHeading(new Pose2d(-vy, 0, 0))
                             .addDisplacementMarker(() -> {
-                                target = 200;
                                 drive.followTrajectoryAsync(f3);
                             })
                             .build();
@@ -378,11 +381,13 @@ public class DriveV7 extends LinearOpMode {
                         && Math.abs(gamepad1.left_stick_y) < .5
                         && Math.abs(gamepad1.right_stick_x) < .5
                         && Math.abs(gamepad1.right_stick_y) < .5
-                        && drive.isBusy())
+                        && drive.isBusy()
+                )
                 {
                     drive.update();
                     Slide();
                     Coordinates();
+                    ServoClamp();
                     while (gamepad1.right_stick_button){
                         M0.setPower(0);
                         M3.setPower(0);
@@ -390,7 +395,24 @@ public class DriveV7 extends LinearOpMode {
                         M2.setPower(0);
                     }
                 }
+                /*M0.setPower(1);
+                M3.setPower(-1);
+                M1.setPower(-1);
+                M2.setPower(1);*/
+                /*while (i < slamtime){
+                    d = D2.getDistance(DistanceUnit.INCH);
+                    if (d>1){
+                        d = D2.getDistance(DistanceUnit.INCH);
+                    }
+                    i += 1;
+                }
+                M0.setPower(0);
+                M3.setPower(0);
+                M1.setPower(0);
+                M2.setPower(0);
+                */
                 atwall = true;
+
             }
 
         }
