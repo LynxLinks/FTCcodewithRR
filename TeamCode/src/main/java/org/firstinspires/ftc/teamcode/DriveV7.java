@@ -35,34 +35,26 @@ public class DriveV7 extends LinearOpMode {
     DistanceSensor D3; // back
     DistanceSensor D4; // left
 
-
-    //All d variables
-    double d = 8.5; // distance to pole update from sensor
+    //public statics
     public static double d2 = 30; //distance strafe at pole but get interupted
     public static double d3 = 11; //distance come back off of pole
     public static double d4 = 14; //y offset when coming back
-
-    //slide variables
-    double target; //slide target position
+    public static double yoffset = 1;
     public static double Sset = 200; //test drop distance
-    int[] hdata = new int[]{200, 1100, 200, 1100, 200,
-            1100, 1750, 2350, 1750, 1100,
-            200, 2350, 200, 2350, 200,
-            1100, 1750, 2350, 1750, 1100,
-            200, 1100, 200, 1100, 200}; //slide heights
+    public static double dxoffset = 2;
+    public static double dyoffset = 2;
 
-    //RR variable
-    public static double yoffset = 1;  //constant added to all y positions
+    //constants
+    double d; // distance to pole update from sensor
+    double target; //slide target position
     boolean track = false; //update d yes or no
-    int y = 2;   // y finallized when built
-    int x = 0;   // x finallized when built
-    double vy = 1;  //vector roadrunner x value
-    double vx = 1;  //vector roadrunner y value
-    double vo = 1;  //target roadrunner theta
+    int y;   // y finallized when built
+    int x;   // x finallized when built
     double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
+    double vy;  //vector roadrunner x value
+    double vx;  //vector roadrunner y value
+    double vo;  //target roadrunner theta
     boolean atwall = true; //used to know whether to run to or from
-
-    //Cordinate variables
     int ycord = 2; // live cord y
     int xcord = 0; // live cord x
     boolean dup = false;
@@ -70,8 +62,11 @@ public class DriveV7 extends LinearOpMode {
     boolean dright = false;
     boolean dleft = false;
     boolean dslide = false;
-
-    //RR trajectories and pose
+    int[] hdata = new int[]{200, 1100, 200, 1100, 200,
+                            1100, 1750, 2350, 1750, 1100,
+                            200, 2350, 200, 2350, 200,
+                            1100, 1750, 2350, 1750, 1100,
+                            200, 1100, 200, 1100, 200}; //slide heights
     Trajectory t1;
     Trajectory t2;
     Trajectory t3;
@@ -85,7 +80,6 @@ public class DriveV7 extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         dashboard = FtcDashboard.getInstance();
-        //Add Motors
         M0 = hardwareMap.get(DcMotor.class, "M0");
         M1 = hardwareMap.get(DcMotor.class, "M1");
         M2 = hardwareMap.get(DcMotor.class, "M2");
@@ -97,8 +91,6 @@ public class DriveV7 extends LinearOpMode {
         D2 = hardwareMap.get(DistanceSensor.class, "D2");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
         D3 = hardwareMap.get(DistanceSensor.class, "D3");
-
-        //Set Motors
         M0.setDirection(DcMotor.Direction.FORWARD);
         M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M1.setDirection(DcMotor.Direction.FORWARD);
@@ -107,7 +99,6 @@ public class DriveV7 extends LinearOpMode {
         M2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M3.setDirection(DcMotor.Direction.FORWARD);
         M3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         M0_2.setDirection(DcMotor.Direction.FORWARD);
         M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -132,6 +123,7 @@ public class DriveV7 extends LinearOpMode {
         //waits here
         waitForStart();
 
+        //raise slide on start
         target = 200;
 
         //main loop
@@ -215,7 +207,7 @@ public class DriveV7 extends LinearOpMode {
                 y = ycord;
                 x = xcord;
                 vy = -(yoffset + 24 * (y - 1));
-                d2 = Math.abs(d2);
+                //d2 = Math.abs(d2);
                 if (x > 0) {
                     vx =  24 * Math.floor(Math.abs(x - xi));
                 } else {
@@ -226,10 +218,6 @@ public class DriveV7 extends LinearOpMode {
                     d2 = d2;
                 } else {
                     vo = -90;
-                    d2 = -d2;
-                }
-                if (vx != 0){
-                    vo = 180;
                     d2 = -d2;
                 }
 
@@ -245,14 +233,18 @@ public class DriveV7 extends LinearOpMode {
 
                 //build with x translation
                 else{
+                    vo = 180
                     t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                            .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(vo)))
+                            .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
                             .addDisplacementMarker(() -> {
                                 drive.followTrajectoryAsync(t2);
                             })
                             .build();
                     t2 = drive.trajectoryBuilder(t1.end())
-                            .lineToLinearHeading(new Pose2d(vy, vx, Math.toRadians(vo)))
+                            .lineToLinearHeading(new Pose2d(vy, (vx+d2), Math.toRadians(0)))
+                            .addDisplacementMarker(Math.abs(vy + vx),() ->{
+                                track = true;
+                            })
                             .build();
                 }
 
@@ -288,8 +280,8 @@ public class DriveV7 extends LinearOpMode {
 
                 //movement 2 build
                 drive.setPoseEstimate(new Pose2d());
-                t4 = drive.trajectoryBuilder(new Pose2d(2,0,Math.toRadians(vo)))
-                        .lineToLinearHeading(new Pose2d(2,d+2,Math.toRadians(vo)))
+                t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,dxoffset,Math.toRadians(vo)))
+                        .lineToLinearHeading(new Pose2d(dyoffset,d+dxoffset,Math.toRadians(vo)))
                         .build();
 
                 //movement 2 onto pole
