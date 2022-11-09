@@ -233,7 +233,7 @@ public class DriveV7 extends LinearOpMode {
 
                 //build with x translation
                 else{
-                    vo = 180
+                    vo = 180;
                     t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
                             .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
                             .addDisplacementMarker(() -> {
