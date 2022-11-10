@@ -36,14 +36,18 @@ public class DriveV7 extends LinearOpMode {
     DistanceSensor D4; // left
 
     //public statics
-    public static double d2 = 17; //distance strafe at pole but get interupted
-    public static double d3 = 7; //distance come back off of pole
+    public static double d2 = 15; //distance strafe at pole but get interupted
+    public static double d3 = 8; //distance come back off of pole
     public static double d4 = 3; //y offset when coming back
     public static double Sset = 200; //test drop distance
     public static double dxoffset = 2.5;
     public static double dyoffset = -.5;
-    public static double yoffset = 4;
+    public static double yoffset = 6;
     public static int slamtime = 10;
+
+    public static double dy2 = 2.5;
+    public static double dx2 = -.5;
+    public static double centertarget = 47;
 
     //constants
     double d; // distance to pole update from sensor
@@ -52,6 +56,7 @@ public class DriveV7 extends LinearOpMode {
     int y;   // y finallized when built
     int x;   // x finallized when built
     int i;
+    double multiplier;
     boolean fillerbool = true;
     double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
     double vy;  //vector roadrunner x value
@@ -65,6 +70,7 @@ public class DriveV7 extends LinearOpMode {
     boolean dright = false;
     boolean dleft = false;
     boolean dslide = false;
+    boolean drop = false;
     int[] hdata = new int[]{200, 1100, 200, 1100, 200,
                             1100, 1750, 2350, 1750, 1100,
                             200, 2350, 200, 2350, 200,
@@ -79,6 +85,7 @@ public class DriveV7 extends LinearOpMode {
     Trajectory f2;
     Trajectory f3;
     Pose2d pole;
+    Trajectory center1;
 
     public void runOpMode() {
 
@@ -165,24 +172,42 @@ public class DriveV7 extends LinearOpMode {
         if (gamepad1.a) {
             target = 200;
             S0.setPosition(0.05);
+            drop = false;
         }
-        if (gamepad1.b) target = 2350;
-        if (gamepad1.y) target = 1750;
-        if (gamepad1.x) target = 1100;
+        if (gamepad1.b){
+            target = 2350;
+            drop = false;
+        }
+        if (gamepad1.y){
+            target = 1750;
+            drop = false;
+        }
+        if (gamepad1.x){
+            target = 1100;
+            drop = false;
+        }
 
         //slide reset if at switch
-        if (D0.getState() && (target == 0)) {
+      /*  if (D0.getState() && (target == 0)) {
             M0_2.setDirection(DcMotor.Direction.FORWARD);
             M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
+       */
+
         //test drop onto pole
         if (gamepad1.dpad_down) dslide = true;
-        if ((!gamepad1.dpad_down) && dslide) {
+        if ((!gamepad1.dpad_down) && dslide && !drop) {
             dslide = false;
+            drop = true;
             target = target - Sset;
+        }
+        if ((!gamepad1.dpad_down) && dslide && drop) {
+            dslide = false;
+            drop = false;
+            target = target + Sset;
         }
     }
 
@@ -202,15 +227,20 @@ public class DriveV7 extends LinearOpMode {
         M2.setPower(-(Rotate + (yAxis - xAxis)));
 
         //Automated Cordiante system
+        if (gamepad1.dpad_left){
+            Center();
+        }
         if (gamepad1.right_stick_button) {
 
             //going to pole movement
             if (atwall) {
                 track = false;
+                dx2 = Math.abs(dx2);
                 //set varibles based off of cordinates
                 y = ycord;
                 x = xcord;
                 vy = yoffset + 24 * (y - 1);
+                d2 = Math.abs(d2);
                 //d2 = Math.abs(d2);
                 if (x > 0) {
                     vx =  24 * Math.floor(Math.abs(x - xi));
@@ -221,6 +251,9 @@ public class DriveV7 extends LinearOpMode {
                     vo = 90;
                 } else {
                     vo = -90;
+                    if(vx != 0){
+                        dx2 = - dx2;
+                    }
                 }
 
 
@@ -290,6 +323,7 @@ public class DriveV7 extends LinearOpMode {
                         M3.setPower(0);
                         M1.setPower(0);
                         M2.setPower(0);
+                        Slide();
                     }
                 }
 
@@ -298,11 +332,16 @@ public class DriveV7 extends LinearOpMode {
                 if(d >= 10 || d <= 1){
                     d = 5;
                 }
-                t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,(dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
-                        .lineToLinearHeading(new Pose2d(dyoffset,(d+dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
-                        .addDisplacementMarker(() ->{
-                        })
-                        .build();
+                if(vx == 0){
+                    t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,(dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
+                            .lineToLinearHeading(new Pose2d(dyoffset,(d+dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
+                            .build();
+                }
+                else{
+                    t4 = drive.trajectoryBuilder(new Pose2d(-dy2,dx2,Math.toRadians(vo)))
+                            .lineToLinearHeading(new Pose2d(-(d +dy2),dx2,Math.toRadians(vo)))
+                            .build();
+                }
 
                 //movement 2 onto pole
                 drive.followTrajectoryAsync(t4);
@@ -321,52 +360,41 @@ public class DriveV7 extends LinearOpMode {
                         M3.setPower(0);
                         M1.setPower(0);
                         M2.setPower(0);
+                        Slide();
                     }
                 }
-                target = target - 250;
-                S0.setPosition(0);
+                target = target - Sset;
+                drop = true;
                 atwall = false;
             }
 
             //movement returning to wall
             else {
-                //set pose at
-                pole = new Pose2d(-vy - 12,vx + Math.sin(Math.toRadians(vo))*d3 ,Math.toRadians(vo));
-                drive.setPoseEstimate(pole);
-                f1 = drive.trajectoryBuilder(pole)
-                        .back(d3)
-                        .addDisplacementMarker(() -> {
-                            drive.followTrajectorySequence(f15);
-                            target = 200;
-                        })
-                        .build();
-                f15 = drive.trajectorySequenceBuilder(f1.end())
-                        .turn(Math.toRadians(-vo))
-                        .addDisplacementMarker(() -> {
-                            target = 200;
-                            drive.followTrajectoryAsync(f2);
-                        })
-                        .build();
-
+                S0.setPosition(0);
                 //neeeeeeds to be fixed but build back
-                if(vx == 0){
-                    f2 = drive.trajectoryBuilder(f15.end())
-
-                            .forward(vy + d4 + 12)
-                            //.lineToLinearHeading(new Pose2d(d4,0,0))
-                            //.addDisplacementMarker(((vy + d4 + 10)) ->
-                            .build();
-                    }
-                else{
-                    f2 = drive.trajectoryBuilder(f15.end())
-                            .lineToLinearHeading(new Pose2d(-vy, 0, 0))
+                if(vx == 0) {
+                    pole = new Pose2d(-vy - 12,vx + Math.sin(Math.toRadians(vo))*d3 ,Math.toRadians(vo));
+                    drive.setPoseEstimate(pole);
+                    f15 = drive.trajectorySequenceBuilder(pole)
+                            .back(d3)
                             .addDisplacementMarker(() -> {
-                                drive.followTrajectoryAsync(f3);
+                                target = 200;
                             })
+                            .turn(Math.toRadians(-vo))
+                            .forward(vy + d4 + 12)
                             .build();
-                    //move diagonal forwards to target junction
-                    f3 = drive.trajectoryBuilder(f2.end())
-                            .lineToLinearHeading(new Pose2d(d4,0,0))
+                }
+                else{
+                    pole = new Pose2d(-vy - 8,vx + ((12)*(x-xi)/Math.abs(x-xi)),Math.toRadians(vo));
+                    drive.setPoseEstimate(pole);
+                    f15 = drive.trajectorySequenceBuilder(pole)
+                            .back(d3)
+                            .addDisplacementMarker(() -> {
+                                target = 200;
+                            })
+                            .turn(Math.toRadians(-vo))
+                            .strafeRight(vx + 12)
+                            .forward(vy + d4)
                             .build();
 
                 }
@@ -375,7 +403,8 @@ public class DriveV7 extends LinearOpMode {
                 S0.setPosition(0);
 
                 //return movement
-                drive.followTrajectoryAsync(f1);
+                drive.followTrajectorySequenceAsync(f15);
+
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
                         && Math.abs(gamepad1.left_stick_y) < .5
@@ -393,6 +422,7 @@ public class DriveV7 extends LinearOpMode {
                         M3.setPower(0);
                         M1.setPower(0);
                         M2.setPower(0);
+                        Slide();
                     }
                 }
                 /*M0.setPower(1);
@@ -464,8 +494,48 @@ public class DriveV7 extends LinearOpMode {
         telemetry.addData("d",d);
         telemetry.addData("track",track);
         telemetry.addData("vy",vy);
+        telemetry.addData("target",target);
+        telemetry.addData("multiplier",multiplier);
+
         telemetry.update();
 
     }
+
+    void Center(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+            if (xi > 0) {
+                multiplier = -1;
+                if(D4.getDistance(DistanceUnit.INCH) > centertarget){
+                    multiplier = 1;
+                }
+            }
+
+            else {
+                multiplier = -1;
+                if(D2.getDistance(DistanceUnit.INCH) > centertarget){
+                    multiplier = 1;
+                }
+        }
+            drive.setPoseEstimate(new Pose2d());
+                center1 = drive.trajectoryBuilder(new Pose2d())
+                        .lineToLinearHeading(new Pose2d(-.5,12*xi*multiplier,0))
+                        .build();
+            drive.followTrajectoryAsync(center1);
+            drive.update();
+                while (multiplier*(D4.getDistance(DistanceUnit.INCH) - centertarget) > 0){
+                    drive.update();
+                    Slide();
+                    ServoClamp();
+                }
+        M0.setPower(0);
+        M1.setPower(0);
+        M2.setPower(0);
+        M3.setPower(0);
+        drive.setPoseEstimate(new Pose2d());
+    }
+
 }
+
+
 
