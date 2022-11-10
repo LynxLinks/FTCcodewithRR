@@ -12,10 +12,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.List;
 
@@ -35,40 +37,66 @@ public class Auto10 extends LinearOpMode {
     DistanceSensor D1;
     DistanceSensor D2;
     DistanceSensor D4;
+    TrajectorySequence startmoves;
+    public static double strafe1 = 19;
+    public static double strafe2 = 19;
+    public static double forward1 = 5;
+    DistanceSensor D3; // back
+    //public statics
+    public static double d2 = 15; //distance strafe at pole but get interupted
+    public static double d3 = 8; //distance come back off of pole
+    public static double d4 = 3; //y offset when coming back
+    public static double Sset = 200; //test drop distance
+    public static double dxoffset = 2.5;
+    public static double dyoffset = -.5;
+    public static double yoffset = 6;
+    public static int slamtime = 10;
+
+    public static double dy2 = 2.5;
+    public static double dx2 = -.5;
+    public static double centertarget = 47;
+
+    //constants
+    double d; // distance to pole update from sensor
+    double target; //slide target position
+    boolean track = false; //update d yes or no
+    int y;   // y finallized when built
+    int x;   // x finallized when built
+    int i;
+    double multiplier;
+    boolean fillerbool = true;
+    double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
+    double vy;  //vector roadrunner x value
+    double vx;  //vector roadrunner y value
+    double vo;  //target roadrunner theta
+    boolean atwall = true; //used to know whether to run to or from
+    int ycord = 2; // live cord y
+    int xcord = 0; // live cord x
+    boolean drop = false;
+    int[] hdata = new int[]{200, 1100, 200, 1100, 200,
+            1100, 1750, 2350, 1750, 1100,
+            200, 2350, 200, 2350, 200,
+            1100, 1750, 2350, 1750, 1100,
+            200, 1100, 200, 1100, 200}; //slide heights
+    Trajectory t1;
+    Trajectory t2;
+    Trajectory t4;
+    TrajectorySequence f15;
+    Pose2d pole;
+
 
     //Slide variables
     Pose2d start;
     double movement;
-    double target;
     double park;
-    double [][] cord;
     double ymult = 1;
-    double [][] audiencecords = {
+    double [][]cords = {
 
             {},
             {},
             {},
-            {1,1},
-            {1,2},
-            {1,3},
-            {0,3}
 
     };
-    double [][] nonaudiencecords = {
-
-            {},
-            {},
-            {},
-            {},
-            {1,3},
-            {0,3},
-            {0,2},
-            {0,1}
-    };
-    boolean audience;
-    boolean slidecalibrated = false;
-    boolean slidecalfiller = true;
-    boolean audienceside = true;
 
     //viewforia Variables
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
@@ -141,40 +169,225 @@ public class Auto10 extends LinearOpMode {
         }
 
         if(isStopRequested()) return;
-        //RR import
+        drive.setPoseEstimate(new Pose2d());
+        startmoves = drive.trajectorySequenceBuilder(new Pose2d())
+                .strafeLeft(strafe1)
+                .addDisplacementMarker(() -> {
+                    target = 200;
+                })
+                .turn(Math.toRadians(90))
+                .strafeLeft(strafe2)
+                .forward(forward1)
+                .build();
 
-        if (audience){
-            Pose2d start = new Pose2d(36,-52,180);
+        drive.followTrajectorySequenceAsync(startmoves);
+        drive.update();
+        while(drive.isBusy()){
+
         }
-        else{
-            Pose2d start = new Pose2d(-36,-52,180);
-        }
+        //RR import
 
         Actions();
 
-        for(int i = 1;i >=0; i++) {
+        for(int i = 0;i < 5; i++) {
             movement = i;
-            Trajectory main = drive.trajectoryBuilder(start)
-                    .lineToLinearHeading(new Pose2d(cord[i][0],ymult*cord[i][1],Math.toRadians(cord[i][2])))
-                    .addDisplacementMarker(() -> {
-                        Actions();
-                    })
-                    .build();
-            start = main.end();
-            drive.followTrajectoryAsync(main);
+            Actions();
+
+            //going to pole movement
+
+            track = false;
+            dx2 = Math.abs(dx2);
+            //set varibles based off of cordinates
+            cords[i][2] = ycord;
+            cords[i][1] = xcord;
+            vy = yoffset + 24 * (y - 1);
+            d2 = Math.abs(d2);
+            //d2 = Math.abs(d2);
+            if (x > 0) {
+                vx =  24 * Math.floor(Math.abs(x - xi));
+            } else {
+                vx =  -24 * Math.floor(Math.abs(x - xi));
+            }
+            if (x > xi) {
+                vo = 90;
+            } else {
+                vo = -90;
+                if(vx != 0){
+                    dx2 = - dx2;
+                }
+            }
+
+
+            //build non x translation
+            if(vx == 0){
+                t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                        .back(vy + d2)
+                        .addDisplacementMarker(Math.abs(vy),() ->{
+                            track = true;
+                        })
+                        .build();
+            }
+
+            //build with x translation
+            else{
+                d2 = Math.abs(d2);
+                vo = 180;
+                if (x < xi){
+                    d2 = -d2;
+                }
+                t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                        .back(vy)
+                        .addDisplacementMarker(() -> {
+                            drive.followTrajectoryAsync(t2);
+                        })
+                        .build();
+                t2 = drive.trajectoryBuilder(t1.end())
+                        .strafeLeft(vx+d2)
+                        .addDisplacementMarker(Math.abs(vx),() ->{
+                            track = true;
+                        })
+                        .build();
+            }
+
+            //close clamp
+            S0.setPosition(.3);
+
+            //retrieve height of pole
+            target = hdata[x + 5*(y-1)+2];
+
+            //movement 1 with distance interrupt
+            drive.followTrajectoryAsync(t1);
             drive.update();
-            while (drive.isBusy()) {
+            while (Math.abs(gamepad1.left_stick_x) < .5
+                    && Math.abs(gamepad1.left_stick_y) < .5
+                    && Math.abs(gamepad1.right_stick_x) < .5
+                    && Math.abs(gamepad1.right_stick_y) < .5
+                    && drive.isBusy()
+            ) {
+                if(D4.getDistance(DistanceUnit.INCH) <= 10 && D4.getDistance(DistanceUnit.INCH) >=1 && track && vo == 90){
+                    d = D4.getDistance(DistanceUnit.INCH);
+                    break;
+                }
+                if(D2.getDistance(DistanceUnit.INCH) <= 10 && D2.getDistance(DistanceUnit.INCH) >=1 && track && vo == -90){
+                    d = D2.getDistance(DistanceUnit.INCH);
+                    break;
+                }
+                if(D3.getDistance(DistanceUnit.INCH) <= 10 && D3.getDistance(DistanceUnit.INCH) >=1 && track && vo == 180){
+                    d = D3.getDistance(DistanceUnit.INCH);
+                    break;
+                }
                 drive.update();
                 Slide();
+                while (gamepad1.right_stick_button){
+                    M0.setPower(0);
+                    M3.setPower(0);
+                    M1.setPower(0);
+                    M2.setPower(0);
+                    Slide();
+                }
+            }
+
+            //movement 2 build
+            drive.setPoseEstimate(new Pose2d());
+            if(d >= 10 || d <= 1){
+                d = 5;
+            }
+            if(vx == 0){
+                t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,(dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
+                        .lineToLinearHeading(new Pose2d(dyoffset,(d+dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
+                        .build();
+            }
+            else{
+                t4 = drive.trajectoryBuilder(new Pose2d(-dy2,dx2,Math.toRadians(vo)))
+                        .lineToLinearHeading(new Pose2d(-(d +dy2),dx2,Math.toRadians(vo)))
+                        .build();
+            }
+
+            //movement 2 onto pole
+            drive.followTrajectoryAsync(t4);
+            drive.update();
+            while (Math.abs(gamepad1.left_stick_x) < .5
+                    && Math.abs(gamepad1.left_stick_y) < .5
+                    && Math.abs(gamepad1.right_stick_x) < .5
+                    && Math.abs(gamepad1.right_stick_y) < .5
+                    && drive.isBusy()
+            ) {
+                drive.update();
+                Slide();
+                while (gamepad1.right_stick_button){
+                    M0.setPower(0);
+                    M3.setPower(0);
+                    M1.setPower(0);
+                    M2.setPower(0);
+                    Slide();
+                }
+            }
+            target = target - Sset;
+            drop = true;
+            atwall = false;
+
+             //movement returning to wall
+
+            S0.setPosition(0);
+            //neeeeeeds to be fixed but build back
+            if(vx == 0) {
+                pole = new Pose2d(-vy - 12,vx + Math.sin(Math.toRadians(vo))*d3 ,Math.toRadians(vo));
+                drive.setPoseEstimate(pole);
+                f15 = drive.trajectorySequenceBuilder(pole)
+                        .back(d3)
+                        .addDisplacementMarker(() -> {
+                            target = 200;
+                        })
+                        .turn(Math.toRadians(-vo))
+                        .forward(vy + d4 + 12)
+                        .build();
+            }
+            else{
+                pole = new Pose2d(-vy - 8,vx + ((12)*(x-xi)/Math.abs(x-xi)),Math.toRadians(vo));
+                drive.setPoseEstimate(pole);
+                f15 = drive.trajectorySequenceBuilder(pole)
+                        .back(d3)
+                        .addDisplacementMarker(() -> {
+                            target = 200;
+                        })
+                        .turn(Math.toRadians(-vo))
+                        .strafeRight(vx + 12)
+                        .forward(vy + d4)
+                        .build();
 
             }
+
+            //open cam
+            S0.setPosition(0);
+
+            //return movement
+            drive.followTrajectorySequenceAsync(f15);
+
+            drive.update();
+            while (Math.abs(gamepad1.left_stick_x) < .5
+                    && Math.abs(gamepad1.left_stick_y) < .5
+                    && Math.abs(gamepad1.right_stick_x) < .5
+                    && Math.abs(gamepad1.right_stick_y) < .5
+                    && drive.isBusy()
+            )
+            {
+                drive.update();
+                Slide();
+                while (gamepad1.right_stick_button){
+                    M0.setPower(0);
+                    M3.setPower(0);
+                    M1.setPower(0);
+                    M2.setPower(0);
+                    Slide();
+                }
+            }
+            atwall = true;
 
         }
 
 
     }
     public void Actions(){
-        if (audience){
             if(movement == 0){
                 target = 200;
             }
@@ -188,25 +401,6 @@ public class Auto10 extends LinearOpMode {
             if (movement == 3){
 
             }
-
-        }
-        else {
-            if (movement == 0){
-                target = 2350;
-            }
-            if (movement == 1){
-
-            }
-            if (movement == 2){
-                S0.setPosition(0);
-            }
-            if (movement == 3){
-                target = 1000;
-            }
-            if (movement == 4){
-
-            }
-        }
     }
     public void IdentifyVuforia(){
         if (tfod != null) {
@@ -225,36 +419,7 @@ public class Auto10 extends LinearOpMode {
         }
     }
     public void Slide () {
-        if (!slidecalibrated) {
-            if (D0.getState() == true && slidecalfiller) {
-                M0_2.setPower(.3);
-            }
-            if (D0.getState() == false) {
-                M0_2.setPower(-0.3);
-                slidecalfiller = false;
-
-            }
-            if (D0.getState() == true && !slidecalfiller) {
-                slidecalibrated = true;
-                if (audienceside) {
-                    target = 200;
-
-                }
-                else{
-                    target = 2350;
-                }
-            }
-        }
-
-
         M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-
-        if (D0.getState() && (target == 0)) {
-            M0_2.setDirection(DcMotor.Direction.FORWARD);
-            M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
     }
     private void initVuforia() {
         /*
