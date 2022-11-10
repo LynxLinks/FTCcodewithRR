@@ -227,13 +227,11 @@ public class DriveV7 extends LinearOpMode {
         M2.setPower(-(Rotate + (yAxis - xAxis)));
 
         //Automated Cordiante system
-        if (gamepad1.dpad_left){
-            Center();
-        }
         if (gamepad1.right_stick_button) {
 
             //going to pole movement
             if (atwall) {
+                drive.setPoseEstimate(new Pose2d());
                 track = false;
                 dx2 = Math.abs(dx2);
                 //set varibles based off of cordinates
@@ -301,6 +299,8 @@ public class DriveV7 extends LinearOpMode {
                         && Math.abs(gamepad1.left_stick_y) < .5
                         && Math.abs(gamepad1.right_stick_x) < .5
                         && Math.abs(gamepad1.right_stick_y) < .5
+                        && Math.abs(gamepad1.right_trigger) < .5
+                        && Math.abs(gamepad1.left_trigger) < .5
                         && drive.isBusy()
                 ) {
                     if(D4.getDistance(DistanceUnit.INCH) <= 10 && D4.getDistance(DistanceUnit.INCH) >=1 && track && vo == 90){
@@ -350,6 +350,8 @@ public class DriveV7 extends LinearOpMode {
                         && Math.abs(gamepad1.left_stick_y) < .5
                         && Math.abs(gamepad1.right_stick_x) < .5
                         && Math.abs(gamepad1.right_stick_y) < .5
+                        && Math.abs(gamepad1.right_trigger) < .5
+                        && Math.abs(gamepad1.left_trigger) < .5
                         && drive.isBusy()
                 ) {
                     drive.update();
@@ -410,6 +412,8 @@ public class DriveV7 extends LinearOpMode {
                         && Math.abs(gamepad1.left_stick_y) < .5
                         && Math.abs(gamepad1.right_stick_x) < .5
                         && Math.abs(gamepad1.right_stick_y) < .5
+                        && Math.abs(gamepad1.right_trigger) < .5
+                        && Math.abs(gamepad1.left_trigger) < .5
                         && drive.isBusy()
                 )
                 {

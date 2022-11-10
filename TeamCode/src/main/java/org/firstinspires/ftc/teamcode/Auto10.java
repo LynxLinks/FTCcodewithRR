@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.List;
 
+@Config
 @Autonomous(name="Auto10", group="Linear Opmode")
 
 public class Auto10 extends LinearOpMode {
@@ -38,9 +40,13 @@ public class Auto10 extends LinearOpMode {
     DistanceSensor D2;
     DistanceSensor D4;
     TrajectorySequence startmoves;
-    public static double strafe1 = 19;
-    public static double strafe2 = 19;
-    public static double forward1 = 5;
+    public static double dwall = 7;
+    public static double strafe2 = 52;
+    public static double forward1 = 15;
+    public static double slidei = 600;
+    public static double slided = -50;
+    public static double slidex = -450;
+
     DistanceSensor D3; // back
     //public statics
     public static double d2 = 15; //distance strafe at pole but get interupted
@@ -48,9 +54,10 @@ public class Auto10 extends LinearOpMode {
     public static double d4 = 3; //y offset when coming back
     public static double Sset = 200; //test drop distance
     public static double dxoffset = 2.5;
-    public static double dyoffset = -.5;
+    public static double dyoffset = -1.5;
     public static double yoffset = 6;
     public static int slamtime = 10;
+    public static double slidespeed = .2;
 
     public static double dy2 = 2.5;
     public static double dx2 = -.5;
@@ -65,11 +72,13 @@ public class Auto10 extends LinearOpMode {
     int i;
     double multiplier;
     boolean fillerbool = true;
-    double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
+    double xi = .5;  //initial robot position against wall in coordinate system, either .5 or -.5
     double vy;  //vector roadrunner x value
     double vx;  //vector roadrunner y value
     double vo;  //target roadrunner theta
     boolean atwall = true; //used to know whether to run to or from
+    boolean beenoff = false;
+    boolean slidecalibrated = false;
     int ycord = 2; // live cord y
     int xcord = 0; // live cord x
     boolean drop = false;
@@ -90,13 +99,9 @@ public class Auto10 extends LinearOpMode {
     double movement;
     double park;
     double ymult = 1;
-    double [][]cords = {
+    int []cordY = {1,2,3,2,4};
+    int []cordx = {1,1,1,0,0};
 
-            {},
-            {},
-            {},
-
-    };
 
     //viewforia Variables
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
@@ -111,6 +116,7 @@ public class Auto10 extends LinearOpMode {
     private TFObjectDetector tfod;
 
     public void runOpMode() {
+
         dashboard = FtcDashboard.getInstance();
         M0 = hardwareMap.get(DcMotor.class, "M0");
         M1 = hardwareMap.get(DcMotor.class, "M1");
@@ -121,6 +127,7 @@ public class Auto10 extends LinearOpMode {
         D0 = hardwareMap.get(DigitalChannel.class, "D0");
         D1 = hardwareMap.get(DistanceSensor.class, "D1");
         D2 = hardwareMap.get(DistanceSensor.class, "D2");
+        D3 = hardwareMap.get(DistanceSensor.class, "D3");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
         M0.setDirection(DcMotor.Direction.FORWARD);
         M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -171,35 +178,38 @@ public class Auto10 extends LinearOpMode {
         if(isStopRequested()) return;
         drive.setPoseEstimate(new Pose2d());
         startmoves = drive.trajectorySequenceBuilder(new Pose2d())
-                .strafeLeft(strafe1)
+                .back(2)
+                .strafeRight(D2.getDistance(DistanceUnit.INCH) - dwall)
+                .turn(Math.toRadians(-90))
                 .addDisplacementMarker(() -> {
-                    target = 200;
+                    target = 600;
+                    S0.setPosition(0);
                 })
-                .turn(Math.toRadians(90))
-                .strafeLeft(strafe2)
+                .strafeRight(strafe2)
                 .forward(forward1)
                 .build();
 
         drive.followTrajectorySequenceAsync(startmoves);
         drive.update();
-        while(drive.isBusy()){
-
+        while(drive.isBusy()&&!isStopRequested()){
+            drive.update();
+            Slide();
         }
         //RR import
 
-        Actions();
-
         for(int i = 0;i < 5; i++) {
-            movement = i;
-            Actions();
 
-            //going to pole movement
-
+            S0.setPosition(0);
+            target = slidei - (slided*i)+slidex; //set slide to level to grab top cone
+            UntilSlide(); //wait until slide height is hit
+            S0.setPosition(0.3); //clamp
+            target = slidei - (slided*i) +100; //set slide to lift cone above stack
+            UntilSlide();
             track = false;
             dx2 = Math.abs(dx2);
             //set varibles based off of cordinates
-            cords[i][2] = ycord;
-            cords[i][1] = xcord;
+            y = cordY[i];
+            x = cordx[i];
             vy = yoffset + 24 * (y - 1);
             d2 = Math.abs(d2);
             //d2 = Math.abs(d2);
@@ -216,7 +226,7 @@ public class Auto10 extends LinearOpMode {
                     dx2 = - dx2;
                 }
             }
-
+            drive.setPoseEstimate(new Pose2d());
 
             //build non x translation
             if(vx == 0){
@@ -336,7 +346,7 @@ public class Auto10 extends LinearOpMode {
                 f15 = drive.trajectorySequenceBuilder(pole)
                         .back(d3)
                         .addDisplacementMarker(() -> {
-                            target = 200;
+                            target = slidei;
                         })
                         .turn(Math.toRadians(-vo))
                         .forward(vy + d4 + 12)
@@ -348,7 +358,7 @@ public class Auto10 extends LinearOpMode {
                 f15 = drive.trajectorySequenceBuilder(pole)
                         .back(d3)
                         .addDisplacementMarker(() -> {
-                            target = 200;
+                            target = slidei;
                         })
                         .turn(Math.toRadians(-vo))
                         .strafeRight(vx + 12)
@@ -388,19 +398,7 @@ public class Auto10 extends LinearOpMode {
 
     }
     public void Actions(){
-            if(movement == 0){
-                target = 200;
-            }
-            if (movement == 1){
-                S0.setPosition(0);
-                target = 1000;
-            }
-            if (movement == 2){
 
-            }
-            if (movement == 3){
-
-            }
     }
     public void IdentifyVuforia(){
         if (tfod != null) {
@@ -419,7 +417,27 @@ public class Auto10 extends LinearOpMode {
         }
     }
     public void Slide () {
-        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+
+        if (slidecalibrated) {
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+        }
+
+         else {
+            if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
+                M0_2.setPower(.5);
+            }
+            if (D0.getState() == false) { //if slide is above limit
+                M0_2.setPower(-0.5);
+                beenoff = true;
+            }
+            if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
+                M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                slidecalibrated = true;
+            }
+        }
     }
     private void initVuforia() {
         /*
@@ -447,5 +465,21 @@ public class Auto10 extends LinearOpMode {
         // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
         tfod.loadModelFromFile(TFOD_MODEL_ASSET, LABELS);
         // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
+    }
+    public void UntilSlide() {
+        if ((target - M0_2.getCurrentPosition()) > 0)
+        {
+            M0_2.setPower(slidespeed);
+            while (target > M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        else{
+            M0_2.setPower(-slidespeed );
+            while (target < M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        M0_2.setPower(0);
     }
 }
