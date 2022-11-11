@@ -40,6 +40,7 @@ public class Auto10 extends LinearOpMode {
     DistanceSensor D2;
     DistanceSensor D4;
     TrajectorySequence startmoves;
+    TrajectorySequence startmove2;
     public static double dwall = 7;
     public static double strafe2 = 52;
     public static double forward1 = 15;
@@ -58,10 +59,9 @@ public class Auto10 extends LinearOpMode {
     public static double yoffset = 6;
     public static int slamtime = 10;
     public static double slidespeed = .2;
-
+    double strafe1;
     public static double dy2 = 2.5;
     public static double dx2 = -.5;
-    public static double centertarget = 47;
 
     //constants
     double d; // distance to pole update from sensor
@@ -69,9 +69,6 @@ public class Auto10 extends LinearOpMode {
     boolean track = false; //update d yes or no
     int y;   // y finallized when built
     int x;   // x finallized when built
-    int i;
-    double multiplier;
-    boolean fillerbool = true;
     double xi = .5;  //initial robot position against wall in coordinate system, either .5 or -.5
     double vy;  //vector roadrunner x value
     double vx;  //vector roadrunner y value
@@ -177,17 +174,23 @@ public class Auto10 extends LinearOpMode {
 
         if(isStopRequested()) return;
         drive.setPoseEstimate(new Pose2d());
+        strafe1 = D2.getDistance(DistanceUnit.INCH) - dwall;
         startmoves = drive.trajectorySequenceBuilder(new Pose2d())
                 .back(2)
-                .strafeRight(D2.getDistance(DistanceUnit.INCH) - dwall)
-                .turn(Math.toRadians(-90))
+                .strafeRight(strafe1)
                 .addDisplacementMarker(() -> {
                     target = 600;
                     S0.setPosition(0);
+                    drive.followTrajectorySequenceAsync(startmove2);
                 })
-                .strafeRight(strafe2)
+                .build();
+
+        startmove2 = drive.trajectorySequenceBuilder(new Pose2d(strafe1,dwall,Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(strafe1,dwall,-90))
                 .forward(forward1)
                 .build();
+
+
 
         drive.followTrajectorySequenceAsync(startmoves);
         drive.update();
@@ -212,7 +215,7 @@ public class Auto10 extends LinearOpMode {
             x = cordx[i];
             vy = yoffset + 24 * (y - 1);
             d2 = Math.abs(d2);
-            //d2 = Math.abs(d2);
+
             if (x > 0) {
                 vx =  24 * Math.floor(Math.abs(x - xi));
             } else {
@@ -226,6 +229,7 @@ public class Auto10 extends LinearOpMode {
                     dx2 = - dx2;
                 }
             }
+
             drive.setPoseEstimate(new Pose2d());
 
             //build non x translation
@@ -259,10 +263,7 @@ public class Auto10 extends LinearOpMode {
                         .build();
             }
 
-            //close clamp
-            S0.setPosition(.3);
 
-            //retrieve height of pole
             target = hdata[x + 5*(y-1)+2];
 
             //movement 1 with distance interrupt
@@ -305,11 +306,23 @@ public class Auto10 extends LinearOpMode {
             if(vx == 0){
                 t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,(dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
                         .lineToLinearHeading(new Pose2d(dyoffset,(d+dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
+                        .addDisplacementMarker(() -> {
+                            target = target - Sset;
+                            drop = true;
+                            atwall = false;
+                            S0.setPosition(0);
+                        })
                         .build();
             }
             else{
                 t4 = drive.trajectoryBuilder(new Pose2d(-dy2,dx2,Math.toRadians(vo)))
                         .lineToLinearHeading(new Pose2d(-(d +dy2),dx2,Math.toRadians(vo)))
+                        .addDisplacementMarker(() -> {
+                            target = target - Sset;
+                            drop = true;
+                            atwall = false;
+                            S0.setPosition(0);
+                        })
                         .build();
             }
 
@@ -332,13 +345,18 @@ public class Auto10 extends LinearOpMode {
                     Slide();
                 }
             }
+
+            //above as maker
+
+            /*
             target = target - Sset;
             drop = true;
             atwall = false;
+            S0.setPosition(0);
+            */
 
              //movement returning to wall
 
-            S0.setPosition(0);
             //neeeeeeds to be fixed but build back
             if(vx == 0) {
                 pole = new Pose2d(-vy - 12,vx + Math.sin(Math.toRadians(vo))*d3 ,Math.toRadians(vo));
@@ -346,6 +364,7 @@ public class Auto10 extends LinearOpMode {
                 f15 = drive.trajectorySequenceBuilder(pole)
                         .back(d3)
                         .addDisplacementMarker(() -> {
+                            slidecalibrated = false;
                             target = slidei;
                         })
                         .turn(Math.toRadians(-vo))
@@ -358,6 +377,7 @@ public class Auto10 extends LinearOpMode {
                 f15 = drive.trajectorySequenceBuilder(pole)
                         .back(d3)
                         .addDisplacementMarker(() -> {
+                            slidecalibrated = false;
                             target = slidei;
                         })
                         .turn(Math.toRadians(-vo))
@@ -367,8 +387,6 @@ public class Auto10 extends LinearOpMode {
 
             }
 
-            //open cam
-            S0.setPosition(0);
 
             //return movement
             drive.followTrajectorySequenceAsync(f15);
@@ -397,9 +415,7 @@ public class Auto10 extends LinearOpMode {
 
 
     }
-    public void Actions(){
 
-    }
     public void IdentifyVuforia(){
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
