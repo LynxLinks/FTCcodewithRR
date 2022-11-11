@@ -153,7 +153,7 @@ public class DriveV7 extends LinearOpMode {
         }
 
         //automatic clamping if within distance
-        if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 45) || gamepad1.right_bumper) {
+        if ((target == 200) && (D1.getDistance(DistanceUnit.INCH) <= 2) || gamepad1.right_bumper) {
             target = 0;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
@@ -231,7 +231,6 @@ public class DriveV7 extends LinearOpMode {
 
             //going to pole movement
             if (atwall) {
-                drive.setPoseEstimate(new Pose2d());
                 track = false;
                 dx2 = Math.abs(dx2);
                 //set varibles based off of cordinates
@@ -257,7 +256,7 @@ public class DriveV7 extends LinearOpMode {
 
                 //build non x translation
                 if(vx == 0){
-                    t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
+                    t1 = drive.trajectoryBuilder(new Pose2d())
                             .back(vy + d2)
                             .addDisplacementMarker(Math.abs(vy),() ->{
                                 track = true;
@@ -293,6 +292,7 @@ public class DriveV7 extends LinearOpMode {
                 target = hdata[x + 5*(y-1)+2];
 
                 //movement 1 with distance interrupt
+                drive.setPoseEstimate(new Pose2d());
                 drive.followTrajectoryAsync(t1);
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
@@ -305,14 +305,17 @@ public class DriveV7 extends LinearOpMode {
                 ) {
                     if(D4.getDistance(DistanceUnit.INCH) <= 10 && D4.getDistance(DistanceUnit.INCH) >=1 && track && vo == 90){
                         d = D4.getDistance(DistanceUnit.INCH);
+                        track = false;
                         break;
                     }
                     if(D2.getDistance(DistanceUnit.INCH) <= 10 && D2.getDistance(DistanceUnit.INCH) >=1 && track && vo == -90){
                         d = D2.getDistance(DistanceUnit.INCH);
+                        track = false;
                         break;
                     }
                     if(D3.getDistance(DistanceUnit.INCH) <= 10 && D3.getDistance(DistanceUnit.INCH) >=1 && track && vo == 180){
                         d = D3.getDistance(DistanceUnit.INCH);
+                        track = false;
                         break;
                     }
                     drive.update();
@@ -372,6 +375,7 @@ public class DriveV7 extends LinearOpMode {
 
             //movement returning to wall
             else {
+                track = false;
                 S0.setPosition(0);
                 //neeeeeeds to be fixed but build back
                 if(vx == 0) {
@@ -503,40 +507,6 @@ public class DriveV7 extends LinearOpMode {
 
         telemetry.update();
 
-    }
-
-    void Center(){
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
-            if (xi > 0) {
-                multiplier = -1;
-                if(D4.getDistance(DistanceUnit.INCH) > centertarget){
-                    multiplier = 1;
-                }
-            }
-
-            else {
-                multiplier = -1;
-                if(D2.getDistance(DistanceUnit.INCH) > centertarget){
-                    multiplier = 1;
-                }
-        }
-            drive.setPoseEstimate(new Pose2d());
-                center1 = drive.trajectoryBuilder(new Pose2d())
-                        .lineToLinearHeading(new Pose2d(-.5,12*xi*multiplier,0))
-                        .build();
-            drive.followTrajectoryAsync(center1);
-            drive.update();
-                while (multiplier*(D4.getDistance(DistanceUnit.INCH) - centertarget) > 0){
-                    drive.update();
-                    Slide();
-                    ServoClamp();
-                }
-        M0.setPower(0);
-        M1.setPower(0);
-        M2.setPower(0);
-        M3.setPower(0);
-        drive.setPoseEstimate(new Pose2d());
     }
 
 }

@@ -19,6 +19,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 
 import java.util.List;
 
@@ -26,6 +27,10 @@ import java.util.List;
 @Autonomous(name="Auto10", group="Linear Opmode")
 
 public class Auto10 extends LinearOpMode {
+
+    boolean sidered = false;
+    double angel = 90;
+
     //Variables
     String zone = "3";
     DcMotor M0;
@@ -41,12 +46,13 @@ public class Auto10 extends LinearOpMode {
     DistanceSensor D4;
     TrajectorySequence startmoves;
     TrajectorySequence startmove2;
-    public static double dwall = 7;
-    public static double strafe2 = 52;
+    public static double dwall = 7.8;
+    public static double strafe2 = 53;
+    public static double strafe3 = 12;
     public static double forward1 = 15;
     public static double slidei = 600;
-    public static double slided = -50;
-    public static double slidex = -450;
+    public static double slided = 100;
+    public static double slidex = -350;
 
     DistanceSensor D3; // back
     //public statics
@@ -54,14 +60,15 @@ public class Auto10 extends LinearOpMode {
     public static double d3 = 8; //distance come back off of pole
     public static double d4 = 3; //y offset when coming back
     public static double Sset = 200; //test drop distance
-    public static double dxoffset = 2.5;
+    public static double dxoffset = 3.2;
     public static double dyoffset = -1.5;
     public static double yoffset = 6;
     public static int slamtime = 10;
-    public static double slidespeed = .2;
+    public static double slidespeed = .3;
     double strafe1;
     public static double dy2 = 2.5;
     public static double dx2 = -.5;
+    public static double forward0 = 8;
 
     //constants
     double d; // distance to pole update from sensor
@@ -96,8 +103,12 @@ public class Auto10 extends LinearOpMode {
     double movement;
     double park;
     double ymult = 1;
-    int []cordY = {1,2,3,2,4};
-    int []cordx = {1,1,1,0,0};
+    int []cordY = {1,2};
+    int []cordx = {1,1};
+    int xmult = 1;
+    double xcorrect = 5;
+    double xcorrectback = 12;
+    double parktrue = 0;
 
 
     //viewforia Variables
@@ -163,34 +174,47 @@ public class Auto10 extends LinearOpMode {
             IdentifyVuforia();
         }
         if(zone == "1"){
-            park = 15;
+            park = -56;
         }
         if(zone == "2"){
-            park = 30;
+            park = -30;
         }
         if(zone == "3"){
-            park = 45;
+            park = 0;
+        }
+        if(sidered){
+            strafe1 = (D2.getDistance(DistanceUnit.INCH) - dwall);
+            angel = -90;
+        }
+        else{
+            strafe1 = -(D4.getDistance(DistanceUnit.INCH) - dwall);
+            angel = 90;
+            xmult = -1;
+            xi = -.5;
+
         }
 
         if(isStopRequested()) return;
+
         drive.setPoseEstimate(new Pose2d());
-        strafe1 = D2.getDistance(DistanceUnit.INCH) - dwall;
         startmoves = drive.trajectorySequenceBuilder(new Pose2d())
                 .back(2)
                 .strafeRight(strafe1)
-                .addDisplacementMarker(() -> {
-                    target = 600;
-                    S0.setPosition(0);
-                    drive.followTrajectorySequenceAsync(startmove2);
-                })
+                .forward(forward0)
+
                 .build();
 
-        startmove2 = drive.trajectorySequenceBuilder(new Pose2d(strafe1,dwall,Math.toRadians(-90)))
-                .lineToLinearHeading(new Pose2d(strafe1,dwall,-90))
+        startmove2 = drive.trajectorySequenceBuilder(new Pose2d())
+                .back(strafe2)
+                .addDisplacementMarker(() -> {
+                    //xcorrect = D1.getDistance(DistanceUnit.INCH);
+                    target = slidei;
+                })
+                // .back(xcorrectback - xcorrect)
+                // .strafeLeft(strafe3)
+                .turn(Math.toRadians(angel))
                 .forward(forward1)
                 .build();
-
-
 
         drive.followTrajectorySequenceAsync(startmoves);
         drive.update();
@@ -198,9 +222,20 @@ public class Auto10 extends LinearOpMode {
             drive.update();
             Slide();
         }
+        drive.setPoseEstimate(new Pose2d());
+        drive.followTrajectorySequenceAsync(startmove2);
+        drive.update();
+        while(drive.isBusy()&&!isStopRequested()){
+            drive.update();
+            Slide();
+        }
+
         //RR import
 
-        for(int i = 0;i < 5; i++) {
+        for(int i = 0;i < 2; i++) {
+            if(i == 1){
+                parktrue = park;
+            }
 
             S0.setPosition(0);
             target = slidei - (slided*i)+slidex; //set slide to level to grab top cone
@@ -212,7 +247,7 @@ public class Auto10 extends LinearOpMode {
             dx2 = Math.abs(dx2);
             //set varibles based off of cordinates
             y = cordY[i];
-            x = cordx[i];
+            x = xmult * cordx[i];
             vy = yoffset + 24 * (y - 1);
             d2 = Math.abs(d2);
 
@@ -364,11 +399,11 @@ public class Auto10 extends LinearOpMode {
                 f15 = drive.trajectorySequenceBuilder(pole)
                         .back(d3)
                         .addDisplacementMarker(() -> {
-                            slidecalibrated = false;
+                            //slidecalibrated = false;
                             target = slidei;
                         })
                         .turn(Math.toRadians(-vo))
-                        .forward(vy + d4 + 12)
+                        .forward(vy + d4 + 12 + parktrue)
                         .build();
             }
             else{
