@@ -24,11 +24,11 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuild
 import java.util.List;
 
 @Config
-@Autonomous(name="Auto10", group="Linear Opmode")
+@Autonomous(name="Auto10R", group="Linear Opmode")
 
-public class Auto10 extends LinearOpMode {
+public class Auto10R extends LinearOpMode {
 
-    boolean sidered = false;
+    boolean sidered = true;
     double angel = 90;
 
     //Variables
@@ -47,7 +47,7 @@ public class Auto10 extends LinearOpMode {
     TrajectorySequence startmoves;
     TrajectorySequence startmove2;
     public static double dwall = 4;
-    public static double dwall2 = -2;
+    public static double dwall2 = 2;
     public static double strafe2 = -53;
     public static double strafe3 = 12;
     public static double forward1 = 15;
@@ -175,13 +175,13 @@ public class Auto10 extends LinearOpMode {
             IdentifyVuforia();
         }
         if(zone == "1"){
-            park = -56;
+            park = -8;
         }
         if(zone == "2"){
             park = -30;
         }
         if(zone == "3"){
-            park = -8;
+            park = -56;
         }
         if(sidered){
             strafe1 = (D2.getDistance(DistanceUnit.INCH) - dwall);
@@ -196,17 +196,6 @@ public class Auto10 extends LinearOpMode {
         }
 
         if(isStopRequested()) return;
-        if(sidered){
-            strafe1 = (D2.getDistance(DistanceUnit.INCH) - dwall);
-            angel = -90;
-        }
-        else{
-            strafe1 = -(D4.getDistance(DistanceUnit.INCH) - dwall);
-            angel = 90;
-            xmult = -1;
-            xi = -.5;
-
-        }
 
         drive.setPoseEstimate(new Pose2d());
         startmoves = drive.trajectorySequenceBuilder(new Pose2d())
@@ -402,7 +391,7 @@ public class Auto10 extends LinearOpMode {
             S0.setPosition(0);
             */
 
-             //movement returning to wall
+            //movement returning to wall
 
             //neeeeeeds to be fixed but build back
             if(vx == 0) {
@@ -479,8 +468,6 @@ public class Auto10 extends LinearOpMode {
                 }
                 telemetry.addData("zone",zone);
                 telemetry.addLine("working");
-                telemetry.addData("right",D2.getDistance(DistanceUnit.INCH));
-                telemetry.addData("left",D4.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
         }
@@ -491,7 +478,7 @@ public class Auto10 extends LinearOpMode {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         }
 
-         else {
+        else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
                 M0_2.setPower(.5);
             }

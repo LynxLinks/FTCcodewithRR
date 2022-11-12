@@ -72,9 +72,9 @@ public class DriveV7 extends LinearOpMode {
     boolean dslide = false;
     boolean drop = false;
     int[] hdata = new int[]{200, 1100, 200, 1100, 200,
-                            1100, 1750, 2350, 1750, 1100,
+                            1100, 1700, 2350, 1700, 1100,
                             200, 2350, 200, 2350, 200,
-                            1100, 1750, 2350, 1750, 1100,
+                            1100, 1700, 2350, 1700, 1100,
                             200, 1100, 200, 1100, 200}; //slide heights
     Trajectory t1;
     Trajectory t2;
@@ -179,7 +179,7 @@ public class DriveV7 extends LinearOpMode {
             drop = false;
         }
         if (gamepad1.y){
-            target = 1750;
+            target = 1700;
             drop = false;
         }
         if (gamepad1.x){
@@ -231,6 +231,7 @@ public class DriveV7 extends LinearOpMode {
 
             //going to pole movement
             if (atwall) {
+                drive.setPoseEstimate(new Pose2d());
                 track = false;
                 dx2 = Math.abs(dx2);
                 //set varibles based off of cordinates
@@ -368,8 +369,6 @@ public class DriveV7 extends LinearOpMode {
                         Slide();
                     }
                 }
-                target = target - Sset;
-                drop = true;
                 atwall = false;
             }
 
@@ -496,15 +495,18 @@ public class DriveV7 extends LinearOpMode {
         telemetry.addData("y", ycord);
         telemetry.addData("xi", xi);
         telemetry.addData("atwall", atwall);
+        telemetry.addLine();
+        telemetry.addLine();
+        telemetry.addLine();
+        telemetry.addLine();
         telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-        telemetry.addData("d",d);
-        telemetry.addData("track",track);
-        telemetry.addData("vy",vy);
-        telemetry.addData("target",target);
-        telemetry.addData("multiplier",multiplier);
-
+        //telemetry.addData("d",d);
+       // telemetry.addData("track",track);
+        //telemetry.addData("vy",vy);
+        //telemetry.addData("target",target);
+        //telemetry.addData("multiplier",multiplier);
         telemetry.update();
 
     }
