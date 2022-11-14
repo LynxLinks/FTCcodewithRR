@@ -24,9 +24,9 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuild
 import java.util.List;
 
 @Config
-@Autonomous(name="Auto10R", group="Linear Opmode")
+@Autonomous(name="Auto11", group="Linear Opmode")
 
-public class Auto10R extends LinearOpMode {
+public class Auto11 extends LinearOpMode {
 
     boolean sidered = true;
     double angel = 90;
@@ -74,7 +74,7 @@ public class Auto10R extends LinearOpMode {
     public static double forward0 = 8;
 
     //constants
-    double d; // distance to pole update from sensor
+    double d = 11.5; // distance to pole update from sensor
     double target; //slide target position
     boolean track = false; //update d yes or no
     int y;   // y finallized when built
@@ -94,10 +94,10 @@ public class Auto10R extends LinearOpMode {
             400, 1300, 400, 1300, 400,
             1300, 1950, 2550, 1950, 1300,
             400, 1300, 400, 1300, 400}; //slide heights
-    Trajectory t1;
+    TrajectorySequence t1;
     Trajectory t2;
-    Trajectory t4;
-    TrajectorySequence f15;
+    Trajectory t3;
+    TrajectorySequence f1;
     Pose2d pole;
 
 
@@ -255,212 +255,65 @@ public class Auto10R extends LinearOpMode {
             target = slidei - (slided*i) +100; //set slide to lift cone above stack
             UntilSlide();
             track = false;
-            dx2 = Math.abs(dx2);
             //set varibles based off of cordinates
             y = cordY[i];
             x = xmult * cordx[i];
-            vy = yoffset + 24 * (y - 1);
-            d2 = Math.abs(d2);
-
+            vy = -(yoffset + 24 * (y - 1));
             if (x > 0) {
-                vx =  24 * Math.floor(Math.abs(x - xi));
+                vx = .1 + 24 * Math.floor(Math.abs(x - xi));
             } else {
-                vx =  -24 * Math.floor(Math.abs(x - xi));
+                vx = .1 - 24 * Math.floor(Math.abs(x - xi));
             }
             if (x > xi) {
-                vo = 90;
+                vo = 135;
             } else {
-                vo = -90;
-                if(vx != 0){
-                    dx2 = - dx2;
-                }
+                vo = -135;
             }
 
             drive.setPoseEstimate(new Pose2d());
+            t1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,0))
+                    .lineToLinearHeading(new Pose2d(vy, 0, Math.toRadians(0)))
+                    .turn(Math.toRadians(vo))
+                    .addDisplacementMarker(() -> {
+                        target = hdata[x + 5*(y-1)+2];
+                        S1.setPosition(.75);
+                        S2.setPosition(0);
+                    })
+                    .forward(d)
+                    .addDisplacementMarker(() -> {
+                        target = target - Sset;
+                        drop = true;
+                        atwall = false;
+                        S0.setPosition(0);
+                    })
+                    .build();
 
-            //build non x translation
-            if(vx == 0){
-                t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                        .back(vy + d2)
-                        .addDisplacementMarker(Math.abs(vy),() ->{
-                            track = true;
-                        })
-                        .build();
-            }
-
-            //build with x translation
-            else{
-                d2 = Math.abs(d2);
-                vo = 180;
-                if (x < xi){
-                    d2 = -d2;
-                }
-                t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                        .back(vy)
-                        .addDisplacementMarker(() -> {
-                            drive.followTrajectoryAsync(t2);
-                        })
-                        .build();
-                t2 = drive.trajectoryBuilder(t1.end())
-                        .strafeLeft(vx+d2)
-                        .addDisplacementMarker(Math.abs(vx),() ->{
-                            track = true;
-                        })
-                        .build();
-            }
-
-
-            target = hdata[x + 5*(y-1)+2];
-            S1.setPosition(0);
-            S1.setPosition(.5);
-
-            //movement 1 with distance interrupt
-            drive.followTrajectoryAsync(t1);
+            drive.followTrajectorySequenceAsync(t1);
             drive.update();
-            while (Math.abs(gamepad1.left_stick_x) < .5
-                    && Math.abs(gamepad1.left_stick_y) < .5
-                    && Math.abs(gamepad1.right_stick_x) < .5
-                    && Math.abs(gamepad1.right_stick_y) < .5
-                    && drive.isBusy()
-            ) {
-                if(D4.getDistance(DistanceUnit.INCH) <= 10 && D4.getDistance(DistanceUnit.INCH) >=1 && track && vo == 90){
-                    d = D4.getDistance(DistanceUnit.INCH);
-                    break;
-                }
-                if(D2.getDistance(DistanceUnit.INCH) <= 10 && D2.getDistance(DistanceUnit.INCH) >=1 && track && vo == -90){
-                    d = D2.getDistance(DistanceUnit.INCH);
-                    break;
-                }
-                if(D3.getDistance(DistanceUnit.INCH) <= 10 && D3.getDistance(DistanceUnit.INCH) >=1 && track && vo == 180){
-                    d = D3.getDistance(DistanceUnit.INCH);
-                    break;
-                }
+            while (drive.isBusy() && !isStarted()) {
                 drive.update();
                 Slide();
-                while (gamepad1.right_stick_button){
-                    M0.setPower(0);
-                    M3.setPower(0);
-                    M1.setPower(0);
-                    M2.setPower(0);
-                    Slide();
-                }
             }
 
-            //movement 2 build
-            drive.setPoseEstimate(new Pose2d());
-            if(d >= 10 || d <= 1){
-                d = 5;
-            }
-            if(vx == 0){
-                t4 = drive.trajectoryBuilder(new Pose2d(dyoffset,(dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
-                        .lineToLinearHeading(new Pose2d(dyoffset,(d+dxoffset)*Math.sin(Math.toRadians(vo)),Math.toRadians(vo)))
-                        .addDisplacementMarker(() -> {
-                            S1.setPosition(0.5);
-                            S2.setPosition(0.0);
-                            target = target - Sset;
-                            drop = true;
-                            atwall = false;
-                            S0.setPosition(0);
-                        })
-                        .build();
-            }
-            else{
-                t4 = drive.trajectoryBuilder(new Pose2d(-dy2,dx2,Math.toRadians(vo)))
-                        .lineToLinearHeading(new Pose2d(-(d +dy2),dx2,Math.toRadians(vo)))
-                        .addDisplacementMarker(() -> {
-                            target = target - Sset;
-                            drop = true;
-                            atwall = false;
-                            S0.setPosition(0);
-                        })
-                        .build();
-            }
-
-            //movement 2 onto pole
-            drive.followTrajectoryAsync(t4);
-            drive.update();
-            while (Math.abs(gamepad1.left_stick_x) < .5
-                    && Math.abs(gamepad1.left_stick_y) < .5
-                    && Math.abs(gamepad1.right_stick_x) < .5
-                    && Math.abs(gamepad1.right_stick_y) < .5
-                    && drive.isBusy()
-            ) {
-                drive.update();
-                Slide();
-                while (gamepad1.right_stick_button){
-                    M0.setPower(0);
-                    M3.setPower(0);
-                    M1.setPower(0);
-                    M2.setPower(0);
-                    Slide();
-                }
-            }
-
-            //above as maker
-
-            /*
-            target = target - Sset;
-            drop = true;
             atwall = false;
-            S0.setPosition(0);
-            */
 
-            //movement returning to wall
-
-            //neeeeeeds to be fixed but build back
-            if(vx == 0) {
-                pole = new Pose2d(-vy - 12,vx + Math.sin(Math.toRadians(vo))*d3 ,Math.toRadians(vo));
-                drive.setPoseEstimate(pole);
-                f15 = drive.trajectorySequenceBuilder(pole)
-                        .back(d3)
-                        .addDisplacementMarker(() -> {
-                            if(parktrue != 0){
-                                target = 0;
-                            }
-                            //slidecalibrated = false;
-                            target = slidei;
-                        })
-                        .turn(Math.toRadians(-vo))
-                        .forward(vy + d4 + 12 + parktrue)
-                        .build();
-            }
-            else{
-                pole = new Pose2d(-vy - 8,vx + ((12)*(x-xi)/Math.abs(x-xi)),Math.toRadians(vo));
-                drive.setPoseEstimate(pole);
-                f15 = drive.trajectorySequenceBuilder(pole)
-                        .back(d3)
-                        .addDisplacementMarker(() -> {
-                            slidecalibrated = false;
-                            target = slidei;
-                        })
-                        .turn(Math.toRadians(-vo))
-                        .strafeRight(vx + 12)
-                        .forward(vy + d4)
-                        .build();
-
-            }
-
-
-            //return movement
-            drive.followTrajectorySequenceAsync(f15);
-
+            drive.setPoseEstimate(new Pose2d());
+            f1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,0))
+                    .back(d)
+                    .turn(Math.toRadians(-vo))
+                    .addDisplacementMarker(() -> {
+                        target = slidei;
+                        S1.setPosition(0);
+                        //up
+                        S2.setPosition(0.75);
+                    })
+                    .lineToLinearHeading(new Pose2d(-vy*Math.cos(Math.toRadians(vo))-d + Math.abs(vx)*Math.cos(Math.toRadians(vo)), vy*Math.sin(Math.toRadians(vo))-vx*Math.cos(Math.toRadians(vo)), Math.toRadians(-vo)))
+                    .build();
+            drive.followTrajectorySequenceAsync(f1);
             drive.update();
-            while (Math.abs(gamepad1.left_stick_x) < .5
-                    && Math.abs(gamepad1.left_stick_y) < .5
-                    && Math.abs(gamepad1.right_stick_x) < .5
-                    && Math.abs(gamepad1.right_stick_y) < .5
-                    && drive.isBusy()
-            )
-            {
+            while (drive.isBusy() && !isStarted()) {
                 drive.update();
                 Slide();
-                while (gamepad1.right_stick_button){
-                    M0.setPower(0);
-                    M3.setPower(0);
-                    M1.setPower(0);
-                    M2.setPower(0);
-                    Slide();
-                }
             }
             atwall = true;
 

@@ -41,7 +41,7 @@ public class DriveV7 extends LinearOpMode {
     public static double d4 = 3; //y offset when coming back
     public static double Sset = 200; //test drop distance
     public static double dxoffset = 2.5;
-    public static double dyoffset = -.5;
+    public static double dyoffset = .5;
     public static double yoffset = 6;
     public static int slamtime = 10;
 

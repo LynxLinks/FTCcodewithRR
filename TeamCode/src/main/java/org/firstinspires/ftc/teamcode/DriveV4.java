@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 //name and class
-@Disabled
+
 @Config
 @TeleOp(name = "DriveV4", group="Linear Opmode")
 
@@ -28,6 +28,8 @@ public class DriveV4 extends LinearOpMode {
     DcMotor M3;
     DcMotor M0_2;
     Servo S0;
+    Servo S1;
+    Servo S2;
     DigitalChannel D0;
     DistanceSensor D1;
     DistanceSensor D2;
@@ -46,11 +48,18 @@ public class DriveV4 extends LinearOpMode {
     double vx = 1;  //vector roadrunner y value
     double vo = 1;  //target roadrunner theta
     double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
-    int[] hdata = new int[]{200, 1100, 200, 1100, 200,
+    /*int[] hdata = new int[]{200, 1100, 200, 1100, 200,
             1100, 1750, 2350, 1750, 1100,
             200, 2350, 200, 2350, 200,
             1100, 1750, 2350, 1750, 1100,
             200, 1100, 200, 1100, 200};
+
+     */
+    int[] hdata = new int[]{400, 1300, 400, 1300, 400,
+            1300, 1950, 2550, 1950, 1300,
+            400, 1300, 400, 1300, 400,
+            1300, 1950, 2550, 1950, 1300,
+            400, 1300, 400, 1300, 400};
     boolean atwall = true; //used to know whether to run to or from
     boolean dup = false;
     boolean ddown = false;
@@ -80,6 +89,8 @@ public class DriveV4 extends LinearOpMode {
         M3 = hardwareMap.get(DcMotor.class, "M3");
         M0_2 = hardwareMap.get(DcMotor.class, "M0_2");
         S0 = hardwareMap.get(Servo.class, "S0");
+        S1 = hardwareMap.get(Servo.class, "S1");
+        S2 = hardwareMap.get(Servo.class, "S2");
         D0 = hardwareMap.get(DigitalChannel.class, "D0");
         D1 = hardwareMap.get(DistanceSensor.class, "D1");
         D2 = hardwareMap.get(DistanceSensor.class, "D2");
@@ -149,19 +160,31 @@ public class DriveV4 extends LinearOpMode {
             target = 200;
             S0.setPosition(0.05);
         }
-        if (gamepad1.b) target = 2350;
-        if (gamepad1.y) target = 1750;
-        if (gamepad1.x) target = 1100;
+        if (gamepad1.b) target = 2550;
+        if (gamepad1.y) target = 1950;
+        if (gamepad1.x) target = 1300;
+        if (gamepad2.a){
+            S1.setPosition(0.75);
+            S2.setPosition(0);
+        }if (gamepad2.b){
+            //down
+            S1.setPosition(0);
+            //up
+            S2.setPosition(0.75);
+        }
         if (D0.getState() && (target == 0)) {
             M0_2.setDirection(DcMotor.Direction.FORWARD);
             M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        if (gamepad1.dpad_down) dslide = true;
         if ((!gamepad1.dpad_down) && dslide) {
             dslide = false;
             target = target - Sset;
+        }
+        if ((!gamepad1.dpad_down) && !dslide) {
+            dslide = true;
+            target = target + Sset;
         }
     }
 
@@ -216,6 +239,7 @@ public class DriveV4 extends LinearOpMode {
 
                 S0.setPosition(.3);
                 target = hdata[x + 5*(y-1)+2];
+
                 drive.followTrajectoryAsync(t1);
                 drive.update();
                 while (Math.abs(gamepad1.left_stick_x) < .5
@@ -237,6 +261,7 @@ public class DriveV4 extends LinearOpMode {
                 atwall = false;
             }
             else {
+                
                 f1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
                         .back(d)
                         .addDisplacementMarker(() -> drive.followTrajectoryAsync(f2))
