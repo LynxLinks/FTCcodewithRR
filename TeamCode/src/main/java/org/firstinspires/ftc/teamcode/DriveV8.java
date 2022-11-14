@@ -42,10 +42,11 @@ public class DriveV8 extends LinearOpMode {
 
     int y = 2;
     int x = 0;
-    int w = 4;
+    int w = 1;
+    int preset = 0;
     double vy; // sync with auto
     double vx; // sync with auto
-    boolean atwall = false;
+    boolean atwall = true;
     double target;
     double vo;
     double ix;
@@ -54,28 +55,40 @@ public class DriveV8 extends LinearOpMode {
     double x1;
     double x2;
     double x3;
+    double x4;
     double y1;
     double y2;
     double y3;
+    double y4;
     double o1;
     double o2;
+    double o3;
+    double o4;
     boolean yfirst;
     boolean dup;
     boolean ddown;
     boolean dright;
     boolean dleft;
     boolean dbright;
+    boolean dleft2;
+    boolean dright2;
     boolean dbleft;
     boolean dslide;
     boolean slidecalibrated;
     boolean beenoff;
+    boolean b;
+    boolean red = true;
     TrajectorySequence traj;
     Pose2d currentpose;
-    int[] hdata = new int[]{400, 1300, 400, 1300, 400,
+    int[] hdata = {400, 1300, 400, 1300, 400,
             1300, 1950, 2550, 1950, 1300,
-            400, 1300, 400, 1300, 400,
+            400, 2550, 400, 2550, 400,
             1300, 1950, 2550, 1950, 1300,
             400, 1300, 400, 1300, 400};
+
+
+    int[] xcord;
+    int[] ycord;
 
 
     public void runOpMode() {
@@ -110,7 +123,18 @@ public class DriveV8 extends LinearOpMode {
 
         S0.setPosition(0.0);
         S1.setPosition(0);
-        S2.setPosition(0.75);
+        S2.setPosition(0.70);
+
+        if (red){
+            //w = 4;
+             xcord = new int[]{3,2,1};
+            ycord = new int[]{6,4,3};
+        }
+        else{
+            //w = 1;
+            xcord = new int[]{-3,-2,-1};
+            ycord = new int[]{6,4,3};
+        }
 
         if(w == 1){
             ix = -65;
@@ -138,6 +162,7 @@ public class DriveV8 extends LinearOpMode {
             ServoClamp();
             Slide();
             UI();
+            maunal();
         }
     }
 
@@ -150,7 +175,7 @@ public class DriveV8 extends LinearOpMode {
             }
             M0_2.setPower(0);
             S0.setPosition(0.25);
-            target = prevtarget;
+           // target = prevtarget;
         }
     }
 
@@ -175,6 +200,7 @@ public class DriveV8 extends LinearOpMode {
 
                 slidecalibrated = true;
                 beenoff = false;
+                M0_2.setPower(0);
             }
         }
     }
@@ -239,10 +265,14 @@ public class DriveV8 extends LinearOpMode {
             }
             x2 = vx;
             y2 = vy;
-            x3 = vx + d * Math.cos(vo);
-            y3 = vy + d * Math.sin(vo) ;
-            o1 = vo;
-            o2 = vo;
+            x3 = vx;
+            y3 = vy;
+            x4 = vx + d * Math.cos(vo);
+            y4 = vy + d * Math.sin(vo) ;
+            o1 = io;
+            o2 = io;
+            o3 = vo;
+            o4 = vo;
             currentpose = new Pose2d(ix,iy,io);
             atwall = false;
             target = hdata[x + 5*(y-1)+2];
@@ -277,53 +307,52 @@ public class DriveV8 extends LinearOpMode {
 
 
             if(yfirst){
-                x2 = vx;
-                y2 = iy;
+                x3 = vx;
+                y3 = iy;
 
             }
             else{
-                x2 = ix;
-                y2 = vy;
+                x3 = ix;
+                y3 = vy;
             }
 
             x1 = vx;
             y1 = vy;
-            x3 = ix;
-            y3 = iy;
+            x2 = vx;
+            y2 = vy;
+            x4 = ix;
+            y4 = iy;
             o1 = vo;
             o2 = io;
+            o3 = io;
+            o4 = io;
 
             currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
             atwall = true;
             S0.setPosition(0); //drop and up on umbrella
             S1.setPosition(0);
-            S2.setPosition(0.75);
+            S2.setPosition(0.7);
 
         }
 
         drive.setPoseEstimate(currentpose);
 
         traj = drive.trajectorySequenceBuilder(currentpose)
-                .lineToLinearHeading(new Pose2d(x1,y1,o1))
-                .addDisplacementMarker(Math.abs(vx),() ->{
+                .lineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1))
+                .addDisplacementMarker(() ->{
                     if (atwall){
                         slidecalibrated = false;
                     }
-                })
-                .lineToLinearHeading(new Pose2d(x2,y2,o1))
-                .addDisplacementMarker(Math.abs(vx),() ->{
                     if (!atwall){
-                        S1.setPosition(0.75);
+                        S1.setPosition(0.70);
                         S2.setPosition(0);
                     }
                 })
-                .lineToLinearHeading(new Pose2d(x3,y3,o1))
-                .addDisplacementMarker(Math.abs(vx),() ->{
-                    if (!atwall){
-                        target = target-Sdrop;
-                    }
-                })
+                .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2))
+                .lineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3))
+                .lineToLinearHeading(new Pose2d(x4,y4,o4))
                 .build();
+
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
         while (Math.abs(gamepad1.left_stick_x) < .5
@@ -339,11 +368,15 @@ public class DriveV8 extends LinearOpMode {
         {
             drive.update();
             Slide();
-            //UI();
+            UI();
+        }
+        if (!atwall){
+            target = target - Sdrop;
+            S0.setPosition(0.05);
         }
 
     }
-    public void UI() {
+    public void maunal(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //manual drive
         double yAxis;
@@ -358,6 +391,8 @@ public class DriveV8 extends LinearOpMode {
             M1.setPower(-(Rotate + (yAxis + xAxis)));
             M2.setPower(-(Rotate + (yAxis - xAxis)));
         }
+    }
+    public void UI() {
         //Manual Servo
         if (gamepad1.left_bumper) {
             S0.setPosition(0.05);
@@ -378,26 +413,17 @@ public class DriveV8 extends LinearOpMode {
         if (gamepad1.x) target = 1300;
 
         //Mauanl Umbrella
-        if (gamepad2.a){
-            S1.setPosition(0.75);
+        if (gamepad2.y){
+            S1.setPosition(0.70);
             S2.setPosition(0);
-        }if (gamepad2.b){
+        }if (gamepad2.x){
             //down
             //up
             S1.setPosition(0);
 
-            S2.setPosition(0.75);
+            S2.setPosition(0.70);
         }
 
-        //Manual drop
-        if ((!gamepad1.dpad_down) && dslide) {
-            dslide = false;
-            target = target - Sdrop;
-        }
-        if ((!gamepad1.dpad_down) && !dslide) {
-            dslide = true;
-            target = target + Sdrop;
-        }
 
         //Cordianates
         if (gamepad2.dpad_up) dup = true;
@@ -406,6 +432,10 @@ public class DriveV8 extends LinearOpMode {
         if (gamepad2.dpad_right) dright = true;
         if (gamepad2.right_bumper) dbright = true;
         if (gamepad2.left_bumper) dbleft = true;
+        if (gamepad1.dpad_right) dright2 = true;
+        if (gamepad1.dpad_left) dleft2 = true;
+
+        if (gamepad2.b) b = true;
         if (!gamepad2.right_bumper && w < 4 && dbright) {
             dbright = false;
             w += 1;
@@ -429,17 +459,27 @@ public class DriveV8 extends LinearOpMode {
         if ((!gamepad2.dpad_left) && dleft) {
             dleft = false;
             x -= 1;
+
+        }
+        if((!gamepad2.b) && b){
+
+            x = xcord[preset];
+            y = ycord[preset];
+            preset += 1;
+            b = false;
         }
         if(gamepad2.a){
             x = 0;
             y = 2;
         }
-        if(gamepad1.dpad_left){
+        if((!gamepad1.dpad_left) && dleft2){
             yfirst = false;
+            dleft2 = false;
             Drive();
         }
-        if(gamepad1.dpad_right){
+        if((!gamepad1.dpad_right) && dright2){
             yfirst = true;
+            dright2 = false;
             Drive();
         }
 
@@ -451,6 +491,8 @@ public class DriveV8 extends LinearOpMode {
         telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+        telemetry.addData("target",target);
+
         telemetry.update();
 
     }
