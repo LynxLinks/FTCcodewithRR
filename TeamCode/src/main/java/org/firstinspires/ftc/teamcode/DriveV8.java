@@ -176,11 +176,11 @@ public class DriveV8 extends LinearOpMode {
             if(w == 1){
                 vx = 24 * x - 12;
                 if (y >= 3){
-                    vo = Math.toRadians(45);
+                    vo = Math.toRadians(135);
                     vy = 24 * (y - 3) -12;
                 }
                 else{
-                    vo = Math.toRadians(135);
+                    vo = Math.toRadians(-135);
                     vy = 24 * (y - 2) -12;
                 }
             }
@@ -202,18 +202,18 @@ public class DriveV8 extends LinearOpMode {
                     vx = 24 * (x - 1) + 12;
                 }
                 else{
-                    vo = Math.toRadians(-45);
+                    vo = Math.toRadians(135);
                     vx = 24 * x  + 12;
                 }
             }
             if(w == 4){
                 vx = 24 * x + 12;
                 if (y >= 3){
-                    vo = Math.toRadians(135);
+                    vo = Math.toRadians(45);
                     vy = 24 * (y - 3) - 12;
                 }
                 else{
-                    vo = Math.toRadians(-135);
+                    vo = Math.toRadians(-45);
                     vy = 24 * (y - 2) -12;
                 }
             }
