@@ -40,16 +40,14 @@ public class DriveV8 extends LinearOpMode {
     public static double d = 11.5;
     public static double Sdrop = 200;
 
-    int y = 2;   //y coordinate final
-    int x = 0;   //x coordinate final
+    int y = 2;
+    int x = 0;
     int w = 4;
-
-    double target; //slide target position
-
-    double vy;  //vector roadrunner x value
-    double vx;  //vector roadrunner y value
-    double vo;  //target roadrunner theta
-    double ix;  //initial robot position against wall in coordinate system, either .5 or -.5
+    double target;
+    double vy;
+    double vx;
+    double vo;
+    double ix;
     double iy;
     double io;
     double x1;
@@ -59,35 +57,30 @@ public class DriveV8 extends LinearOpMode {
     double y2;
     double y3;
     double o1;
-
+    boolean atwall; //used to know whether to run to or from
+    boolean yfirst;
+    boolean dup;
+    boolean ddown;
+    boolean dright;
+    boolean dleft;
+    boolean dbright;
+    boolean dbleft;
+    boolean dslide;
+    boolean slidecalibrated;
+    boolean beenoff;
+    TrajectorySequence traj;
+    Pose2d currentpose;
     int[] hdata = new int[]{400, 1300, 400, 1300, 400,
             1300, 1950, 2550, 1950, 1300,
             400, 1300, 400, 1300, 400,
             1300, 1950, 2550, 1950, 1300,
             400, 1300, 400, 1300, 400};
 
-    boolean atwall = true; //used to know whether to run to or from
-
-    boolean dup = false;
-    boolean ddown = false;
-    boolean dright = false;
-    boolean dleft = false;
-    boolean dbright = false;
-    boolean dbleft = false;
-    boolean yfirst = true;
-
-    boolean dslide = false;
-    boolean slidecalibrated = false;
-    boolean beenoff = false;
-
-    TrajectorySequence traj;
-    Pose2d currentpose;
 
     public void runOpMode() {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         dashboard = FtcDashboard.getInstance();
-        //Add Motors
         M0 = hardwareMap.get(DcMotor.class, "M0");
         M1 = hardwareMap.get(DcMotor.class, "M1");
         M2 = hardwareMap.get(DcMotor.class, "M2");
@@ -101,10 +94,6 @@ public class DriveV8 extends LinearOpMode {
         D2 = hardwareMap.get(DistanceSensor.class, "D2");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
         D3 = hardwareMap.get(DistanceSensor.class, "D3");
-
-
-        //Set Motors
-
         M0.setDirection(DcMotor.Direction.FORWARD);
         M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M1.setDirection(DcMotor.Direction.FORWARD);
@@ -113,15 +102,33 @@ public class DriveV8 extends LinearOpMode {
         M2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M3.setDirection(DcMotor.Direction.FORWARD);
         M3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         M0_2.setDirection(DcMotor.Direction.FORWARD);
         M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
         S0.setPosition(0.0);
 
+        if(w == 1){
+            ix = -65;
+            iy = -12;
+            io = Math.toRadians(180);
+        }
+        if(w == 2){
+            ix = -12;
+            iy = -65;
+            io = Math.toRadians(-90);
+        }
+        if(w == 3){
+            ix = 12;
+            iy = -65;
+            io = Math.toRadians(-90);
+        }
+        if(w == 4){
+            ix = 65;
+            iy = -12;
+            io = 0;
+        }
         waitForStart();
 
         while (opModeIsActive()) {
@@ -130,7 +137,6 @@ public class DriveV8 extends LinearOpMode {
             UI();
         }
     }
-
 
     public void ServoClamp() {
         if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
@@ -166,8 +172,6 @@ public class DriveV8 extends LinearOpMode {
             }
         }
     }
-
-
 
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -310,11 +314,12 @@ public class DriveV8 extends LinearOpMode {
         yAxis = gamepad1.left_stick_y * .8 + gamepad1.right_stick_y / 3;
         xAxis = gamepad1.left_stick_x * .8 + gamepad1.right_stick_x / 3;
         Rotate = -gamepad1.left_trigger / 2 + gamepad1.right_trigger / 2;
-        M0.setPower((Rotate + (-yAxis + xAxis)));
-        M3.setPower((Rotate + (-yAxis - xAxis)));
-        M1.setPower(-(Rotate + (yAxis + xAxis)));
-        M2.setPower(-(Rotate + (yAxis - xAxis)));
-
+        if (!drive.isBusy()) {
+            M0.setPower((Rotate + (-yAxis + xAxis)));
+            M3.setPower((Rotate + (-yAxis - xAxis)));
+            M1.setPower(-(Rotate + (yAxis + xAxis)));
+            M2.setPower(-(Rotate + (yAxis - xAxis)));
+        }
         //Manual Servo
         if (gamepad1.left_bumper) {
             S0.setPosition(0.05);

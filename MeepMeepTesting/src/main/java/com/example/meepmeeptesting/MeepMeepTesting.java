@@ -12,59 +12,183 @@ import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 public class MeepMeepTesting {
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(1000);
-        double xoffset =         6;
-        double yoffset = 5;  //constant added to all y positions
-        double d = 12;
-        double y1 =    53;
-        double d4 =    29.3;
-        int y = 5;   //y coordinate input
-        int x = -2;   //x coordinate input
-        double target; //slide target position
-        double vy = 1;  //vector roadrunner x value
-        double vx = 1;  //vector roadrunner y value
-        double vo = 1;  //target roadrunner theta
-        double xi = -.5;  //initial robot position against wall in coordinate system, either .5 or -.5
+       double d = 11.5;
+        double Sdrop = 200;
 
-        double xstart = 36;
-        double ystart = -65.3;
-        double ostart = 270;
-        vy = -(yoffset + 24 * (y - 1));
-        if (x > 0) {
-            vx = .1 - 24 * Math.floor(Math.abs(x - xi));
-        } else {
-            vx = .1 + 24 * Math.floor(Math.abs(x - xi));
+        int y = 2;
+        int x = 0;
+        int w = 4;
+        double target;
+        double vy = 0;
+        double vx = 0;
+        double vo = 0;
+        double ix = 0;
+        double iy = 0;
+        double io = 0;
+        double x1;
+        double x2;
+        double x3;
+        double y1;
+        double y2;
+        double y3;
+        double o1;
+        boolean atwall = true; //used to know whether to run to or from
+        boolean yfirst = false;
+        boolean dup;
+        boolean ddown;
+        boolean dright;
+        boolean dleft;
+        boolean dbright;
+        boolean dbleft;
+        boolean dslide;
+        boolean slidecalibrated;
+        boolean beenoff;
+        Pose2d currentpose;
+        if(w == 1){
+            ix = -65;
+            iy = -12;
+            io = Math.toRadians(180);
         }
-        if (x > xi) {
-            vo = 135;
-        } else {
-            vo = -135;
+        if(w == 2){
+            ix = -12;
+            iy = -65;
+            io = Math.toRadians(-90);
+        }
+        if(w == 3){
+            ix = 12;
+            iy = -65;
+            io = Math.toRadians(-90);
+        }
+        if(w == 4){
+            ix = 65;
+            iy = -12;
+            io = 0;
+        }
+        int[] hdata = new int[]{400, 1300, 400, 1300, 400,
+                1300, 1950, 2550, 1950, 1300,
+                400, 1300, 400, 1300, 400,
+                1300, 1950, 2550, 1950, 1300,
+                400, 1300, 400, 1300, 400};
+        if (atwall) {
+            if(w == 1){
+                vx = 24 * x - 12;
+                if (y >= 3){
+                    vo = Math.toRadians(135);
+                    vy = 24 * (y - 3) -12;
+                }
+                else{
+                    vo = Math.toRadians(-135);
+                    vy = 24 * (y - 2) -12;
+                }
+            }
+            if(w == 2){
+                vy = 24 * (y -3) - 12;
+                if (x >= 0){
+                    vo = Math.toRadians(45);
+                    vx = 24 * x -12;
+                }
+                else{
+                    vo = Math.toRadians(135);
+                    vx = 24 * (x + 1) -12;
+                }
+            }
+            if(w == 3){
+                vy = 24 * (y -3) - 12;
+                if (x >= 1){
+                    vo = Math.toRadians(45);
+                    vx = 24 * (x - 1) + 12;
+                }
+                else{
+                    vo = Math.toRadians(135);
+                    vx = 24 * x  + 12;
+                }
+            }
+            if(w == 4){
+                vx = 24 * x + 12;
+                if (y >= 3){
+                    vo = Math.toRadians(45);
+                    vy = 24 * (y - 3) - 12;
+                }
+                else{
+                    vo = Math.toRadians(-45);
+                    vy = 24 * (y - 2) -12;
+                }
+            }
+            if(yfirst){
+                x1 = ix;
+                y1 = vy;
+                x2 = vx;
+                y2 = vy;
+                x3 = vx + d * Math.cos(vo);
+                y3 = iy + d * Math.sin(vo) ;
+                o1 = vo;
+            }
+            else{
+                x1 = vx;
+                y1 = iy;
+                x2 = vx;
+                y2 = vy;
+                x3 = vx + d * Math.cos(vo);
+                y3 = iy + d * Math.sin(vo) ;
+                o1 = vo;
+            }
+            currentpose = new Pose2d(ix,iy,io);
+        }
+        else {
+            if(w == 1){
+                ix = -65;
+                iy = -12;
+                io = Math.toRadians(180);
+            }
+            if(w == 2){
+                ix = -12;
+                iy = -65;
+                io = Math.toRadians(-90);
+            }
+            if(w == 3){
+                ix = 12;
+                iy = -65;
+                io = Math.toRadians(-90);
+            }
+            if(w == 4){
+                ix = 65;
+                iy = -12;
+                io = 0;
+            }
+            if(yfirst){
+                x2 = vx;
+                y2 = iy;
+
+            }
+            else{
+                x2 = ix;
+                y2 = vy;
+            }
+
+            x1 = vx;
+            y1 = vy;
+            x3 = ix;
+            y3 = iy;
+            o1 = io;
+
+            currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
         }
 
-        // Declare our first bot
-        double xwallstart = xstart + (d4);
-        double ywallstart = ystart + y1;
-        double owallstart = 0;
-        double finalVy = ywallstart - vx;
-        double finalVo = owallstart + vo;
-        double finalVx = xwallstart + vy;
+
+
+
 
         RoadRunnerBotEntity myFirstBot = new DefaultBotBuilder(meepMeep)
                 // We set this bot to be blue
                 .setColorScheme(new ColorSchemeBlueDark())
                 .setConstraints(30, 20, Math.toRadians(100), Math.toRadians(100), 6.7)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(xstart, - ystart, Math.toRadians(ostart)))
-                                .strafeLeft(d4 - xoffset)
-                                .lineToLinearHeading(new Pose2d(xstart+(d4-xoffset), -ystart+y1, Math.toRadians(0)))
-                                .forward(xoffset)
+                        drive.trajectorySequenceBuilder(currentpose)
+                                .lineToLinearHeading(new Pose2d(x1,y1,o1))
+                                .lineToLinearHeading(new Pose2d(x2,y2,o1))
+                                .lineToLinearHeading(new Pose2d(x3,y3,o1))
+                                .build());
 
-                                .lineToLinearHeading(new Pose2d(finalVx-ywallstart , Math.toRadians(0)))
-                                .lineToLinearHeading(new Pose2d(finalVx, -finalVy, Math.toRadians(finalVo)))
-                                .lineToLinearHeading(new Pose2d(finalVx + (d * Math.sin(Math.toRadians(finalVo))), -(finalVy + (d * Math.cos(Math.toRadians(finalVo)))), Math.toRadians(finalVo)))
-                                .lineToLinearHeading(new Pose2d(finalVx,- finalVy, Math.toRadians(finalVo)))
-                                .lineToLinearHeading(new Pose2d(finalVx,- ywallstart, Math.toRadians(owallstart)))
-                                .lineToLinearHeading(new Pose2d(xwallstart, -ywallstart, Math.toRadians(owallstart)))
-                                .build()
 
 
                         /*.forward(30)
@@ -77,7 +201,7 @@ public class MeepMeepTesting {
                                 .turn(Math.toRadians(90))
                                 .build()*/
 
-                );
+
 
         // Declare out second bot
 
