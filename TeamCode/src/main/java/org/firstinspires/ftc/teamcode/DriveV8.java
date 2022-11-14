@@ -38,14 +38,15 @@ public class DriveV8 extends LinearOpMode {
     DistanceSensor D4;
 
     public static double d = 11.5;
-    public static double Sdrop = 200;
+    public static double Sdrop = 350;
 
     int y = 2;
     int x = 0;
     int w = 4;
+    double vy; // sync with auto
+    double vx; // sync with auto
+    boolean atwall = false;
     double target;
-    double vy;
-    double vx;
     double vo;
     double ix;
     double iy;
@@ -58,7 +59,6 @@ public class DriveV8 extends LinearOpMode {
     double y3;
     double o1;
     double o2;
-    boolean atwall; //used to know whether to run to or from
     boolean yfirst;
     boolean dup;
     boolean ddown;
@@ -142,7 +142,7 @@ public class DriveV8 extends LinearOpMode {
     }
 
     public void ServoClamp() {
-        if ((target < 600) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
+        if ((target <= 600) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
             double prevtarget = target;
             target = 0;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
