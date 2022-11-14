@@ -57,6 +57,7 @@ public class DriveV8 extends LinearOpMode {
     double y2;
     double y3;
     double o1;
+    double o2;
     boolean atwall; //used to know whether to run to or from
     boolean yfirst;
     boolean dup;
@@ -108,6 +109,8 @@ public class DriveV8 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         S0.setPosition(0.0);
+        S1.setPosition(0);
+        S2.setPosition(0.75);
 
         if(w == 1){
             ix = -65;
@@ -139,13 +142,15 @@ public class DriveV8 extends LinearOpMode {
     }
 
     public void ServoClamp() {
-        if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
+        if ((target < 600) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
+            double prevtarget = target;
             target = 0;
             while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
                 M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
             }
             M0_2.setPower(0);
             S0.setPosition(0.25);
+            target = prevtarget;
         }
     }
 
@@ -169,6 +174,7 @@ public class DriveV8 extends LinearOpMode {
                 M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
                 slidecalibrated = true;
+                beenoff = false;
             }
         }
     }
@@ -179,12 +185,13 @@ public class DriveV8 extends LinearOpMode {
         if (atwall) {
             if(w == 1){
                 vx = 24 * x - 12;
+
                 if (y >= 3){
-                    vo = Math.toRadians(135);
+                    vo = Math.toRadians(45);
                     vy = 24 * (y - 3) -12;
                 }
                 else{
-                    vo = Math.toRadians(-135);
+                    vo = Math.toRadians(-45);
                     vy = 24 * (y - 2) -12;
                 }
             }
@@ -212,56 +219,63 @@ public class DriveV8 extends LinearOpMode {
             }
             if(w == 4){
                 vx = 24 * x + 12;
+
                 if (y >= 3){
-                    vo = Math.toRadians(45);
+                    vo = Math.toRadians(135);
                     vy = 24 * (y - 3) - 12;
                 }
                 else{
-                    vo = Math.toRadians(-45);
+                    vo = Math.toRadians(-135);
                     vy = 24 * (y - 2) -12;
                 }
             }
             if(yfirst){
                 x1 = ix;
                 y1 = vy;
-                x2 = vx;
-                y2 = vy;
-                x3 = vx + d * Math.cos(vo);
-                y3 = iy + d * Math.sin(vo) ;
-                o1 = vo;
             }
             else{
                 x1 = vx;
                 y1 = iy;
-                x2 = vx;
-                y2 = vy;
-                x3 = vx + d * Math.cos(vo);
-                y3 = iy + d * Math.sin(vo) ;
-                o1 = vo;
             }
+            x2 = vx;
+            y2 = vy;
+            x3 = vx + d * Math.cos(vo);
+            y3 = vy + d * Math.sin(vo) ;
+            o1 = vo;
+            o2 = vo;
             currentpose = new Pose2d(ix,iy,io);
+            atwall = false;
+            target = hdata[x + 5*(y-1)+2];
         }
         else {
             if(w == 1){
                 ix = -65;
                 iy = -12;
                 io = Math.toRadians(180);
+                target = 600;
+
             }
             if(w == 2){
                 ix = -12;
                 iy = -65;
                 io = Math.toRadians(-90);
+                target = 300;
             }
             if(w == 3){
                 ix = 12;
                 iy = -65;
                 io = Math.toRadians(-90);
+                target = 300;
             }
             if(w == 4){
                 ix = 65;
                 iy = -12;
                 io = 0;
+                target = 600;
+
             }
+
+
             if(yfirst){
                 x2 = vx;
                 y2 = iy;
@@ -276,17 +290,39 @@ public class DriveV8 extends LinearOpMode {
             y1 = vy;
             x3 = ix;
             y3 = iy;
-            o1 = io;
+            o1 = vo;
+            o2 = io;
 
             currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
+            atwall = true;
+            S0.setPosition(0); //drop and up on umbrella
+            S1.setPosition(0);
+            S2.setPosition(0.75);
+
         }
 
         drive.setPoseEstimate(currentpose);
 
         traj = drive.trajectorySequenceBuilder(currentpose)
                 .lineToLinearHeading(new Pose2d(x1,y1,o1))
+                .addDisplacementMarker(Math.abs(vx),() ->{
+                    if (atwall){
+                        slidecalibrated = false;
+                    }
+                })
                 .lineToLinearHeading(new Pose2d(x2,y2,o1))
+                .addDisplacementMarker(Math.abs(vx),() ->{
+                    if (!atwall){
+                        S1.setPosition(0.75);
+                        S2.setPosition(0);
+                    }
+                })
                 .lineToLinearHeading(new Pose2d(x3,y3,o1))
+                .addDisplacementMarker(Math.abs(vx),() ->{
+                    if (!atwall){
+                        target = target-Sdrop;
+                    }
+                })
                 .build();
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
@@ -299,15 +335,17 @@ public class DriveV8 extends LinearOpMode {
                 && Math.abs(gamepad1.right_trigger) < .5
                 && Math.abs(gamepad1.left_trigger) < .5
         )
+
         {
             drive.update();
             Slide();
             //UI();
         }
+
     }
     public void UI() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        //mauanl drive
+        //manual drive
         double yAxis;
         double xAxis;
         double Rotate;
@@ -345,8 +383,9 @@ public class DriveV8 extends LinearOpMode {
             S2.setPosition(0);
         }if (gamepad2.b){
             //down
-            S1.setPosition(0);
             //up
+            S1.setPosition(0);
+
             S2.setPosition(0.75);
         }
 
