@@ -276,6 +276,9 @@ public class DriveV8 extends LinearOpMode {
 
             currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
         }
+
+        drive.setPoseEstimate(currentpose);
+
         traj = drive.trajectorySequenceBuilder(currentpose)
                 .lineToLinearHeading(new Pose2d(x1,y1,o1))
                 .lineToLinearHeading(new Pose2d(x2,y2,o1))
