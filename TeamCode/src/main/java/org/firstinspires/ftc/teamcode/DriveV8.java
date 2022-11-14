@@ -84,6 +84,7 @@ public class DriveV8 extends LinearOpMode {
     Pose2d currentpose;
 
     public void runOpMode() {
+
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         dashboard = FtcDashboard.getInstance();
         //Add Motors
@@ -170,7 +171,6 @@ public class DriveV8 extends LinearOpMode {
 
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
 
         if (atwall) {
             if(w == 1){
@@ -295,10 +295,11 @@ public class DriveV8 extends LinearOpMode {
         {
             drive.update();
             Slide();
-            UI();
+            //UI();
         }
     }
     public void UI() {
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //mauanl drive
         double yAxis;
         double xAxis;
