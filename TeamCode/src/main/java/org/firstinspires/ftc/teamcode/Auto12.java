@@ -93,8 +93,8 @@ public class Auto12 extends LinearOpMode {
     double o5;
     double y5;
     double park;
-    int[] xcord = new int[]{3, 2, 1};
-    int[] ycord = new int[]{3, 2, 1};
+    int[] xcord = new int[]{-2, -1, 0};
+    int[] ycord = new int[]{2, 2, 2};
     double dback = 5;
     double dwall = 5;
     double dslam = 5;
@@ -287,7 +287,14 @@ public class Auto12 extends LinearOpMode {
 
     public void Cycle(){
         for(int i = 0;i < xcord.length; i++){
-            x = xcord[i];
+            int xm;
+            if (sidered){
+                xm = 1;
+            }else{
+                xm = -1;
+            }
+
+            x = xm* xcord[i];
             y = ycord[i];
             ServoClamp();
             Drive();
