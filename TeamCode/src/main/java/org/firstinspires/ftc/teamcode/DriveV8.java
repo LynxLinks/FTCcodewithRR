@@ -86,7 +86,8 @@ public class DriveV8 extends LinearOpMode {
             1300, 1950, 2550, 1950, 1300,
             400, 2550, 400, 2550, 400,
             1300, 1950, 2550, 1950, 1300,
-            400, 1300, 400, 1300, 400};
+            400, 1300, 400, 1300, 400
+    ,200,200,200,200,200,200,200,200,200,200,200};
 
 
     int[] xcord;
@@ -176,7 +177,7 @@ public class DriveV8 extends LinearOpMode {
         }
         M0_2.setPower(0);
         S0.setPosition(0.25);
-        // target = prevtarget;
+        target = prevtarget;
 
     }
 

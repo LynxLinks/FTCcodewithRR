@@ -31,11 +31,6 @@ import java.util.List;
 
 public class Auto12 extends LinearOpMode {
 
-    boolean sidered = true;
-    double angel = 90;
-
-    //Variables
-    String zone = "3";
     DcMotor M0;
     FtcDashboard dashboard;
     DcMotor M1;
@@ -48,19 +43,23 @@ public class Auto12 extends LinearOpMode {
     DigitalChannel D0;
     DistanceSensor D1;
     DistanceSensor D2;
+    DistanceSensor D3;
     DistanceSensor D4;
-    TrajectorySequence startmoves;
-    TrajectorySequence startmove2;
+
+    //teleop vars
     TrajectorySequence traj;
     Pose2d currentpose;
-    Pose2d startpose;
     public static double d1 = 11.5;
     public static double d2 = 3;
     public static double Sdrop = 350;
+    double target;
+    boolean sidered = true;
     boolean yfirst;
     int y = 2;
     int x = 0;
     int w = 1;
+    double vy;
+    double vx;
     double d;
     double vo;
     double ix;
@@ -78,69 +77,31 @@ public class Auto12 extends LinearOpMode {
     double o2;
     double o3;
     double o4;
-    public static double dwall = 4;
-    public static double dwall2 = 2;
-    public static double strafe2 = -53;
-    public static double strafe3 = 12;
-    public static double forward1 = 15;
-    public static double slidei = 600;
-    public static double slided = 100;
-    public static double slidex = -350;
-
-    DistanceSensor D3; // back
-    //public statics
-
-    public static double d3 = 8; //distance come back off of pole
-    public static double d4 = 3; //y offset when coming back
-    public static double Sset = 200; //test drop distance
-    public static double dxoffset = 3.2;
-    public static double dyoffset = -1.5;
-    public static double yoffset = 6;
-    public static int slamtime = 10;
-    public static double slidespeed = .3;
-    double strafe1;
-    public static double dy2 = 2.5;
-    public static double dx2 = -.5;
-    public static double forward0 = 8;
-
-    //constants
-
-    double target; //slide target position
-    boolean track = false; //update d yes or no
-
-    double xi = .5;  //initial robot position against wall in coordinate system, either .5 or -.5
-    double vy;  //vector roadrunner x value
-    double vx;  //vector roadrunner y value
-    boolean atwall = true; //used to know whether to run to or from
+    boolean atwall = true;
     boolean beenoff = false;
     boolean slidecalibrated = false;
-    boolean drop = false;
-    int[] hdata = new int[]{400, 1300, 400, 1300, 400,
+    int[] hdata = {400, 1300, 400, 1300, 400,
             1300, 1950, 2550, 1950, 1300,
-            400, 1300, 400, 1300, 400,
+            400, 2550, 400, 2550, 400,
             1300, 1950, 2550, 1950, 1300,
-            400, 1300, 400, 1300, 400}; //slide heights
-    TrajectorySequence t1;
-    Trajectory t2;
-    Trajectory t3;
-    TrajectorySequence f1;
-    Pose2d pole;
+            400, 1300, 400, 1300, 400
+            ,200,200,200,200,200,200,200,200,200,200,200};
 
 
-    //Slide variables
-    Pose2d start;
-    double movement;
+    //auto vars
+    double x5;
+    double o5;
+    double y5;
     double park;
-    double ymult = 1;
     int[] xcord = new int[]{3, 2, 1};
     int[] ycord = new int[]{3, 2, 1};
-    int[] cordY = {1, 2};
-    int[] cordx = {1, 1};
-    int xmult = 1;
-    double xcorrect = 5;
-    double xcorrectback = 12;
-    double parktrue = 0;
-    double slam;
+    double dback = 5;
+    double dwall = 5;
+    double dslam = 5;
+    TrajectorySequence init1;
+    TrajectorySequence init2;
+    TrajectorySequence parktraj;
+    String zone = "3";
 
 
     //viewforia Variables
@@ -203,19 +164,8 @@ public class Auto12 extends LinearOpMode {
         while (!isStarted()) {
             IdentifyVuforia();
         }
-
         S1.setPosition(0);
         S2.setPosition(0.75);
-
-        if (zone == "1") {
-            park = -8;
-        }
-        if (zone == "2") {
-            park = -30;
-        }
-        if (zone == "3") {
-            park = -56;
-        }
 
         Init();
         Cycle();
@@ -225,31 +175,120 @@ public class Auto12 extends LinearOpMode {
 
     public void Init() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        target = 600;
         if (sidered) {
-            strafe1 = (D2.getDistance(DistanceUnit.INCH) - dwall);
-            angel = -90;
+            x1 = 0;
+            y1 = dback;
+            o1 = Math.toRadians(180);
+
+            x2 = -(D2.getDistance(DistanceUnit.INCH) - dwall);
+            y2 = dback;
+            o2 = Math.toRadians(-90);
+
+            x3 = x2;
+            y3 = -dslam;
+            o3 = Math.toRadians(-90);
+
+            x4 = x3;
+           y4 = 0;
+           o4 = Math.toRadians(-90);
+
+           x5 = -(dslam + dwall);
+           y5 = 53;
+           o5 = Math.toRadians(-90);
+
+
         } else {
-            strafe1 = -(D4.getDistance(DistanceUnit.INCH) - dwall);
-            angel = 90;
-            xmult = -1;
-            xi = -.5;
+            x1 = 0;
+            y1 = dback;
+            o1 = Math.toRadians(0);
+
+            x2 = (D4.getDistance(DistanceUnit.INCH) - dwall);
+            y2 = dback;
+            o2 = Math.toRadians(-90);
+
+            x3 = x2;
+            y3 = -dslam;
+            o3 = Math.toRadians(-90);
+
+            x4 = x3;
+            y4 = 0;
+            o4 = Math.toRadians(-90);
+
+            x5 = dslam + dwall;
+            y5 = 53;
+            o5 = Math.toRadians(90);
 
         }
+        drive.setPoseEstimate(new Pose2d());
 
-        if (isStopRequested()) return;
-
-        drive.setPoseEstimate(startpose);
-        startmoves = drive.trajectorySequenceBuilder(startpose)
-                .splineToConstantHeading(new Vector2d(x1,y2),Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(x2,y2),Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(x2,y2 + slam),Math.toRadians(-90))
+        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,-90))
+                .splineToConstantHeading(new Vector2d(x1,y1),o1)
+                .splineToConstantHeading(new Vector2d(x2,y2),o2)
+                .splineToConstantHeading(new Vector2d(x3,y3),o3)
+                //.lineTo(new Vector2d(x4,y4))
                 .build();
-        drive.setPoseEstimate(startpose);
+        drive.followTrajectorySequenceAsync(init1);
+       while( drive.isBusy()
+                && !isStopRequested()){
+           drive.update();
+           Slide();
+       }
+       drive.setPoseEstimate(new Pose2d(x4,y4,o4));
+
+        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,-90))
+                .back(y5)
+                .turn(o5)
+                .forward(x5)
+                .build();
+        drive.followTrajectorySequenceAsync(init2);
+        while( drive.isBusy()
+                && !isStopRequested()){
+            drive.update();
+            Slide();
+        }
     }
-    public void Park(){}
+
+
+    public void Park() {
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        if (sidered) {
+            if (zone == "1") {
+                park = -60;
+            }
+            if (zone == "2") {
+                park = -36;
+            }
+            if (zone == "3") {
+                park = -12;
+            }
+        }else{
+            if (zone == "1") {
+                park = 12;
+            }
+            if (zone == "2") {
+                park = 36;
+            }
+            if (zone == "3") {
+                park = 60;
+            }
+        }
+        target = 600;
+        parktraj = drive.trajectorySequenceBuilder(currentpose)
+                .back(d1)
+                .lineToLinearHeading(new Pose2d(park,vy,0))
+                .build();
+        drive.followTrajectorySequenceAsync(parktraj);
+        while( drive.isBusy()
+                && !isStopRequested()){
+            drive.update();
+            Slide();
+        }
+    }
+
 
     public void Cycle(){
-        for(int i = 0;i < 2; i++){
+        for(int i = 0;i < xcord.length; i++){
             x = xcord[i];
             y = ycord[i];
             ServoClamp();
@@ -265,7 +304,7 @@ public class Auto12 extends LinearOpMode {
         }
         M0_2.setPower(0);
         S0.setPosition(0.25);
-        // target = prevtarget;
+        target = prevtarget;
 
     }
     public void Drive() {
@@ -465,10 +504,7 @@ public class Auto12 extends LinearOpMode {
                 && drive.isBusy()
                 && !isStopRequested()
                 && Math.abs(gamepad1.right_trigger) < .5
-                && Math.abs(gamepad1.left_trigger) < .5
-        )
-
-        {
+                && Math.abs(gamepad1.left_trigger) < .5) {
             drive.update();
             Slide();
         }
@@ -476,17 +512,7 @@ public class Auto12 extends LinearOpMode {
             target = target - Sdrop;
             S0.setPosition(0.05);
         }
-
     }
-
-
-
-
-
-
-
-
-
 
     public void IdentifyVuforia(){
         if (tfod != null) {
@@ -540,7 +566,6 @@ public class Auto12 extends LinearOpMode {
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
     }
-
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -554,22 +579,6 @@ public class Auto12 extends LinearOpMode {
         // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
         tfod.loadModelFromFile(TFOD_MODEL_ASSET, LABELS);
         // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
-    }
-    public void UntilSlide() {
-        if ((target - M0_2.getCurrentPosition()) > 0)
-        {
-            M0_2.setPower(slidespeed);
-            while (target > M0_2.getCurrentPosition()) { //faster slide algo
-                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
-            }
-        }
-        else{
-            M0_2.setPower(-slidespeed );
-            while (target < M0_2.getCurrentPosition()) { //faster slide algo
-                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
-            }
-        }
-        M0_2.setPower(0);
     }
 }
 
