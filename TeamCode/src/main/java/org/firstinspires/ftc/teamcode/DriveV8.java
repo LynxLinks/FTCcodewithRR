@@ -37,7 +37,8 @@ public class DriveV8 extends LinearOpMode {
     DistanceSensor D3;
     DistanceSensor D4;
 
-    public static double d = 11.5;
+    public static double d1 = 11.5;
+    public static double d2 = 3;
     public static double Sdrop = 350;
 
     int y = 2;
@@ -48,6 +49,7 @@ public class DriveV8 extends LinearOpMode {
     double vx; // sync with auto
     boolean atwall = true;
     double target;
+    double d;
     double vo;
     double ix;
     double iy;
@@ -183,9 +185,7 @@ public class DriveV8 extends LinearOpMode {
 
         if (slidecalibrated) {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-        }
-
-        else {
+        } else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
                 M0_2.setPower(.5);
             }
@@ -204,21 +204,42 @@ public class DriveV8 extends LinearOpMode {
             }
         }
     }
-
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         if (atwall) {
+            if (y ==6){
+                d = d2;
+            }
+            else{
+                d = d1;
+            }
             if(w == 1){
-                vx = 24 * x - 12;
-
                 if (y >= 3){
-                    vo = Math.toRadians(45);
+
+
                     vy = 24 * (y - 3) -12;
+                    if (x <= -2){
+                        vx = 24 * (x+1) - 12;
+                        vo = Math.toRadians(135);
+                    }
+                    else{
+
+
+                        vx = 24 * x - 12;
+                        vo = Math.toRadians(45);
+                    }
                 }
                 else{
-                    vo = Math.toRadians(-45);
                     vy = 24 * (y - 2) -12;
+                    if (x <= -2){
+                        vx = 24 * (x+1) - 12;
+                        vo = Math.toRadians(-135);
+                    }
+                    else{
+                        vx = 24 * x - 12;
+                        vo = Math.toRadians(-45);
+                    }
                 }
             }
             if(w == 2){
@@ -232,27 +253,44 @@ public class DriveV8 extends LinearOpMode {
                     vx = 24 * (x + 1) -12;
                 }
             }
-            if(w == 3){
-                vy = 24 * (y -3) - 12;
-                if (x >= 1){
+            if(w == 3) {
+                vy = 24 * (y - 3) - 12;
+                if (x >= 1) {
                     vo = Math.toRadians(45);
                     vx = 24 * (x - 1) + 12;
-                }
-                else{
+                } else {
                     vo = Math.toRadians(135);
-                    vx = 24 * x  + 12;
+                    vx = 24 * x + 12;
                 }
             }
             if(w == 4){
-                vx = 24 * x + 12;
+
+
 
                 if (y >= 3){
-                    vo = Math.toRadians(135);
+
                     vy = 24 * (y - 3) - 12;
+                    if (x >= 2){
+                        vx = 24 * (x-1) + 12;
+                        vo = Math.toRadians(45);
+                    }
+                    else{
+                        vx = 24 * x + 12;
+                        vo = Math.toRadians(135);
+                    }
                 }
                 else{
-                    vo = Math.toRadians(-135);
                     vy = 24 * (y - 2) -12;
+                    if (x >= 2){
+                        vx = 24 * (x-1) + 12;
+                        vo = Math.toRadians(-45);
+                    }
+                    else{
+                        vx = 24 * x + 12;
+                        vo = Math.toRadians(-135);
+                    }
+
+
                 }
             }
             if(yfirst){
@@ -283,6 +321,7 @@ public class DriveV8 extends LinearOpMode {
                 iy = -12;
                 io = Math.toRadians(180);
                 target = 600;
+                yfirst = true;
 
             }
             if(w == 2){
@@ -302,7 +341,7 @@ public class DriveV8 extends LinearOpMode {
                 iy = -12;
                 io = 0;
                 target = 600;
-
+                yfirst = true;
             }
 
 
