@@ -15,11 +15,11 @@ public class MeepMeepTesting {
        double d = 11.5;
         double Sdrop = 200;
 
-        int y = 6;
-        int x = 3;
-        int w = 4;
+        int y = 4;
+        int x = 2;
+        int w = 3;
         boolean atwall = true; //used to know whether to run to or from
-        boolean yfirst = false;
+        boolean yfirst = true;
         double target;
         double d1 = 11.5;
         double d2 = 5;
@@ -334,15 +334,24 @@ public class MeepMeepTesting {
         ///////////////////////////
 
 
-        Pose2d finalCurrentpose = currentpose;
+
 
         RoadRunnerBotEntity myFirstBot = new DefaultBotBuilder(meepMeep)
                 // We set this bot to be blue
                 .setColorScheme(new ColorSchemeBlueDark())
                 .setConstraints(62, 50, Math.toRadians(320), Math.toRadians(210), 6.7)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(finalCurrentpose)
-                                .SpineTo()
+
+                        drive.trajectorySequenceBuilder(currentpose)
+                                .splineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1),Math.toRadians(0))
+                                .splineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2),o3)
+                                .splineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3),o3)
+                                .splineToLinearHeading(new Pose2d(x4,y4,o4),o4)
+                                /*
+                                new Pose2d(-36,-65,Math.toRadians(-90))
+                                .splineToConstantHeading(new Vector2d(-36,-60),Math.toRadians(180))
+                                .splineToConstantHeading(new Vector2d(-60,-60),Math.toRadians(-90))
+                                .splineToConstantHeading(new Vector2d(-60,-65),Math.toRadians(-90))*/
                                 .build());
 
 

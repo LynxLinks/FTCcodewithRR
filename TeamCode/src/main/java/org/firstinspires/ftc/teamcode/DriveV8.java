@@ -169,16 +169,15 @@ public class DriveV8 extends LinearOpMode {
     }
 
     public void ServoClamp() {
-        if ((target <= 600) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
-            double prevtarget = target;
-            target = 0;
-            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-            }
-            M0_2.setPower(0);
-            S0.setPosition(0.25);
-           // target = prevtarget;
+        double prevtarget = target;
+        target = 0;
+        while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         }
+        M0_2.setPower(0);
+        S0.setPosition(0.25);
+        // target = prevtarget;
+
     }
 
     public void Slide () {
@@ -433,16 +432,14 @@ public class DriveV8 extends LinearOpMode {
     }
     public void UI() {
         //Manual Servo
+        if ((target <= 600) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
+           ServoClamp();
+        }
         if (gamepad1.left_bumper) {
             S0.setPosition(0.05);
         }
         if (gamepad1.right_bumper) {
-            target = 0;
-            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-            }
-            M0_2.setPower(0);
-            S0.setPosition(0.25);
+            ServoClamp();
         }
 
         //Manual Slide
