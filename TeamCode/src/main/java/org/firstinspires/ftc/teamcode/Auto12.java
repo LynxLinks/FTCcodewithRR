@@ -149,10 +149,8 @@ public class Auto12 extends LinearOpMode {
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        //Sync Dashboard
         dashboard = FtcDashboard.getInstance();
 
-        //start viewforia
         initVuforia();
         initTfod();
         if (tfod != null) {
@@ -160,17 +158,16 @@ public class Auto12 extends LinearOpMode {
             tfod.setZoom(1.0, 16.0 / 12.0);
         }
         FtcDashboard.getInstance().startCameraStream(tfod, 0);
-
         while (!isStarted()) {
             IdentifyVuforia();
         }
+        S0.setPosition(0);
         S1.setPosition(0);
         S2.setPosition(0.75);
 
         Init();
         Cycle();
         Park();
-
     }
 
     public void Init() {
@@ -222,7 +219,7 @@ public class Auto12 extends LinearOpMode {
         }
         drive.setPoseEstimate(new Pose2d());
 
-        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,-90))
+        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,o4))
                 .splineToConstantHeading(new Vector2d(x1,y1),o1)
                 .splineToConstantHeading(new Vector2d(x2,y2),o2)
                 .splineToConstantHeading(new Vector2d(x3,y3),o3)
@@ -236,11 +233,12 @@ public class Auto12 extends LinearOpMode {
        }
        drive.setPoseEstimate(new Pose2d(x4,y4,o4));
 
-        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,-90))
+        init2 = drive.trajectorySequenceBuilder(new Pose2d(0,0,o4))
                 .back(y5)
                 .turn(o5)
                 .forward(x5)
                 .build();
+
         drive.followTrajectorySequenceAsync(init2);
         while( drive.isBusy()
                 && !isStopRequested()){
