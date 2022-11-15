@@ -226,6 +226,7 @@ public class Auto12 extends LinearOpMode {
                 //.lineTo(new Vector2d(x4,y4))
                 .build();
         drive.followTrajectorySequenceAsync(init1);
+        drive.update();
        while( drive.isBusy()
                 && !isStopRequested()){
            drive.update();
@@ -240,6 +241,7 @@ public class Auto12 extends LinearOpMode {
                 .build();
 
         drive.followTrajectorySequenceAsync(init2);
+        drive.update();
         while( drive.isBusy()
                 && !isStopRequested()){
             drive.update();

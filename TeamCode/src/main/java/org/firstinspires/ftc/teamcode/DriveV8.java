@@ -432,10 +432,11 @@ public class DriveV8 extends LinearOpMode {
         }
     }
     public void UI() {
-        //Manual Servo
+        //autoservo
         if ((target <= 600) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
            ServoClamp();
         }
+        //Manual Servo
         if (gamepad1.left_bumper) {
             S0.setPosition(0.05);
         }
