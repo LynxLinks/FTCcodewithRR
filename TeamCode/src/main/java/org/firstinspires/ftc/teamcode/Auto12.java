@@ -219,65 +219,24 @@ public class Auto12 extends LinearOpMode {
 
 
         } else {
-            x1 =-( dwall2 - dwall);
+            x1 = (D2.getDistance(DistanceUnit.INCH) - dwall);
             y1 = dback;
             o1 = Math.toRadians(-90);
 
-            x2 = (D4.getDistance(DistanceUnit.INCH) - dwall);
-            y2 = dback;
-            o2 = Math.toRadians(-90);
+            x2 =  (D2.getDistance(DistanceUnit.INCH) - dwall2);
+            y2 = 53;
+            o2 = Math.toRadians(0);
 
-            x3 = x2;
-            y3 = -dslam;
-            o3 = Math.toRadians(-90);
+            x3 = dwall2 + dslam;
 
-            x4 = x3;
-            y4 = 0;
-            o4 = Math.toRadians(-90);
-
-            x5 = dslam + dwall;
-            y5 = 53;
-            o5 = Math.toRadians(90);
 
         }
         drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(-90)));
-
-        /*init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
-                .splineToConstantHeading(new Vector2d(x1,y1),o1)
-                .splineToConstantHeading(new Vector2d(x2,y2),o2)
-                .splineToConstantHeading(new Vector2d(x3,y3),o3)
-                //.lineTo(new Vector2d(x4,y4))
-                .build();
-
-         */
         init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
                 .lineToLinearHeading(new Pose2d(x1,y1,o1))
                 .lineToLinearHeading(new Pose2d(x2,y2,o2))
                 .forward(x3)
-
                 .build();
-/*
-        drive.followTrajectorySequenceAsync(init1);
-        drive.update();
-       while( drive.isBusy()
-                && !isStopRequested()){
-           drive.update();
-           Slide();
-       }*/
-
-      // drive.setPoseEstimate(new Pose2d(x4,y4,o4));
-        // drive.setPoseEstimate(new Pose2d(x2,y2,o4));
-      /*  init2 = drive.trajectorySequenceBuilder(new Pose2d(x4,y4,o4))
-                .back(y5)
-                .turn(o5)
-                .forward(x5)
-                .build();
-
-       */
-        /*init2 = drive.trajectorySequenceBuilder(new Pose2d(x2,y2 ,o4))
-                .lineToLinearHeading(new Pose2d(x3,y5,o5 + o4))
-                .forward(x5)
-                .build();*/
 
         drive.followTrajectorySequenceAsync(init1);
         drive.update();
