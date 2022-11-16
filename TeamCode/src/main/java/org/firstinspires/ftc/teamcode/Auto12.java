@@ -354,32 +354,57 @@ public class Auto12 extends LinearOpMode {
                 }
             }
             if(w == 2){
-                vy = 24 * (y -3) - 12;
+
                 if (x >= 0){
-                    vo = Math.toRadians(45);
+
                     vx = 24 * x -12;
+                    if (y <= 1){
+                        vy = 24 * (y -2) - 12;
+                        vo = Math.toRadians(-45);
+                    }else{
+                        vy = 24 * (y -3) - 12;
+                        vo = Math.toRadians(45);
+                    }
                 }
                 else{
-                    vo = Math.toRadians(135);
+
                     vx = 24 * (x + 1) -12;
+                    if (y <= 1){
+                        vy = 24 * (y -2) - 12;
+                        vo = Math.toRadians(-135);
+                    }else{
+                        vy = 24 * (y -3) - 12;
+                        vo = Math.toRadians(135);
+                    }
                 }
             }
             if(w == 3) {
-                vy = 24 * (y - 3) - 12;
                 if (x >= 1) {
-                    vo = Math.toRadians(45);
                     vx = 24 * (x - 1) + 12;
+                    if (y <= 1){
+                        vy = 24 * (y -2) - 12;
+                        vo = Math.toRadians(-45);
+                    }else{
+                        vy = 24 * (y -3) - 12;
+                        vo = Math.toRadians(45);
+                    }
+
                 } else {
-                    vo = Math.toRadians(135);
+
+
                     vx = 24 * x + 12;
+                    if (y <= 1) {
+                        vy = 24 * (y - 2) - 12;
+                        vo = Math.toRadians(-135);
+                    } else {
+                        vy = 24 * (y - 3) - 12;
+                        vo = Math.toRadians(135);
+                    }
                 }
+
             }
             if(w == 4){
-
-
-
                 if (y >= 3){
-
                     vy = 24 * (y - 3) - 12;
                     if (x >= 2){
                         vx = 24 * (x-1) + 12;
@@ -412,6 +437,7 @@ public class Auto12 extends LinearOpMode {
                 x1 = vx;
                 y1 = iy;
             }
+
             x2 = vx;
             y2 = vy;
             x3 = vx;
@@ -460,8 +486,7 @@ public class Auto12 extends LinearOpMode {
                 x3 = vx;
                 y3 = iy;
 
-            }
-            else{
+            } else{
                 x3 = ix;
                 y3 = vy;
             }

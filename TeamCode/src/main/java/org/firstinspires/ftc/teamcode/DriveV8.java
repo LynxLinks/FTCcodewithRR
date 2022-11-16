@@ -84,6 +84,7 @@ public class DriveV8 extends LinearOpMode {
     int xm;
     int x;
     int y;
+    boolean rightafterauto = true;
 
     TrajectorySequence traj;
     Pose2d currentpose;
@@ -134,6 +135,7 @@ public class DriveV8 extends LinearOpMode {
         S0.setPosition(0.0);
         S1.setPosition(0);
         S2.setPosition(0.70);
+
         drive.setPoseEstimate(autopose);
 
         // change target stack and x cord preset multiplier
@@ -151,7 +153,7 @@ public class DriveV8 extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            ServoClamp();
+
             Slide();
             UI();
             maunal();
@@ -232,32 +234,57 @@ public class DriveV8 extends LinearOpMode {
                 }
             }
             if(w == 2){
-                vy = 24 * (y -3) - 12;
+
                 if (x >= 0){
-                    vo = Math.toRadians(45);
+
                     vx = 24 * x -12;
+                    if (y <= 1){
+                        vy = 24 * (y -2) - 12;
+                        vo = Math.toRadians(-45);
+                    }else{
+                        vy = 24 * (y -3) - 12;
+                        vo = Math.toRadians(45);
+                    }
                 }
                 else{
-                    vo = Math.toRadians(135);
+
                     vx = 24 * (x + 1) -12;
+                    if (y <= 1){
+                        vy = 24 * (y -2) - 12;
+                        vo = Math.toRadians(-135);
+                    }else{
+                        vy = 24 * (y -3) - 12;
+                        vo = Math.toRadians(135);
+                    }
                 }
             }
             if(w == 3) {
-                vy = 24 * (y - 3) - 12;
                 if (x >= 1) {
-                    vo = Math.toRadians(45);
                     vx = 24 * (x - 1) + 12;
+                    if (y <= 1){
+                        vy = 24 * (y -2) - 12;
+                        vo = Math.toRadians(-45);
+                    }else{
+                        vy = 24 * (y -3) - 12;
+                        vo = Math.toRadians(45);
+                    }
+
                 } else {
+
+
+                vx = 24 * x + 12;
+                if (y <= 1) {
+                    vy = 24 * (y - 2) - 12;
+                    vo = Math.toRadians(-135);
+                } else {
+                    vy = 24 * (y - 3) - 12;
                     vo = Math.toRadians(135);
-                    vx = 24 * x + 12;
                 }
             }
+
+            }
             if(w == 4){
-
-
-
                 if (y >= 3){
-
                     vy = 24 * (y - 3) - 12;
                     if (x >= 2){
                         vx = 24 * (x-1) + 12;
@@ -355,7 +382,10 @@ public class DriveV8 extends LinearOpMode {
             o3 = io;
             o4 = io;
 
-            currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
+            if (!rightafterauto){
+                currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
+            }
+
             atwall = true;
             S0.setPosition(0); //drop and up on umbrella
             S1.setPosition(0);

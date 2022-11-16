@@ -15,11 +15,11 @@ public class MeepMeepTesting {
        double d = 11.5;
         double Sdrop = 200;
 
-        int y = 4;
-        int x = 2;
-        int w = 3;
+        int y = 2;
+        int x = -2;
+        int w = 1;
         boolean atwall = true; //used to know whether to run to or from
-        boolean yfirst = true;
+        boolean yfirst = false;
         double target;
         double d1 = 11.5;
         double d2 = 5;
@@ -150,11 +150,12 @@ public class MeepMeepTesting {
 
             }
         }
-        int[] hdata = new int[]{400, 1300, 400, 1300, 400,
+        int[] hdata = {400, 1300, 400, 1300, 400,
                 1300, 1950, 2550, 1950, 1300,
-                400, 1300, 400, 1300, 400,
+                400, 2550, 400, 2550, 400,
                 1300, 1950, 2550, 1950, 1300,
-                400, 1300, 400, 1300, 400};
+                400, 1300, 400, 1300, 400
+                ,200,200,200,200,200,200,200,200,200,200,200};
 
 
 
@@ -162,170 +163,195 @@ public class MeepMeepTesting {
 
 
         ///////////////////////////
-        if (atwall) {
-            if (y ==6){
-                d = d2;
-            }
-            else{
-                d = d1;
-            }
-            if(w == 1){
-                if (y >= 3){
+        //public void Drive() {
+            //SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-
-                    vy = 24 * (y - 3) -12;
-                    if (x <= -2){
-                        vx = 24 * (x+1) - 12;
-                        vo = Math.toRadians(135);
-                    }
-                    else{
-
-
-                        vx = 24 * x - 12;
-                        vo = Math.toRadians(45);
-                    }
+            if (atwall) {
+                if (y ==6){
+                    d = d2;
                 }
                 else{
-                    vy = 24 * (y - 2) -12;
-                    if (x <= -2){
-                        vx = 24 * (x+1) - 12;
-                        vo = Math.toRadians(-135);
+                    d = d1;
+                }
+                if(w == 1){
+                    if (y >= 3){
+
+
+                        vy = 24 * (y - 3) -12;
+                        if (x <= -2){
+                            vx = 24 * (x+1) - 12;
+                            vo = Math.toRadians(135);
+                        }
+                        else{
+
+
+                            vx = 24 * x - 12;
+                            vo = Math.toRadians(45);
+                        }
                     }
                     else{
-                        vx = 24 * x - 12;
-                        vo = Math.toRadians(-45);
+                        vy = 24 * (y - 2) -12;
+                        if (x <= -2){
+                            vx = 24 * (x+1) - 12;
+                            vo = Math.toRadians(-135);
+                        }
+                        else{
+                            vx = 24 * x - 12;
+                            vo = Math.toRadians(-45);
+                        }
                     }
                 }
-            }
-            if(w == 2){
-                vy = 24 * (y -3) - 12;
-                if (x >= 0){
-                    vo = Math.toRadians(45);
-                    vx = 24 * x -12;
-                }
-                else{
-                    vo = Math.toRadians(135);
-                    vx = 24 * (x + 1) -12;
-                }
-            }
-            if(w == 3) {
-                vy = 24 * (y - 3) - 12;
-                if (x >= 1) {
-                    vo = Math.toRadians(45);
-                    vx = 24 * (x - 1) + 12;
-                } else {
-                    vo = Math.toRadians(135);
-                    vx = 24 * x + 12;
-                }
-            }
-            if(w == 4){
+                if(w == 2){
 
+                    if (x >= 0){
 
-
-                if (y >= 3){
-
-                    vy = 24 * (y - 3) - 12;
-                    if (x >= 2){
-                        vx = 24 * (x-1) + 12;
-                        vo = Math.toRadians(45);
+                        vx = 24 * x -12;
+                        if (y <= 1){
+                            vy = 24 * (y -2) - 12;
+                            vo = Math.toRadians(-45);
+                        }else{
+                            vy = 24 * (y -3) - 12;
+                            vo = Math.toRadians(45);
+                        }
                     }
                     else{
+
+                        vx = 24 * (x + 1) -12;
+                        if (y <= 1){
+                            vy = 24 * (y -2) - 12;
+                            vo = Math.toRadians(-135);
+                        }else{
+                            vy = 24 * (y -3) - 12;
+                            vo = Math.toRadians(135);
+                        }
+                    }
+                }
+                if(w == 3) {
+                    if (x >= 1) {
+                        vx = 24 * (x - 1) + 12;
+                        if (y <= 1){
+                            vy = 24 * (y -2) - 12;
+                            vo = Math.toRadians(-45);
+                        }else{
+                            vy = 24 * (y -3) - 12;
+                            vo = Math.toRadians(45);
+                        }
+
+                    } else {
+
+
                         vx = 24 * x + 12;
-                        vo = Math.toRadians(135);
+                        if (y <= 1) {
+                            vy = 24 * (y - 2) - 12;
+                            vo = Math.toRadians(-135);
+                        } else {
+                            vy = 24 * (y - 3) - 12;
+                            vo = Math.toRadians(135);
+                        }
                     }
+
                 }
-                else{
-                    vy = 24 * (y - 2) -12;
-                    if (x >= 2){
-                        vx = 24 * (x-1) + 12;
-                        vo = Math.toRadians(-45);
+                if(w == 4){
+                    if (y >= 3){
+                        vy = 24 * (y - 3) - 12;
+                        if (x >= 2){
+                            vx = 24 * (x-1) + 12;
+                            vo = Math.toRadians(45);
+                        }
+                        else{
+                            vx = 24 * x + 12;
+                            vo = Math.toRadians(135);
+                        }
                     }
                     else{
-                        vx = 24 * x + 12;
-                        vo = Math.toRadians(-135);
+                        vy = 24 * (y - 2) -12;
+                        if (x >= 2){
+                            vx = 24 * (x-1) + 12;
+                            vo = Math.toRadians(-45);
+                        }
+                        else{
+                            vx = 24 * x + 12;
+                            vo = Math.toRadians(-135);
+                        }
+
+
                     }
-
-
                 }
-            }
-            if(yfirst){
-                x1 = ix;
-                y1 = vy;
-            }
-            else{
-                x1 = vx;
-                y1 = iy;
-            }
-            x2 = vx;
-            y2 = vy;
-            x3 = vx;
-            y3 = vy;
-            x4 = vx + d * Math.cos(vo);
-            y4 = vy + d * Math.sin(vo) ;
-            o1 = io;
-            o2 = io;
-            o3 = vo;
-            o4 = vo;
-            currentpose = new Pose2d(ix,iy,io);
-            atwall = false;
-            //target = hdata[x + 5*(y-1)+2];
-        }
-        else {
-            if(w == 1){
-                ix = -65;
-                iy = -12;
-                io = Math.toRadians(180);
-                target = 600;
-                yfirst = true;
+                if(yfirst){
+                    x1 = ix;
+                    y1 = vy;
+                }
+                else{
+                    x1 = vx;
+                    y1 = iy;
+                }
 
-            }
-            if(w == 2){
-                ix = -12;
-                iy = -65;
-                io = Math.toRadians(-90);
-                target = 300;
-
-            }
-            if(w == 3){
-                ix = 12;
-                iy = -65;
-                io = Math.toRadians(-90);
-                target = 300;
-
-            }
-            if(w == 4){
-                ix = 65;
-                iy = -12;
-                io = 0;
-                target = 600;
-                yfirst = true;
-            }
-
-
-            if(yfirst){
+                x2 = vx;
+                y2 = vy;
                 x3 = vx;
-                y3 = iy;
-
-            }
-            else{
-                x3 = ix;
                 y3 = vy;
+                x4 = vx + d * Math.cos(vo);
+                y4 = vy + d * Math.sin(vo) ;
+                o1 = io;
+                o2 = io;
+                o3 = vo;
+                o4 = vo;
+                currentpose = new Pose2d(ix,iy,io);
+                atwall = false;
+                target = hdata[x + 5*(y-1)+2];
             }
+            else {
+                if(w == 1){
+                    ix = -65;
+                    iy = -12;
+                    io = Math.toRadians(180);
+                    target = 600;
+                    yfirst = true;
 
-            x1 = vx;
-            y1 = vy;
-            x2 = vx;
-            y2 = vy;
-            x4 = ix;
-            y4 = iy;
-            o1 = vo;
-            o2 = io;
-            o3 = io;
-            o4 = io;
+                }
+                if(w == 2){
+                    ix = -12;
+                    iy = -65;
+                    io = Math.toRadians(-90);
+                    target = 300;
+                }
+                if(w == 3){
+                    ix = 12;
+                    iy = -65;
+                    io = Math.toRadians(-90);
+                    target = 300;
+                }
+                if(w == 4){
+                    ix = 65;
+                    iy = -12;
+                    io = 0;
+                    target = 600;
+                    yfirst = true;
+                }
 
-            currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
-            atwall = true;
 
+                if(yfirst){
+                    x3 = vx;
+                    y3 = iy;
+
+                } else{
+                    x3 = ix;
+                    y3 = vy;
+                }
+
+                x1 = vx;
+                y1 = vy;
+                x2 = vx;
+                y2 = vy;
+                x4 = ix;
+                y4 = iy;
+                o1 = vo;
+                o2 = io;
+                o3 = io;
+                o4 = io;
+
+                currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
+                atwall = true;
 
         }
 
@@ -343,10 +369,10 @@ public class MeepMeepTesting {
                 .followTrajectorySequence(drive ->
 
                         drive.trajectorySequenceBuilder(currentpose)
-                                .splineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1),Math.toRadians(0))
-                                .splineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2),o3)
-                                .splineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3),o3)
-                                .splineToLinearHeading(new Pose2d(x4,y4,o4),o4)
+                                 .lineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1))
+                                .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2))
+                                .lineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3))
+                                .lineToLinearHeading(new Pose2d(x4,y4,o4))
                                 /*
                                 new Pose2d(-36,-65,Math.toRadians(-90))
                                 .splineToConstantHeading(new Vector2d(-36,-60),Math.toRadians(180))
