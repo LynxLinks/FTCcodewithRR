@@ -11,6 +11,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import static org.firstinspires.ftc.teamcode.Auto12.sidered;
+import static org.firstinspires.ftc.teamcode.Auto12.vy;
+import static org.firstinspires.ftc.teamcode.Auto12.vx;
+import static org.firstinspires.ftc.teamcode.Auto12.autopose;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -41,16 +45,13 @@ public class DriveV8 extends LinearOpMode {
     public static double d2 = 3;
     public static double Sdrop = 350;
 
-    int y = 2;
-    int x = 0;
+
     int w = 1;
-    int preset = 0;
-    double vy; // sync with auto
-    double vx; // sync with auto
-    boolean atwall = true;
+    int preset = 1;
+    boolean atwall = false;
     double target;
     double d;
-    double vo;
+    double vo = 0;
     double ix;
     double iy;
     double io;
@@ -78,8 +79,12 @@ public class DriveV8 extends LinearOpMode {
     boolean dslide;
     boolean slidecalibrated;
     boolean beenoff;
-    boolean b;
-    boolean red = true;
+    boolean gx;
+    boolean gy;
+    int xm;
+    int x;
+    int y;
+
     TrajectorySequence traj;
     Pose2d currentpose;
     int[] hdata = {400, 1300, 400, 1300, 400,
@@ -90,8 +95,10 @@ public class DriveV8 extends LinearOpMode {
     ,200,200,200,200,200,200,200,200,200,200,200};
 
 
-    int[] xcord;
-    int[] ycord;
+    int[] xcord = new int[]{3,2,1,0,1,-1,-1,1};
+    int [] ycord = new int[]{6,4,3,2,2,2,1,1};
+
+
 
 
     public void runOpMode() {
@@ -127,38 +134,20 @@ public class DriveV8 extends LinearOpMode {
         S0.setPosition(0.0);
         S1.setPosition(0);
         S2.setPosition(0.70);
+        drive.setPoseEstimate(autopose);
 
-        if (red){
-            //w = 4;
-             xcord = new int[]{3,2,1};
-            ycord = new int[]{6,4,3};
+        // change target stack and x cord preset multiplier
+        if (sidered){
+            w = 1;
+            xm = 1;
+        } else {
+            w = 4;
+            xm = -1;
         }
-        else{
-            //w = 1;
-            xcord = new int[]{-3,-2,-1};
-            ycord = new int[]{6,4,3};
-        }
+        //load first preset
+        y = ycord[0];
+        x = xm*xcord[0];
 
-        if(w == 1){
-            ix = -65;
-            iy = -12;
-            io = Math.toRadians(180);
-        }
-        if(w == 2){
-            ix = -12;
-            iy = -65;
-            io = Math.toRadians(-90);
-        }
-        if(w == 3){
-            ix = 12;
-            iy = -65;
-            io = Math.toRadians(-90);
-        }
-        if(w == 4){
-            ix = 65;
-            iy = -12;
-            io = 0;
-        }
         waitForStart();
 
         while (opModeIsActive()) {
@@ -301,6 +290,7 @@ public class DriveV8 extends LinearOpMode {
                 x1 = vx;
                 y1 = iy;
             }
+
             x2 = vx;
             y2 = vy;
             x3 = vx;
@@ -349,8 +339,7 @@ public class DriveV8 extends LinearOpMode {
                 x3 = vx;
                 y3 = iy;
 
-            }
-            else{
+            } else{
                 x3 = ix;
                 y3 = vy;
             }
@@ -473,7 +462,8 @@ public class DriveV8 extends LinearOpMode {
         if (gamepad1.dpad_right) dright2 = true;
         if (gamepad1.dpad_left) dleft2 = true;
 
-        if (gamepad2.b) b = true;
+        if (gamepad2.x && preset < xcord.length-1) gx = true;
+        if (gamepad2.y && preset >= 0) gy = true;
         if (!gamepad2.right_bumper && w < 4 && dbright) {
             dbright = false;
             w += 1;
@@ -499,12 +489,19 @@ public class DriveV8 extends LinearOpMode {
             x -= 1;
 
         }
-        if((!gamepad2.b) && b){
-
-            x = xcord[preset];
-            y = ycord[preset];
+        if((!gamepad2.x) && gx){
             preset += 1;
-            b = false;
+            x = xm*xcord[preset-1];
+            y = ycord[preset-1];
+
+            gx = false;
+        }
+        if((!gamepad2.y) && gy){
+            preset -= 1;
+            x = xm*xcord[preset-1];
+            y = ycord[preset-1];
+
+            gy = false;
         }
         if(gamepad2.a){
             x = 0;
@@ -526,10 +523,11 @@ public class DriveV8 extends LinearOpMode {
         telemetry.addData("y", y);
         telemetry.addData("w", w);
         telemetry.addData("atwall", atwall);
-        telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
-        telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
-        telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-        telemetry.addData("target",target);
+        telemetry.addData("preset", preset);
+        //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("target",target);
 
         telemetry.update();
 

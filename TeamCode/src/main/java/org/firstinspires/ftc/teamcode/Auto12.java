@@ -53,15 +53,16 @@ public class Auto12 extends LinearOpMode {
     public static double d2 = 3;
     public static double Sdrop = 350;
     double target;
-    boolean sidered = true;
+    public static final boolean sidered = true;
+    public static double vy;
+    public static double vx;
+    public static double vo;
+    public static Pose2d autopose = new Pose2d();
     boolean yfirst;
     int y = 2;
     int x = 0;
     int w = 1;
-    double vy;
-    double vx;
     double d;
-    double vo;
     double ix;
     double iy;
     double io;
@@ -92,7 +93,6 @@ public class Auto12 extends LinearOpMode {
     double x5;
     double o5;
     double y5;
-    double park;
     int[] xcord = new int[]{-2, -1, 0};
     int[] ycord = new int[]{2, 2, 2};
     double dback = 5;
@@ -168,6 +168,7 @@ public class Auto12 extends LinearOpMode {
         Init();
         Cycle();
         Park();
+        autopose = drive.getPoseEstimate();
     }
 
     public void Init() {
@@ -254,29 +255,29 @@ public class Auto12 extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         if (sidered) {
             if (zone == "1") {
-                park = -60;
+                vx = -60;
             }
             if (zone == "2") {
-                park = -36;
+                vx = -36;
             }
             if (zone == "3") {
-                park = -12;
+                vx = -12;
             }
         }else{
             if (zone == "1") {
-                park = 12;
+                vx = 12;
             }
             if (zone == "2") {
-                park = 36;
+                vx = 36;
             }
             if (zone == "3") {
-                park = 60;
+                vx = 60;
             }
         }
         target = 600;
         parktraj = drive.trajectorySequenceBuilder(currentpose)
                 .back(d1)
-                .lineToLinearHeading(new Pose2d(park,vy,0))
+                .lineToLinearHeading(new Pose2d(vx,vy,0))
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
         while( drive.isBusy()
