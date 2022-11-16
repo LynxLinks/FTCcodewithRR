@@ -49,7 +49,7 @@ public class Auto12 extends LinearOpMode {
     //teleop vars
     TrajectorySequence traj;
     Pose2d currentpose;
-    public static double d1 = 11.5;
+    public static double d1 = 13;
     public static double d2 = 3;
     public static double Sdrop = 350;
     double target;
@@ -59,9 +59,10 @@ public class Auto12 extends LinearOpMode {
     public static double vo;
     public static Pose2d autopose = new Pose2d();
     boolean yfirst;
-    int y = 2;
-    int x = 0;
+    int y;
+    int x;
     int w = 1;
+    double starget;
     double d;
     double ix;
     double iy;
@@ -93,14 +94,23 @@ public class Auto12 extends LinearOpMode {
     double x5;
     double o5;
     double y5;
-    int[] xcord = new int[]{-2, -1, 0};
-    int[] ycord = new int[]{2, 2, 2};
-    double dback = 5;
-    double dwall = 5;
-    double dslam = 5;
+    double park;
+    int[] xcord = new int[]{0, -1, -2};
+    int[] ycord = new int[]{2, 3, 2};
+    public static double dback = 0;
+    public static double dwall = 4;
+    public static double dwall2 = 9;
+    public static double dslam = 2;
+    public static double slidei = -80;
+    public static double leftstack = 5;
+    public static double rightstack = 5;
+    public static double strafe = 1;
+    public static double parkoffset = -5;
+
     TrajectorySequence init1;
     TrajectorySequence init2;
     TrajectorySequence parktraj;
+    TrajectorySequence slam1;
     String zone = "3";
 
 
@@ -161,6 +171,26 @@ public class Auto12 extends LinearOpMode {
         while (!isStarted()) {
             IdentifyVuforia();
         }
+        if(w == 1){
+            ix = -65;
+            iy = -12;
+            io = Math.toRadians(180);
+        }
+        if(w == 2){
+            ix = -12;
+            iy = -65;
+            io = Math.toRadians(-90);
+        }
+        if(w == 3){
+            ix = 12;
+            iy = -65;
+            io = Math.toRadians(-90);
+        }
+        if(w == 4){
+            ix = 65;
+            iy = -12;
+            io = 0;
+        }
         S0.setPosition(0);
         S1.setPosition(0);
         S2.setPosition(0.75);
@@ -173,33 +203,25 @@ public class Auto12 extends LinearOpMode {
 
     public void Init() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        target = 600;
+        target = 750;
         if (sidered) {
-            x1 = 0;
+
+
+            x1 = -(D2.getDistance(DistanceUnit.INCH) - dwall);
             y1 = dback;
-            o1 = Math.toRadians(180);
+            o1 = Math.toRadians(-90);
 
-            x2 = -(D2.getDistance(DistanceUnit.INCH) - dwall);
-            y2 = dback;
-            o2 = Math.toRadians(-90);
+            x2 =  -(D2.getDistance(DistanceUnit.INCH) - dwall2);
+            y2 = 53;
+            o2 = Math.toRadians(180);
 
-            x3 = x2;
-            y3 = -dslam;
-            o3 = Math.toRadians(-90);
-
-            x4 = x3;
-           y4 = 0;
-           o4 = Math.toRadians(-90);
-
-           x5 = -(dslam + dwall);
-           y5 = 53;
-           o5 = Math.toRadians(-90);
+            x3 = dwall2 + dslam;
 
 
         } else {
-            x1 = 0;
+            x1 =-( dwall2 - dwall);
             y1 = dback;
-            o1 = Math.toRadians(0);
+            o1 = Math.toRadians(-90);
 
             x2 = (D4.getDistance(DistanceUnit.INCH) - dwall);
             y2 = dback;
@@ -218,30 +240,46 @@ public class Auto12 extends LinearOpMode {
             o5 = Math.toRadians(90);
 
         }
-        drive.setPoseEstimate(new Pose2d());
+        drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(-90)));
 
-        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,o4))
+        /*init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
                 .splineToConstantHeading(new Vector2d(x1,y1),o1)
                 .splineToConstantHeading(new Vector2d(x2,y2),o2)
                 .splineToConstantHeading(new Vector2d(x3,y3),o3)
                 //.lineTo(new Vector2d(x4,y4))
                 .build();
+
+         */
+        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(x1,y1,o1))
+                .lineToLinearHeading(new Pose2d(x2,y2,o2))
+                .forward(x3)
+
+                .build();
+/*
         drive.followTrajectorySequenceAsync(init1);
         drive.update();
        while( drive.isBusy()
                 && !isStopRequested()){
            drive.update();
            Slide();
-       }
-       drive.setPoseEstimate(new Pose2d(x4,y4,o4));
+       }*/
 
-        init2 = drive.trajectorySequenceBuilder(new Pose2d(0,0,o4))
+      // drive.setPoseEstimate(new Pose2d(x4,y4,o4));
+        // drive.setPoseEstimate(new Pose2d(x2,y2,o4));
+      /*  init2 = drive.trajectorySequenceBuilder(new Pose2d(x4,y4,o4))
                 .back(y5)
                 .turn(o5)
                 .forward(x5)
                 .build();
 
-        drive.followTrajectorySequenceAsync(init2);
+       */
+        /*init2 = drive.trajectorySequenceBuilder(new Pose2d(x2,y2 ,o4))
+                .lineToLinearHeading(new Pose2d(x3,y5,o5 + o4))
+                .forward(x5)
+                .build();*/
+
+        drive.followTrajectorySequenceAsync(init1);
         drive.update();
         while( drive.isBusy()
                 && !isStopRequested()){
@@ -274,10 +312,11 @@ public class Auto12 extends LinearOpMode {
                 vx = 60;
             }
         }
+        drive.setPoseEstimate(new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo));
         target = 600;
-        parktraj = drive.trajectorySequenceBuilder(currentpose)
+        parktraj = drive.trajectorySequenceBuilder(new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo))
                 .back(d1)
-                .lineToLinearHeading(new Pose2d(vx,vy,0))
+                 .lineToLinearHeading(new Pose2d(vx,vy,0))
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
         while( drive.isBusy()
@@ -289,6 +328,8 @@ public class Auto12 extends LinearOpMode {
 
 
     public void Cycle(){
+
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         for(int i = 0;i < xcord.length; i++){
             int xm;
             if (sidered){
@@ -301,18 +342,48 @@ public class Auto12 extends LinearOpMode {
             y = ycord[i];
             ServoClamp();
             Drive();
-            Drive();
+
+            if (i < xcord.length -1) {
+                Drive();
+                drive.setPoseEstimate(new Pose2d());
+                slam1 = drive.trajectorySequenceBuilder(new Pose2d())
+                        .forward(dslam)
+                        .strafeLeft(strafe)
+                        .build();
+                drive.followTrajectorySequenceAsync(slam1);
+                drive.update();
+                while (drive.isBusy()) {
+                    drive.update();
+                    Slide();
+                }
+            }
+
         }
     }
     public void ServoClamp() {
         double prevtarget = target;
-        target = 0;
+        S0.setPosition(0.1);
+        if (w == 1 ){
+            target = 400 + slidei*(5-leftstack);
+            leftstack -= 1;
+        }
+        else if(  w ==4) {
+          target = 400 + slidei*(5-rightstack);
+          rightstack -= 1;
+        }
+        else {
+            target = 0;
+        }
         while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            M0_2.setPower(-1);
         }
         M0_2.setPower(0);
         S0.setPosition(0.25);
+
         target = prevtarget;
+        while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+            M0_2.setPower(1);
+        }
 
     }
     public void Drive() {
@@ -465,19 +536,19 @@ public class Auto12 extends LinearOpMode {
                 ix = -12;
                 iy = -65;
                 io = Math.toRadians(-90);
-                target = 300;
+                starget = 300;
             }
             if(w == 3){
                 ix = 12;
                 iy = -65;
                 io = Math.toRadians(-90);
-                target = 300;
+                starget = 300;
             }
             if(w == 4){
                 ix = 65;
                 iy = -12;
                 io = 0;
-                target = 600;
+                starget = 600;
                 yfirst = true;
             }
 
@@ -517,6 +588,7 @@ public class Auto12 extends LinearOpMode {
                 .addDisplacementMarker(() ->{
                     if (atwall){
                         slidecalibrated = false;
+                        target = starget;
                     }
                     if (!atwall){
                         S1.setPosition(0.70);
@@ -542,8 +614,21 @@ public class Auto12 extends LinearOpMode {
             Slide();
         }
         if (!atwall){
+            double prevt = target;
             target = target - Sdrop;
-            S0.setPosition(0.05);
+            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+                M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            }
+
+            S0.setPosition(0);
+            S1.setPosition(0);
+            S2.setPosition(0.7);
+            target = prevt;
+            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+                M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            }
+
+
         }
     }
 
