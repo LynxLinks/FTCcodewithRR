@@ -162,7 +162,6 @@ public class DriveV8 extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            ServoClamp();
             Slide();
             UI();
             maunal();
@@ -187,10 +186,10 @@ public class DriveV8 extends LinearOpMode {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         } else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
-                M0_2.setPower(.5);
+                M0_2.setPower(.25);
             }
             if (D0.getState() == false) { //if slide is above limit
-                M0_2.setPower(-0.5);
+                M0_2.setPower(-0.25);
                 beenoff = true;
             }
             if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
@@ -368,9 +367,6 @@ public class DriveV8 extends LinearOpMode {
 
             currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
             atwall = true;
-            S0.setPosition(0); //drop and up on umbrella
-            S1.setPosition(0);
-            S2.setPosition(0.7);
 
         }
 
@@ -411,7 +407,12 @@ public class DriveV8 extends LinearOpMode {
         }
         if (!atwall){
             target = target - Sdrop;
+            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
+                M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            }
             S0.setPosition(0.05);
+            S1.setPosition(0);
+            S2.setPosition(0.7);
         }
 
     }
