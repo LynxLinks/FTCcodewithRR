@@ -53,16 +53,17 @@ public class Auto12 extends LinearOpMode {
     public static double d2 = 3;
     public static double Sdrop = 350;
     double target;
-    boolean sidered = true;
+    public static final boolean sidered = true;
+    public static double vy;
+    public static double vx;
+    public static double vo;
+    public static Pose2d autopose = new Pose2d();
     boolean yfirst;
     int y;
     int x;
     int w = 1;
     double starget;
-    double vy;
-    double vx;
     double d;
-    double vo;
     double ix;
     double iy;
     double io;
@@ -197,6 +198,7 @@ public class Auto12 extends LinearOpMode {
         Init();
         Cycle();
         Park();
+        autopose = drive.getPoseEstimate();
     }
 
     public void Init() {
@@ -291,30 +293,30 @@ public class Auto12 extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         if (sidered) {
             if (zone == "1") {
-                park = -60;
+                vx = -60;
             }
             if (zone == "2") {
-                park = -36;
+                vx = -36;
             }
             if (zone == "3") {
-                park = -12;
+                vx = -12;
             }
         }else{
             if (zone == "1") {
-                park = 12;
+                vx = 12;
             }
             if (zone == "2") {
-                park = 36;
+                vx = 36;
             }
             if (zone == "3") {
-                park = 60;
+                vx = 60;
             }
         }
         drive.setPoseEstimate(new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo));
         target = 600;
         parktraj = drive.trajectorySequenceBuilder(new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo))
                 .back(d1)
-                .lineToLinearHeading(new Pose2d(park+.1,vy+parkoffset,0))
+                 .lineToLinearHeading(new Pose2d(vx,vy,0))
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
         while( drive.isBusy()
@@ -500,7 +502,7 @@ public class Auto12 extends LinearOpMode {
                 ix = -65;
                 iy = -12;
                 io = Math.toRadians(180);
-                starget = 600;
+                target = 600;
                 yfirst = true;
 
             }
@@ -551,6 +553,7 @@ public class Auto12 extends LinearOpMode {
             S0.setPosition(0); //drop and up on umbrella
             S1.setPosition(0);
             S2.setPosition(0.7);
+
         }
 
         drive.setPoseEstimate(currentpose);
