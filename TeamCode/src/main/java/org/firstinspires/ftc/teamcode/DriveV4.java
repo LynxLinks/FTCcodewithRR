@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 //name and class
 
+@Disabled
 @Config
 @TeleOp(name = "DriveV4", group="Linear Opmode")
 
@@ -146,8 +147,8 @@ public class DriveV4 extends LinearOpMode {
         }
         if ((target == 200) && (D1.getDistance(DistanceUnit.MM) <= 33) || gamepad1.right_bumper) {
             target = 0;
-            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            while (Math.abs(target - 1.4*M0_2.getCurrentPosition()) > 10) {
+                M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
             }
             M0_2.setPower(0);
             S0.setPosition(0.25);
@@ -155,7 +156,7 @@ public class DriveV4 extends LinearOpMode {
     }
 
     public void Slide() {
-        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+        M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
         if (gamepad1.a) {
             target = 200;
             S0.setPosition(0.05);

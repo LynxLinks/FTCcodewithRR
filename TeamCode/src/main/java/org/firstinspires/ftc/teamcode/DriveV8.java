@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.google.gson.annotations.Until;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,10 +13,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import static org.firstinspires.ftc.teamcode.Auto12.sidered;
-import static org.firstinspires.ftc.teamcode.Auto12.vy;
-import static org.firstinspires.ftc.teamcode.Auto12.vx;
-import static org.firstinspires.ftc.teamcode.Auto12.autopose;
-
+import static org.firstinspires.ftc.teamcode.Auto12.slidespeed;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -42,16 +40,19 @@ public class DriveV8 extends LinearOpMode {
     DistanceSensor D4;
 
     public static double d1 = 11.5;
-    public static double d2 = 3;
+    public static double d2 = .2;
     public static double Sdrop = 350;
 
 
-    int w = 1;
+    int w = 4;
     int preset = 1;
-    boolean atwall = false;
+    boolean atwall = true;
     double target;
+    double starget = 850;
+    double vx;
+    double vo;
+    double vy;
     double d;
-    double vo = 0;
     double ix;
     double iy;
     double io;
@@ -68,6 +69,7 @@ public class DriveV8 extends LinearOpMode {
     double o3;
     double o4;
     boolean yfirst;
+    boolean god = true;
     boolean dup;
     boolean ddown;
     boolean dright;
@@ -84,7 +86,6 @@ public class DriveV8 extends LinearOpMode {
     int xm;
     int x;
     int y;
-    boolean rightafterauto = true;
 
     TrajectorySequence traj;
     Pose2d currentpose;
@@ -96,8 +97,8 @@ public class DriveV8 extends LinearOpMode {
     ,200,200,200,200,200,200,200,200,200,200,200};
 
 
-    int[] xcord = new int[]{3,2,1,0,1,-1,-1,1};
-    int [] ycord = new int[]{6,4,3,2,2,2,1,1};
+    int[] xcord = new int[]{0,3,2,1,0,-1,1,1,2};
+    int [] ycord = new int[]{2,6,5,3,4,2,2,4,4};
 
 
 
@@ -136,7 +137,7 @@ public class DriveV8 extends LinearOpMode {
         S1.setPosition(0);
         S2.setPosition(0.70);
 
-        drive.setPoseEstimate(autopose);
+
 
         // change target stack and x cord preset multiplier
         if (sidered){
@@ -146,14 +147,65 @@ public class DriveV8 extends LinearOpMode {
             w = 4;
             xm = -1;
         }
+        if(w == 1){
+            ix = -65;
+            iy = -12;
+            io = Math.toRadians(180);
+            target = 850;
+            yfirst = true;
+
+        }
+        if(w == 2){
+            ix = -12;
+            iy = -65;
+            io = Math.toRadians(-90);
+            target = 300;
+        }
+        if(w == 3){
+            ix = 12;
+            iy = -65;
+            io = Math.toRadians(-90);
+            target = 300;
+        }
+        if(w == 4){
+            ix = 65;
+            iy = -12;
+            io = 0;
+            target = 850;
+            yfirst = true;
+        }
+
         //load first preset
         y = ycord[0];
         x = xm*xcord[0];
 
+        /*Trajectory trajq = drive.trajectoryBuilder(autopose)
+                .lineToLinearHeading(new Pose2d(ix, iy,io))
+                .build();*/
+
         waitForStart();
 
-        while (opModeIsActive()) {
+        Drive();
+        atwall = true;
 
+       /* while (!gamepad1.dpad_left && !gamepad1.dpad_right){
+
+        }
+        drive.followTrajectoryAsync(trajq);
+        drive.update();
+        while (Math.abs(gamepad1.left_stick_x) < .5
+                && Math.abs(gamepad1.left_stick_y) < .5
+                && Math.abs(gamepad1.right_stick_x) < .5
+                && Math.abs(gamepad1.right_stick_y) < .5
+                && drive.isBusy()
+                && !isStopRequested()
+                && Math.abs(gamepad1.right_trigger) < .5
+                && Math.abs(gamepad1.left_trigger) < .5
+        ){
+            drive.update();
+            Slide();
+        }*/
+        while (opModeIsActive()) {
             Slide();
             UI();
             maunal();
@@ -161,27 +213,24 @@ public class DriveV8 extends LinearOpMode {
     }
 
     public void ServoClamp() {
-        double prevtarget = target;
-        target = 0;
-        while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-        }
-        M0_2.setPower(0);
+        S0.setPosition(0.0);
+        target = 20;
+        UntilSlide();
         S0.setPosition(0.25);
-        target = prevtarget;
-
+        //target = starget;
+        //UntilSlide();
     }
 
     public void Slide () {
 
         if (slidecalibrated) {
-            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
         } else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
-                M0_2.setPower(.5);
+                M0_2.setPower(.4);
             }
             if (D0.getState() == false) { //if slide is above limit
-                M0_2.setPower(-0.5);
+                M0_2.setPower(-0.4);
                 beenoff = true;
             }
             if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
@@ -197,7 +246,6 @@ public class DriveV8 extends LinearOpMode {
     }
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
         if (atwall) {
             if (y ==6){
                 d = d2;
@@ -206,6 +254,7 @@ public class DriveV8 extends LinearOpMode {
                 d = d1;
             }
             if(w == 1){
+                yfirst=false;
                 if (y >= 3){
 
 
@@ -284,6 +333,7 @@ public class DriveV8 extends LinearOpMode {
 
             }
             if(w == 4){
+                yfirst = false;
                 if (y >= 3){
                     vy = 24 * (y - 3) - 12;
                     if (x >= 2){
@@ -309,6 +359,9 @@ public class DriveV8 extends LinearOpMode {
 
                 }
             }
+            if (y == 6){
+                vx = vx -2*xm;
+            }
             if(yfirst){
                 x1 = ix;
                 y1 = vy;
@@ -330,14 +383,13 @@ public class DriveV8 extends LinearOpMode {
             o4 = vo;
             currentpose = new Pose2d(ix,iy,io);
             atwall = false;
-            target = hdata[x + 5*(y-1)+2];
         }
         else {
             if(w == 1){
                 ix = -65;
                 iy = -12;
                 io = Math.toRadians(180);
-                target = 600;
+                starget = 850;
                 yfirst = true;
 
             }
@@ -345,19 +397,22 @@ public class DriveV8 extends LinearOpMode {
                 ix = -12;
                 iy = -65;
                 io = Math.toRadians(-90);
-                target = 300;
+                starget = 400;
+                yfirst = false;
             }
             if(w == 3){
                 ix = 12;
                 iy = -65;
                 io = Math.toRadians(-90);
-                target = 300;
+                starget = 400;
+                yfirst = false;
+
             }
             if(w == 4){
                 ix = 65;
                 iy = -12;
                 io = 0;
-                target = 600;
+                starget = 850;
                 yfirst = true;
             }
 
@@ -382,15 +437,9 @@ public class DriveV8 extends LinearOpMode {
             o3 = io;
             o4 = io;
 
-            if (!rightafterauto){
-                currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
-            }
-
+            currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
+            drop();
             atwall = true;
-            S0.setPosition(0); //drop and up on umbrella
-            S1.setPosition(0);
-            S2.setPosition(0.7);
-
         }
 
         drive.setPoseEstimate(currentpose);
@@ -400,14 +449,20 @@ public class DriveV8 extends LinearOpMode {
                 .addDisplacementMarker(() ->{
                     if (atwall){
                         slidecalibrated = false;
-                    }
-                    if (!atwall){
-                        S1.setPosition(0.70);
-                        S2.setPosition(0);
+                        target = starget;
                     }
                 })
                 .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2))
                 .lineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3))
+                .addDisplacementMarker(() ->{
+                    if (!atwall){
+                        target = hdata[x + 5*(y-1)+2];
+                        if(hdata[x + 5*(y-1)+2] > 1000){
+                            S1.setPosition(0.70);
+                            S2.setPosition(0);
+                        }
+                    }
+                })
                 .lineToLinearHeading(new Pose2d(x4,y4,o4))
                 .build();
 
@@ -420,19 +475,16 @@ public class DriveV8 extends LinearOpMode {
                 && drive.isBusy()
                 && !isStopRequested()
                 && Math.abs(gamepad1.right_trigger) < .5
-                && Math.abs(gamepad1.left_trigger) < .5
-        )
+                && Math.abs(gamepad1.left_trigger) < .5)
 
         {
             drive.update();
             Slide();
             UI();
         }
-        if (!atwall){
-            target = target - Sdrop;
-            S0.setPosition(0.05);
+        if (!atwall && target > 500){
+            S0.setPosition(0);
         }
-
     }
     public void maunal(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -450,11 +502,39 @@ public class DriveV8 extends LinearOpMode {
             M2.setPower(-(Rotate + (yAxis - xAxis)));
         }
     }
+    public void UntilSlide() {
+        if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
+            M0_2.setPower(slidespeed);
+            while (target > 1.4*M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        else{
+            M0_2.setPower(-slidespeed );
+            while (target < 1.4*M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        M0_2.setPower(0);
+    }
+    public void drop(){
+        S0.setPosition(0);
+        double pt = target;
+        target = target - Sdrop;
+        UntilSlide();
+        S0.setPosition(0);
+        S1.setPosition(0);
+        S2.setPosition(0.7);
+        target = pt;
+        UntilSlide();
+    }
     public void UI() {
         //autoservo
-        if ((target <= 600) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
+        /*if ((target <= 850) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
            ServoClamp();
         }
+
+         */
         //Manual Servo
         if (gamepad1.left_bumper) {
             S0.setPosition(0.05);
@@ -464,16 +544,16 @@ public class DriveV8 extends LinearOpMode {
         }
 
         //Manual Slide
-        if (gamepad1.a) target = 200;
+        if (gamepad1.a) target = starget;
         if (gamepad1.b) target = 2550;
         if (gamepad1.y) target = 1950;
         if (gamepad1.x) target = 1300;
 
         //Mauanl Umbrella
-        if (gamepad2.y){
+        if (gamepad2.left_stick_button){
             S1.setPosition(0.70);
             S2.setPosition(0);
-        }if (gamepad2.x){
+        }if (gamepad2.right_stick_button){
             //down
             //up
             S1.setPosition(0);
@@ -492,8 +572,8 @@ public class DriveV8 extends LinearOpMode {
         if (gamepad1.dpad_right) dright2 = true;
         if (gamepad1.dpad_left) dleft2 = true;
 
-        if (gamepad2.x && preset < xcord.length-1) gx = true;
-        if (gamepad2.y && preset >= 0) gy = true;
+        if (gamepad2.x && preset < xcord.length) gx = true;
+        if (gamepad2.y && preset > 1) gy = true;
         if (!gamepad2.right_bumper && w < 4 && dbright) {
             dbright = false;
             w += 1;
@@ -537,6 +617,9 @@ public class DriveV8 extends LinearOpMode {
             x = 0;
             y = 2;
         }
+        if(gamepad2.left_trigger > 0.6){
+            atwall = true;
+        }
         if((!gamepad1.dpad_left) && dleft2){
             yfirst = false;
             dleft2 = false;
@@ -547,20 +630,29 @@ public class DriveV8 extends LinearOpMode {
             dright2 = false;
             Drive();
         }
+        /*if (gamepad2.right_trigger>.6){
+            slidecalibrated = false;
+        }
+
+         */
 
         //Teletry
+        telemetry.addData("preset", preset);
+        telemetry.addData("/", "/");
         telemetry.addData("x", x);
         telemetry.addData("y", y);
         telemetry.addData("w", w);
+        telemetry.addData("/", "/");
         telemetry.addData("atwall", atwall);
-        telemetry.addData("preset", preset);
+
         //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         //telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         //telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-        //telemetry.addData("target",target);
+        telemetry.addData("target",target);
+        //telemetry.addData("encoder",1.4*M0_2.getCurrentPosition());
+
 
         telemetry.update();
-
     }
 }
 

@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.google.gson.annotations.Until;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -49,16 +50,17 @@ public class Auto12 extends LinearOpMode {
     //teleop vars
     TrajectorySequence traj;
     Pose2d currentpose;
-    public static double d1 = 13;
+    public static double d1 = 14;
     public static double d2 = 3;
     public static double Sdrop = 350;
     double target;
-    public static final boolean sidered = true;
+    public static boolean sidered = true;
     public static double vy;
     public static double vx;
     public static double vo;
     public static Pose2d autopose = new Pose2d();
     boolean yfirst;
+    double vopark;
     int y;
     int x;
     int w = 1;
@@ -82,6 +84,7 @@ public class Auto12 extends LinearOpMode {
     boolean atwall = true;
     boolean beenoff = false;
     boolean slidecalibrated = false;
+
     int[] hdata = {400, 1300, 400, 1300, 400,
             1300, 1950, 2550, 1950, 1300,
             400, 2550, 400, 2550, 400,
@@ -95,16 +98,17 @@ public class Auto12 extends LinearOpMode {
     double o5;
     double y5;
     double park;
-    int[] xcord = new int[]{0, -1, -2};
-    int[] ycord = new int[]{2, 3, 2};
+    int[] xcord = new int[]{-1, -2};
+    int[] ycord = new int[]{3, 2};
     public static double dback = 0;
-    public static double dwall = 4;
+    public static double dwall = 3.5;
     public static double dwall2 = 9;
-    public static double dslam = 2;
-    public static double slidei = -80;
+    public static double dslam = 7;
+    public static double slidei = -150  ;
     public static double leftstack = 5;
     public static double rightstack = 5;
     public static double strafe = 1;
+    public static double slidespeed = 0.6;
     public static double parkoffset = -5;
 
     TrajectorySequence init1;
@@ -163,14 +167,24 @@ public class Auto12 extends LinearOpMode {
 
         initVuforia();
         initTfod();
+        if (D2.getDistance(DistanceUnit.INCH)<35){
+            sidered = true;
+        }
+        else{
+            sidered = false;
+        }
+
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1.0, 16.0 / 12.0);
         }
+
         FtcDashboard.getInstance().startCameraStream(tfod, 0);
+
         while (!isStarted()) {
             IdentifyVuforia();
         }
+
         if(w == 1){
             ix = -65;
             iy = -12;
@@ -191,19 +205,19 @@ public class Auto12 extends LinearOpMode {
             iy = -12;
             io = 0;
         }
+
         S0.setPosition(0);
         S1.setPosition(0);
-        S2.setPosition(0.75);
-
+        S2.setPosition(0.70);
         Init();
         Cycle();
         Park();
-        autopose = drive.getPoseEstimate();
+
     }
 
     public void Init() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        target = 750;
+        target = 900;
         if (sidered) {
 
 
@@ -212,19 +226,19 @@ public class Auto12 extends LinearOpMode {
             o1 = Math.toRadians(-90);
 
             x2 =  -(D2.getDistance(DistanceUnit.INCH) - dwall2);
-            y2 = 53;
+            y2 = 52;
             o2 = Math.toRadians(180);
 
             x3 = dwall2 + dslam;
 
 
         } else {
-            x1 = (D2.getDistance(DistanceUnit.INCH) - dwall);
+            x1 = (D4.getDistance(DistanceUnit.INCH) - dwall);
             y1 = dback;
             o1 = Math.toRadians(-90);
 
-            x2 =  (D2.getDistance(DistanceUnit.INCH) - dwall2);
-            y2 = 53;
+            x2 =  (D4.getDistance(DistanceUnit.INCH) - dwall2);
+            y2 = 52;
             o2 = Math.toRadians(0);
 
             x3 = dwall2 + dslam;
@@ -252,37 +266,47 @@ public class Auto12 extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         if (sidered) {
             if (zone == "1") {
-                vx = -60;
+                park = -60;
             }
             if (zone == "2") {
-                vx = -36;
+                park = -36;
             }
             if (zone == "3") {
-                vx = -12;
+                park = -12;
             }
         }else{
             if (zone == "1") {
-                vx = 12;
+                park = 12;
             }
             if (zone == "2") {
-                vx = 36;
+                park = 36;
             }
             if (zone == "3") {
-                vx = 60;
+                park = 60;
             }
         }
+
+        if (sidered){
+            vopark = Math.toRadians(180);
+        }
+        else{
+            vopark = Math.toRadians(0);
+        }
         drive.setPoseEstimate(new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo));
-        target = 600;
+        target = 800;
         parktraj = drive.trajectorySequenceBuilder(new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo))
                 .back(d1)
-                 .lineToLinearHeading(new Pose2d(vx,vy,0))
+                 .lineToLinearHeading(new Pose2d(park-.01,vy-3,vopark))
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
+        vx = park;
+        vy = vy -3;
         while( drive.isBusy()
                 && !isStopRequested()){
             drive.update();
             Slide();
         }
+        autopose = drive.getPoseEstimate();
     }
 
 
@@ -304,10 +328,10 @@ public class Auto12 extends LinearOpMode {
 
             if (i < xcord.length -1) {
                 Drive();
-                drive.setPoseEstimate(new Pose2d());
+                /*drive.setPoseEstimate(new Pose2d());
                 slam1 = drive.trajectorySequenceBuilder(new Pose2d())
                         .forward(dslam)
-                        .strafeLeft(strafe)
+                        //.strafeLeft(strafe)
                         .build();
                 drive.followTrajectorySequenceAsync(slam1);
                 drive.update();
@@ -315,35 +339,29 @@ public class Auto12 extends LinearOpMode {
                     drive.update();
                     Slide();
                 }
+
+                 */
             }
 
         }
     }
     public void ServoClamp() {
         double prevtarget = target;
-        S0.setPosition(0.1);
         if (w == 1 ){
-            target = 400 + slidei*(5-leftstack);
+            target = 350 + slidei*(5-leftstack);
             leftstack -= 1;
         }
         else if(  w ==4) {
-          target = 400 + slidei*(5-rightstack);
+          target = 350 + slidei*(5-rightstack);
           rightstack -= 1;
         }
         else {
             target = 0;
         }
-        while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-            M0_2.setPower(-1);
-        }
-        M0_2.setPower(0);
+        UntilSlide();
         S0.setPosition(0.25);
-
         target = prevtarget;
-        while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-            M0_2.setPower(1);
-        }
-
+        UntilSlide();
     }
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -480,14 +498,14 @@ public class Auto12 extends LinearOpMode {
             o4 = vo;
             currentpose = new Pose2d(ix,iy,io);
             atwall = false;
-            target = hdata[x + 5*(y-1)+2];
+            //target = hdata[x + 5*(y-1)+2];
         }
         else {
             if(w == 1){
                 ix = -65;
                 iy = -12;
                 io = Math.toRadians(180);
-                target = 600;
+                starget = 850;
                 yfirst = true;
 
             }
@@ -507,7 +525,7 @@ public class Auto12 extends LinearOpMode {
                 ix = 65;
                 iy = -12;
                 io = 0;
-                starget = 600;
+                starget = 850;
                 yfirst = true;
             }
 
@@ -534,9 +552,6 @@ public class Auto12 extends LinearOpMode {
 
             currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
             atwall = true;
-            S0.setPosition(0); //drop and up on umbrella
-            S1.setPosition(0);
-            S2.setPosition(0.7);
 
         }
 
@@ -549,45 +564,37 @@ public class Auto12 extends LinearOpMode {
                         slidecalibrated = false;
                         target = starget;
                     }
-                    if (!atwall){
-                        S1.setPosition(0.70);
-                        S2.setPosition(0);
-                    }
                 })
                 .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2))
+                .addDisplacementMarker(() ->{
+                    if (!atwall){
+                        target = hdata[x + 5*(y-1)+2];
+                        if(hdata[x + 5*(y-1)+2] > 1000){
+                            S1.setPosition(0.70);
+                            S2.setPosition(0);
+                        }
+
+                    }
+                })
+
                 .lineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3))
                 .lineToLinearHeading(new Pose2d(x4,y4,o4))
                 .build();
 
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
-        while (Math.abs(gamepad1.left_stick_x) < .5
-                && Math.abs(gamepad1.left_stick_y) < .5
-                && Math.abs(gamepad1.right_stick_x) < .5
-                && Math.abs(gamepad1.right_stick_y) < .5
-                && drive.isBusy()
+        while (
+                 drive.isBusy()
                 && !isStopRequested()
-                && Math.abs(gamepad1.right_trigger) < .5
-                && Math.abs(gamepad1.left_trigger) < .5) {
+
+               ) {
+            telemetry.addData("target", target);
+            telemetry.update();
             drive.update();
             Slide();
         }
         if (!atwall){
-            double prevt = target;
-            target = target - Sdrop;
-            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-                M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-            }
-
-            S0.setPosition(0);
-            S1.setPosition(0);
-            S2.setPosition(0.7);
-            target = prevt;
-            while (Math.abs(target - M0_2.getCurrentPosition()) > 10) {
-                M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
-            }
-
-
+            drop();
         }
     }
 
@@ -604,6 +611,9 @@ public class Auto12 extends LinearOpMode {
                 }
                 telemetry.addData("zone",zone);
                 telemetry.addLine("working");
+                telemetry.addData("sidered",sidered);
+                telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+                telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
                 telemetry.update();
             }
         }
@@ -611,15 +621,15 @@ public class Auto12 extends LinearOpMode {
     public void Slide () {
 
         if (slidecalibrated) {
-            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
         }
 
         else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
-                M0_2.setPower(.5);
+                M0_2.setPower(.4);
             }
             if (D0.getState() == false) { //if slide is above limit
-                M0_2.setPower(-0.5);
+                M0_2.setPower(-0.4);
                 beenoff = true;
             }
             if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
@@ -656,6 +666,36 @@ public class Auto12 extends LinearOpMode {
         // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
         tfod.loadModelFromFile(TFOD_MODEL_ASSET, LABELS);
         // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
+    }
+    public void UntilSlide() {
+        if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
+            M0_2.setPower(slidespeed);
+            while (target > 1.4*M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        else{
+            M0_2.setPower(-slidespeed );
+            while (target < 1.4*M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        M0_2.setPower(0);
+    }
+    public void drop(){
+        S0.setPosition(0);
+        double prevt = target;
+        target = target - Sdrop;
+        while (Math.abs(target - 1.4*M0_2.getCurrentPosition()) > 10) {
+            M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
+        }
+        S0.setPosition(0);
+        S1.setPosition(0);
+        S2.setPosition(0.7);
+        target = prevt;
+        while (Math.abs(target - 1.4*M0_2.getCurrentPosition()) > 10) {
+            M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
+        }
     }
 }
 

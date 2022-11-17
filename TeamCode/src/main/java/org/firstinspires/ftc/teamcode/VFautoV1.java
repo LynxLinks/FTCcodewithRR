@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -19,7 +20,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 
 
 import java.util.List;
-
+@Disabled
 @Config
 @Autonomous(name="VFautoV1", group="Linear Opmode")
 
