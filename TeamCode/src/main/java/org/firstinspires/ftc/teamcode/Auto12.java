@@ -110,6 +110,7 @@ public class Auto12 extends LinearOpMode {
     public static double strafe = 1;
     public static double slidespeed = 0.6;
     public static double parkoffset = -5;
+    int xm;
 
     TrajectorySequence init1;
     TrajectorySequence init2;
@@ -169,9 +170,11 @@ public class Auto12 extends LinearOpMode {
         initTfod();
         if (D2.getDistance(DistanceUnit.INCH)<35){
             sidered = true;
+
         }
         else{
             sidered = false;
+            xcord = new int[]{1, 2};
         }
 
         if (tfod != null) {
@@ -314,14 +317,9 @@ public class Auto12 extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         for(int i = 0;i < xcord.length; i++){
-            int xm;
-            if (sidered){
-                xm = 1;
-            }else{
-                xm = -1;
-            }
 
-            x = xm* xcord[i];
+
+            x = xcord[i];
             y = ycord[i];
             ServoClamp();
             Drive();
@@ -614,6 +612,7 @@ public class Auto12 extends LinearOpMode {
                 telemetry.addData("sidered",sidered);
                 telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
                 telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+                telemetry.addData("xm",xm);
                 telemetry.update();
             }
         }

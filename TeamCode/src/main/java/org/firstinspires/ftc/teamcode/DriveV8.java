@@ -101,8 +101,6 @@ public class DriveV8 extends LinearOpMode {
     int [] ycord = new int[]{2,6,5,3,4,2,2,4,4};
 
 
-
-
     public void runOpMode() {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -136,7 +134,6 @@ public class DriveV8 extends LinearOpMode {
         S0.setPosition(0.0);
         S1.setPosition(0);
         S2.setPosition(0.70);
-
 
 
         // change target stack and x cord preset multiplier
