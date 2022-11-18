@@ -97,8 +97,8 @@ public class DriveV8 extends LinearOpMode {
     ,200,200,200,200,200,200,200,200,200,200,200};
 
 
-    int[] xcord = new int[]{0,3,2,1,0,-1,1,1,2};
-    int [] ycord = new int[]{2,6,5,3,4,2,2,4,4};
+    int[] xcord = new int[]{0,3,2,1,0,1,-1};
+    int [] ycord = new int[]{2,6,4,3,4,5,1};
 
 
     public void runOpMode() {
@@ -634,18 +634,18 @@ public class DriveV8 extends LinearOpMode {
          */
 
         //Teletry
-        telemetry.addData("preset", preset);
-        telemetry.addData("/", "/");
         telemetry.addData("x", x);
+        telemetry.addData("", "");
         telemetry.addData("y", y);
+        telemetry.addData("", "");
         telemetry.addData("w", w);
-        telemetry.addData("/", "/");
+        telemetry.addData("", "");
         telemetry.addData("atwall", atwall);
 
         //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         //telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         //telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-        telemetry.addData("target",target);
+        //telemetry.addData("target",target);
         //telemetry.addData("encoder",1.4*M0_2.getCurrentPosition());
 
 

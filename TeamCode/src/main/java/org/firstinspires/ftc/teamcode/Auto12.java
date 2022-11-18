@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -165,16 +166,18 @@ public class Auto12 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         dashboard = FtcDashboard.getInstance();
-
         initVuforia();
         initTfod();
         if (D2.getDistance(DistanceUnit.INCH)<35){
             sidered = true;
+            xm = 1;
 
         }
         else{
             sidered = false;
-            xcord = new int[]{1, 2};
+            xm = -1;
+            w = 4;
+
         }
 
         if (tfod != null) {
@@ -319,7 +322,7 @@ public class Auto12 extends LinearOpMode {
         for(int i = 0;i < xcord.length; i++){
 
 
-            x = xcord[i];
+            x = xm * xcord[i];
             y = ycord[i];
             ServoClamp();
             Drive();
@@ -608,11 +611,12 @@ public class Auto12 extends LinearOpMode {
                     zone = recognition.getLabel();
                 }
                 telemetry.addData("zone",zone);
-                telemetry.addLine("working");
+                //telemetry.addLine("working");
                 telemetry.addData("sidered",sidered);
+                telemetry.addData("", "");
                 telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
                 telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-                telemetry.addData("xm",xm);
+                //telemetry.addData("xm",xm);
                 telemetry.update();
             }
         }
