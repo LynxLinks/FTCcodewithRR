@@ -51,7 +51,7 @@ public class Auto12 extends LinearOpMode {
     //teleop vars
     TrajectorySequence traj;
     Pose2d currentpose;
-    public static double d1 = 14;
+    public static double d1 = 12.8;
     public static double d2 = 3;
     public static double Sdrop = 350;
     double target;
@@ -100,7 +100,7 @@ public class Auto12 extends LinearOpMode {
     double y5;
     double park;
     int[] xcord = new int[]{-1, -2};
-    int[] ycord = new int[]{3, 2};
+    int[] ycord = new int[]{2, 2};
     public static double dback = 0;
     public static double dwall = 3.5;
     public static double dwall2 = 9;
@@ -109,7 +109,7 @@ public class Auto12 extends LinearOpMode {
     public static double leftstack = 5;
     public static double rightstack = 5;
     public static double strafe = 1;
-    public static double slidespeed = 0.6;
+    public static double slidespeed = 0.4;
     public static double parkoffset = -5;
     int xm;
 
@@ -315,13 +315,17 @@ public class Auto12 extends LinearOpMode {
         autopose = drive.getPoseEstimate();
     }
 
-
     public void Cycle(){
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         for(int i = 0;i < xcord.length; i++){
 
-
+            if (sidered && i == 1){
+                d1 = 14.8;
+            }
+            if (!sidered){
+                d1 = 14.2;
+            }
             x = xm * xcord[i];
             y = ycord[i];
             ServoClamp();
@@ -523,7 +527,7 @@ public class Auto12 extends LinearOpMode {
                 starget = 300;
             }
             if(w == 4){
-                ix = 65;
+                ix = 66.5;
                 iy = -12;
                 io = 0;
                 starget = 850;

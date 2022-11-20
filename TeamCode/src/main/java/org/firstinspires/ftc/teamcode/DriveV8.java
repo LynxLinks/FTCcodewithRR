@@ -97,8 +97,8 @@ public class DriveV8 extends LinearOpMode {
     ,200,200,200,200,200,200,200,200,200,200,200};
 
 
-    int[] xcord = new int[]{0,3,2,1,0,1,-1};
-    int [] ycord = new int[]{2,6,4,3,4,5,1};
+    int[] xcord = new int[]{-1,0,-1,0,1,0};
+    int [] ycord = new int[]{3,2,1,1,2,1,2};
 
 
     public void runOpMode() {
@@ -536,7 +536,7 @@ public class DriveV8 extends LinearOpMode {
         if (gamepad1.left_bumper) {
             S0.setPosition(0.05);
         }
-        if (gamepad1.right_bumper) {
+        if (gamepad1.right_bumper && atwall) {
             ServoClamp();
         }
 
