@@ -81,11 +81,16 @@ public class DriveV8 extends LinearOpMode {
     boolean dslide;
     boolean slidecalibrated;
     boolean beenoff;
+    boolean righttrig;
+    boolean Bbutton;
     boolean gx;
     boolean gy;
     int xm;
     int x;
     int y;
+    int wcordset;
+    int ycordset;
+    int xcordset;
 
     TrajectorySequence traj;
     Pose2d currentpose;
@@ -132,16 +137,16 @@ public class DriveV8 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         S0.setPosition(0.0);
-        S1.setPosition(0);
-        S2.setPosition(0.70);
+        S1.setPosition(0.02); //.02
+        S2.setPosition(.7); ;//.7
 
 
         // change target stack and x cord preset multiplier
         if (sidered){
-            w = 1;
+            wcordset = 1;
             xm = 1;
         } else {
-            w = 4;
+            wcordset = 4;
             xm = -1;
         }
         if(w == 1){
@@ -173,8 +178,8 @@ public class DriveV8 extends LinearOpMode {
         }
 
         //load first preset
-        y = ycord[0];
-        x = xm*xcord[0];
+        ycordset = ycord[0];
+        xcordset = xm*xcord[0];
 
         /*Trajectory trajq = drive.trajectoryBuilder(autopose)
                 .lineToLinearHeading(new Pose2d(ix, iy,io))
@@ -243,6 +248,233 @@ public class DriveV8 extends LinearOpMode {
     }
     public void Drive() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        if(atwall){
+            target = 850;
+        }
+        else{
+            drop();
+        }
+
+        math();
+
+        drive.setPoseEstimate(currentpose);
+
+        traj = drive.trajectorySequenceBuilder(currentpose)
+                .lineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1))
+                .addDisplacementMarker(() ->{
+                    if (atwall){
+                        slidecalibrated = false;
+                        target = starget;
+                    }
+                })
+                .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2))
+                .lineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3))
+                .addDisplacementMarker(() ->{
+                    if (!atwall){
+                        target = hdata[x + 5*(y-1)+2];
+                        if(hdata[x + 5*(y-1)+2] > 1000){
+                            S1.setPosition(.7); //.02
+                            S2.setPosition(.03); ;//.7
+                        }
+                    }
+                })
+                .lineToLinearHeading(new Pose2d(x4,y4,o4))
+                .build();
+
+        drive.followTrajectorySequenceAsync(traj);
+        drive.update();
+        while (Math.abs(gamepad1.left_stick_x) < .5
+                && Math.abs(gamepad1.left_stick_y) < .5
+                && Math.abs(gamepad1.right_stick_x) < .5
+                && Math.abs(gamepad1.right_stick_y) < .5
+                && drive.isBusy()
+                && !isStopRequested()
+                && Math.abs(gamepad1.right_trigger) < .5
+                && Math.abs(gamepad1.left_trigger) < .5)
+
+        {
+            drive.update();
+            Slide();
+            UI();
+        }
+        if (!atwall && target > 500){
+            S0.setPosition(0);
+        }
+    }
+    public void maunal(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        //manual drive
+        double yAxis;
+        double xAxis;
+        double Rotate;
+        yAxis = gamepad1.left_stick_y * .8 + gamepad1.right_stick_y / 3;
+        xAxis = gamepad1.left_stick_x * .8 + gamepad1.right_stick_x / 3;
+        Rotate = -gamepad1.left_trigger / 2 + gamepad1.right_trigger / 2;
+        if (!drive.isBusy()) {
+            M0.setPower((Rotate + (-yAxis + xAxis)));
+            M3.setPower((Rotate + (-yAxis - xAxis)));
+            M1.setPower(-(Rotate + (yAxis + xAxis)));
+            M2.setPower(-(Rotate + (yAxis - xAxis)));
+        }
+    }
+    public void UntilSlide() {
+        if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
+            M0_2.setPower(slidespeed);
+            while (target > 1.4*M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        else{
+            M0_2.setPower(-slidespeed );
+            while (target < 1.4*M0_2.getCurrentPosition()) { //faster slide algo
+                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
+            }
+        }
+        M0_2.setPower(0);
+    }
+    public void drop(){
+        S0.setPosition(0);
+        double pt = target;
+        target = target - Sdrop;
+        UntilSlide();
+        S0.setPosition(0);
+        S1.setPosition(0.02); //.02
+        S2.setPosition(.7); ;//.7
+        target = pt;
+        UntilSlide();
+    }
+    public void UI() {
+        //autoservo
+        /*if ((target <= 850) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
+           ServoClamp();
+        }
+
+         */
+        //Manual Servo
+        if (gamepad1.left_bumper) {
+            S0.setPosition(0.05);
+        }
+        if (gamepad1.right_bumper && atwall) {
+            ServoClamp();
+        }
+
+        //Manual Slide
+        if (gamepad1.a) target = starget;
+        if (gamepad1.b) target = 2550;
+        if (gamepad1.y) target = 1950;
+        if (gamepad1.x) target = 1300;
+
+        //Mauanl Umbrella
+        if (gamepad2.left_stick_button){
+            S1.setPosition(.7); //.02
+            S2.setPosition(.03); ;//.7
+        }if (gamepad2.right_stick_button){
+            S1.setPosition(0.02); //.02
+            S2.setPosition(.7); ;//.7
+        }
+
+
+        //Cordianates
+        if (!gamepad2.dpad_up) dup = true;
+        if (!gamepad2.dpad_down) ddown = true;
+        if (!gamepad2.dpad_left) dleft = true;
+        if (!gamepad2.dpad_right) dright = true;
+        if (!gamepad2.right_bumper) dbright = true;
+        if (!gamepad2.left_bumper) dbleft = true;
+        if (!gamepad1.dpad_right) dright2 = true;
+        if (!gamepad1.dpad_left) dleft2 = true;
+
+        if (gamepad2.x && preset < xcord.length) gx = true;
+        if (gamepad2.y && preset > 1) gy = true;
+        if (gamepad2.right_bumper && w < 4 && dbright) {
+            dbright = false;
+            wcordset += 1;
+        }
+        if (gamepad2.left_bumper && w > 1 && dbleft) {
+            dbleft = false;
+            wcordset -= 1;
+        }
+        if ((gamepad2.dpad_up) && dup) {
+            dup = false;
+            ycordset += 1;
+        }
+        if ((gamepad2.dpad_down) && ddown) {
+            ddown = false;
+            ycordset -= 1;
+        }
+        if ((gamepad2.dpad_right) && dright) {
+            dright = false;
+            xcordset += 1;
+        }
+        if ((gamepad2.dpad_left) && dleft) {
+            dleft = false;
+            xcordset -= 1;
+
+        }
+        if((gamepad2.x) && gx){
+            preset += 1;
+            xcordset = xm*xcord[preset-1];
+            ycordset = ycord[preset-1];
+
+            gx = false;
+        }
+        if((gamepad2.y) && gy){
+            preset -= 1;
+            xcordset = xm*xcord[preset-1];
+            ycordset = ycord[preset-1];
+
+            gy = false;
+        }
+        if(gamepad2.a){
+            xcordset = 0;
+            ycordset = 2;
+        }
+        if(gamepad2.left_trigger > 0.6){
+            atwall = true;
+        }
+        if((gamepad1.dpad_left) && dleft2){
+            yfirst = false;
+            dleft2 = false;
+            Drive();
+        }
+        if((gamepad1.dpad_right) && dright2){
+            yfirst = true;
+            dright2 = false;
+            Drive();
+        }
+        if(gamepad2.right_trigger > 0.6){
+            slidecalibrated = false;
+        }
+        if(!gamepad2.b) Bbutton = true;
+        if(gamepad2.b && Bbutton){
+            Bbutton = false;
+            math();
+        }
+
+
+        //Teletry
+        telemetry.addData("x", x);
+        telemetry.addData("", "");
+        telemetry.addData("y", y);
+        telemetry.addData("", "");
+        telemetry.addData("w", w);
+        telemetry.addData("", "");
+        telemetry.addData("atwall", atwall);
+
+        //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("target",target);
+        //telemetry.addData("encoder",1.4*M0_2.getCurrentPosition());
+
+        telemetry.update();
+    }
+    public void math(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        y = ycordset;
+        x = xcordset;
+        w = wcordset;
         if (atwall) {
             if (y ==6){
                 d = d2;
@@ -318,15 +550,15 @@ public class DriveV8 extends LinearOpMode {
                 } else {
 
 
-                vx = 24 * x + 12;
-                if (y <= 1) {
-                    vy = 24 * (y - 2) - 12;
-                    vo = Math.toRadians(-135);
-                } else {
-                    vy = 24 * (y - 3) - 12;
-                    vo = Math.toRadians(135);
+                    vx = 24 * x + 12;
+                    if (y <= 1) {
+                        vy = 24 * (y - 2) - 12;
+                        vo = Math.toRadians(-135);
+                    } else {
+                        vy = 24 * (y - 3) - 12;
+                        vo = Math.toRadians(135);
+                    }
                 }
-            }
 
             }
             if(w == 4){
@@ -394,14 +626,14 @@ public class DriveV8 extends LinearOpMode {
                 ix = -12;
                 iy = -65;
                 io = Math.toRadians(-90);
-                starget = 400;
+                starget = 500;
                 yfirst = false;
             }
             if(w == 3){
                 ix = 12;
                 iy = -65;
                 io = Math.toRadians(-90);
-                starget = 400;
+                starget = 500;
                 yfirst = false;
 
             }
@@ -435,221 +667,8 @@ public class DriveV8 extends LinearOpMode {
             o4 = io;
 
             currentpose = new Pose2d(vx + d*Math.cos(vo),vy + d*Math.sin(vo),vo);
-            drop();
             atwall = true;
         }
-
-        drive.setPoseEstimate(currentpose);
-
-        traj = drive.trajectorySequenceBuilder(currentpose)
-                .lineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1))
-                .addDisplacementMarker(() ->{
-                    if (atwall){
-                        slidecalibrated = false;
-                        target = starget;
-                    }
-                })
-                .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .01,o2))
-                .lineToLinearHeading(new Pose2d(x3 + .01,y3 + .03,o3))
-                .addDisplacementMarker(() ->{
-                    if (!atwall){
-                        target = hdata[x + 5*(y-1)+2];
-                        if(hdata[x + 5*(y-1)+2] > 1000){
-                            S1.setPosition(0.70);
-                            S2.setPosition(0);
-                        }
-                    }
-                })
-                .lineToLinearHeading(new Pose2d(x4,y4,o4))
-                .build();
-
-        drive.followTrajectorySequenceAsync(traj);
-        drive.update();
-        while (Math.abs(gamepad1.left_stick_x) < .5
-                && Math.abs(gamepad1.left_stick_y) < .5
-                && Math.abs(gamepad1.right_stick_x) < .5
-                && Math.abs(gamepad1.right_stick_y) < .5
-                && drive.isBusy()
-                && !isStopRequested()
-                && Math.abs(gamepad1.right_trigger) < .5
-                && Math.abs(gamepad1.left_trigger) < .5)
-
-        {
-            drive.update();
-            Slide();
-            UI();
-        }
-        if (!atwall && target > 500){
-            S0.setPosition(0);
-        }
-    }
-    public void maunal(){
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        //manual drive
-        double yAxis;
-        double xAxis;
-        double Rotate;
-        yAxis = gamepad1.left_stick_y * .8 + gamepad1.right_stick_y / 3;
-        xAxis = gamepad1.left_stick_x * .8 + gamepad1.right_stick_x / 3;
-        Rotate = -gamepad1.left_trigger / 2 + gamepad1.right_trigger / 2;
-        if (!drive.isBusy()) {
-            M0.setPower((Rotate + (-yAxis + xAxis)));
-            M3.setPower((Rotate + (-yAxis - xAxis)));
-            M1.setPower(-(Rotate + (yAxis + xAxis)));
-            M2.setPower(-(Rotate + (yAxis - xAxis)));
-        }
-    }
-    public void UntilSlide() {
-        if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
-            M0_2.setPower(slidespeed);
-            while (target > 1.4*M0_2.getCurrentPosition()) { //faster slide algo
-                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
-            }
-        }
-        else{
-            M0_2.setPower(-slidespeed );
-            while (target < 1.4*M0_2.getCurrentPosition()) { //faster slide algo
-                //* ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition())))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()))))));
-            }
-        }
-        M0_2.setPower(0);
-    }
-    public void drop(){
-        S0.setPosition(0);
-        double pt = target;
-        target = target - Sdrop;
-        UntilSlide();
-        S0.setPosition(0);
-        S1.setPosition(0);
-        S2.setPosition(0.7);
-        target = pt;
-        UntilSlide();
-    }
-    public void UI() {
-        //autoservo
-        /*if ((target <= 850) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
-           ServoClamp();
-        }
-
-         */
-        //Manual Servo
-        if (gamepad1.left_bumper) {
-            S0.setPosition(0.05);
-        }
-        if (gamepad1.right_bumper && atwall) {
-            ServoClamp();
-        }
-
-        //Manual Slide
-        if (gamepad1.a) target = starget;
-        if (gamepad1.b) target = 2550;
-        if (gamepad1.y) target = 1950;
-        if (gamepad1.x) target = 1300;
-
-        //Mauanl Umbrella
-        if (gamepad2.left_stick_button){
-            S1.setPosition(0.70);
-            S2.setPosition(0);
-        }if (gamepad2.right_stick_button){
-            //down
-            //up
-            S1.setPosition(0);
-
-            S2.setPosition(0.70);
-        }
-
-
-        //Cordianates
-        if (gamepad2.dpad_up) dup = true;
-        if (gamepad2.dpad_down) ddown = true;
-        if (gamepad2.dpad_left) dleft = true;
-        if (gamepad2.dpad_right) dright = true;
-        if (gamepad2.right_bumper) dbright = true;
-        if (gamepad2.left_bumper) dbleft = true;
-        if (gamepad1.dpad_right) dright2 = true;
-        if (gamepad1.dpad_left) dleft2 = true;
-
-        if (gamepad2.x && preset < xcord.length) gx = true;
-        if (gamepad2.y && preset > 1) gy = true;
-        if (!gamepad2.right_bumper && w < 4 && dbright) {
-            dbright = false;
-            w += 1;
-        }
-        if (!gamepad2.left_bumper && w > 1 && dbleft) {
-            dbleft = false;
-            w -= 1;
-        }
-        if ((!gamepad2.dpad_up) && dup) {
-            dup = false;
-            y += 1;
-        }
-        if ((!gamepad2.dpad_down) && ddown) {
-            ddown = false;
-            y -= 1;
-        }
-        if ((!gamepad2.dpad_right) && dright) {
-            dright = false;
-            x += 1;
-        }
-        if ((!gamepad2.dpad_left) && dleft) {
-            dleft = false;
-            x -= 1;
-
-        }
-        if((!gamepad2.x) && gx){
-            preset += 1;
-            x = xm*xcord[preset-1];
-            y = ycord[preset-1];
-
-            gx = false;
-        }
-        if((!gamepad2.y) && gy){
-            preset -= 1;
-            x = xm*xcord[preset-1];
-            y = ycord[preset-1];
-
-            gy = false;
-        }
-        if(gamepad2.a){
-            x = 0;
-            y = 2;
-        }
-        if(gamepad2.left_trigger > 0.6){
-            atwall = true;
-        }
-        if((!gamepad1.dpad_left) && dleft2){
-            yfirst = false;
-            dleft2 = false;
-            Drive();
-        }
-        if((!gamepad1.dpad_right) && dright2){
-            yfirst = true;
-            dright2 = false;
-            Drive();
-        }
-        /*if (gamepad2.right_trigger>.6){
-            slidecalibrated = false;
-        }
-
-         */
-
-        //Teletry
-        telemetry.addData("x", x);
-        telemetry.addData("", "");
-        telemetry.addData("y", y);
-        telemetry.addData("", "");
-        telemetry.addData("w", w);
-        telemetry.addData("", "");
-        telemetry.addData("atwall", atwall);
-
-        //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
-        //telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
-        //telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-        //telemetry.addData("target",target);
-        //telemetry.addData("encoder",1.4*M0_2.getCurrentPosition());
-
-
-        telemetry.update();
     }
 }
 
