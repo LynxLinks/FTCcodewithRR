@@ -13,9 +13,9 @@ public class MeepMeepTesting {
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(1000, 120);
 
-        int y = 5;
+        int y = 1;
         int x = 2;
-        int w = 1;
+        int w = 3;
 
         boolean atwall = true;
         double d = 14;
@@ -43,8 +43,8 @@ public class MeepMeepTesting {
         double io = 0;
         double xm = 1;
         Pose2d currentpose;
-        double offset = 16;
-        double doffset = 8;
+        double offset = 9;
+        double doffset = 8;  //revser offset
 
 
         if (w == 1) {

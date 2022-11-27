@@ -36,7 +36,7 @@ public class DriveV9 extends LinearOpMode {
     public static double d1 = 11.5;
     public static double d2 = .2;
     public static double Sdrop = 350;
-    public static double offset = 15;
+    public static double offset = 9;
     public static double reverseoffset = 8;
 
     int[] xcord = new int[]{-1,0,-1,0,1,0};
@@ -59,15 +59,12 @@ public class DriveV9 extends LinearOpMode {
     double x1;
     double x2;
     double x3;
-    double x4;
     double y1;
     double y2;
     double y3;
-    double y4;
     double o1;
     double o2;
     double o3;
-    double o4;
     boolean dup;
     boolean ddown;
     boolean dright;
@@ -125,11 +122,10 @@ public class DriveV9 extends LinearOpMode {
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         S0.setPosition(0.0);
-        S1.setPosition(0.02); //.02
-        S2.setPosition(.7); ;//.7
+        S1.setPosition(0.02);
+        S2.setPosition(.7);
 
 
-        // change target stack and x cord preset multiplier
         if (sidered){
             wcordset = 1;
             xm = 1;
@@ -164,14 +160,14 @@ public class DriveV9 extends LinearOpMode {
         if (slidecalibrated) {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
         } else {
-            if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
+            if (D0.getState() == true && !beenoff) {
                 M0_2.setPower(.4);
             }
-            if (D0.getState() == false) { //if slide is above limit
+            if (D0.getState() == false) {
                 M0_2.setPower(-0.4);
                 beenoff = true;
             }
-            if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
+            if (D0.getState() == true && beenoff) {
                 M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
