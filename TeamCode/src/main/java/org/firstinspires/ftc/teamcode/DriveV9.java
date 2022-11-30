@@ -432,11 +432,11 @@ public class DriveV9 extends LinearOpMode {
             Bbutton = false;
             math();
         }
-        telemetry.addData("x", x);
+        telemetry.addData("x", xcordset);
         telemetry.addData("", "");
-        telemetry.addData("y", y);
+        telemetry.addData("y", ycordset);
         telemetry.addData("", "");
-        telemetry.addData("w", w);
+        telemetry.addData("w", wcordset);
         telemetry.addData("", "");
         telemetry.addData("atwall", atwall);
         telemetry.update();
