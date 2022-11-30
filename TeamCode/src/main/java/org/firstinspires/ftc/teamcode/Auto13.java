@@ -26,8 +26,6 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import java.util.List;
 
 
-
-
 @Config
 @Autonomous(name="Auto13", group="Linear Opmode")
 
@@ -262,7 +260,6 @@ public class Auto13 extends LinearOpMode {
         }
     }
 
-
     public void Park() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         if (sidered) {
@@ -315,12 +312,6 @@ public class Auto13 extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         for(int i = 0;i < xcord.length; i++){
 
-            if (sidered && i == 1){
-                d1 = 14.8;
-            }
-            if (!sidered){
-                d1 = 14.2;
-            }
             x = xm * xcord[i];
             y = ycord[i];
             ServoClamp();
@@ -332,6 +323,7 @@ public class Auto13 extends LinearOpMode {
 
         }
     }
+
     public void ServoClamp() {
 
         M0_2.setPower(-1);
@@ -657,19 +649,21 @@ public class Auto13 extends LinearOpMode {
         M0_2.setPower(0);
     }
     public void drop(){
-        S0.setPosition(0);
-        double prevt = target;
+
+        double pt = target;
         target = target - Sdrop;
-        while (Math.abs(target - 1.4*M0_2.getCurrentPosition()) > 10) {
-            M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
+        UntilSlide();
+        if (beacon){
+            //only drop beacon
+            beacon = false;
         }
-        S0.setPosition(0);
-        S1.setPosition(0);
-        S2.setPosition(0.7);
-        target = prevt;
-        while (Math.abs(target - 1.4*M0_2.getCurrentPosition()) > 10) {
-            M0_2.setPower(-.5 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
+        else {
+            S0.setPosition(0);
         }
+        S1.setPosition(0.02); //.02
+        S2.setPosition(.7); ;//.7
+        target = pt;
+        UntilSlide();
     }
 }
 
