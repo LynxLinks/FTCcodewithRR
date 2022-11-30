@@ -61,7 +61,7 @@ public class Auto12 extends LinearOpMode {
     public static double vo;
     public static Pose2d autopose = new Pose2d();
     boolean yfirst;
-    double vopark;
+    public static double vopark;
     int y;
     int x;
     int w = 1;

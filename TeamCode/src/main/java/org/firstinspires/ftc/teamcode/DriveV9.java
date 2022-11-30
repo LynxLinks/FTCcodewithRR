@@ -11,7 +11,9 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import static org.firstinspires.ftc.teamcode.Auto12.sidered;
+import static org.firstinspires.ftc.teamcode.Auto12.vopark;
 import static org.firstinspires.ftc.teamcode.Auto12.slidespeed;
+import static org.firstinspires.ftc.teamcode.Auto12.autopose;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -32,12 +34,15 @@ public class DriveV9 extends LinearOpMode {
     DistanceSensor D2;
     DistanceSensor D3;
     DistanceSensor D4;
+    DigitalChannel D5;
 
     public static double d1 = 11.5;
     public static double d2 = .2;
     public static double Sdrop = 350;
     public static double offset = 9;
     public static double reverseoffset = 8;
+    public static double slideoffset = 300;
+    public static boolean usepreset = false;
 
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
@@ -65,6 +70,7 @@ public class DriveV9 extends LinearOpMode {
     double o1;
     double o2;
     double o3;
+    boolean beacon;
     boolean dup;
     boolean ddown;
     boolean dright;
@@ -84,6 +90,7 @@ public class DriveV9 extends LinearOpMode {
     int xcordset;
 
     TrajectorySequence traj;
+    TrajectorySequence setuptraj;
     Pose2d currentpose;
     int[] hdata = {100, 1300, 100, 1300, 100,
             1300, 1950, 2550, 1950, 1300,
@@ -104,6 +111,7 @@ public class DriveV9 extends LinearOpMode {
         S1 = hardwareMap.get(Servo.class, "S1");
         S2 = hardwareMap.get(Servo.class, "S2");
         D0 = hardwareMap.get(DigitalChannel.class, "D0");
+        D5 = hardwareMap.get(DigitalChannel.class, "D5");
         D1 = hardwareMap.get(DistanceSensor.class, "D1");
         D2 = hardwareMap.get(DistanceSensor.class, "D2");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
@@ -135,6 +143,27 @@ public class DriveV9 extends LinearOpMode {
         }
         ycordset = ycord[0];
         xcordset = xm*xcord[0];
+
+        if (usepreset){  //if using automatic move to stack
+            drive.setPoseEstimate(autopose);
+            setuptraj = drive.trajectorySequenceBuilder(autopose)
+                    .lineToLinearHeading(new Pose2d(-65, -12,vopark))
+                    .build();
+            drive.followTrajectorySequenceAsync(setuptraj);
+            while (Math.abs(gamepad1.left_stick_x) < .5
+                    && Math.abs(gamepad1.left_stick_y) < .5
+                    && Math.abs(gamepad1.right_stick_x) < .5
+                    && Math.abs(gamepad1.right_stick_y) < .5
+                    && drive.isBusy()
+                    && !isStopRequested()
+                    && Math.abs(gamepad1.right_trigger) < .5
+                    && Math.abs(gamepad1.left_trigger) < .5) {
+                drive.update();
+                Slide();
+                UI();
+            }
+        }
+
         math();
         math();
 
@@ -148,12 +177,20 @@ public class DriveV9 extends LinearOpMode {
         }
     }
     public void ServoClamp() {
-        S0.setPosition(0.0);
-        target = 20;
-        UntilSlide();
-        S0.setPosition(0.25);
-        //target = starget;
-        //UntilSlide();
+
+            M0_2.setPower(-1);
+            while (D5.getState() == false);
+            if (w == 4 || w ==1){
+                //close upper
+            }
+            else{
+                //close both
+            }
+            M0_2.setPower(1);
+            target = M0_2.getCurrentPosition() + slideoffset;
+            UntilSlide();
+
+
     }
     public void Slide () {
 
@@ -192,43 +229,50 @@ public class DriveV9 extends LinearOpMode {
                         slidecalibrated = false;
                         target = starget;
                     }
+                    if (!atwall){
+
+
+                    target = hdata[x + 5*(y-1)+2];
+                    if(hdata[x + 5*(y-1)+2] > 1000){
+                        S1.setPosition(.7); //.02
+                        S2.setPosition(.03); ;//.7
+                    }
+                    }
                 })
                 .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                 .addDisplacementMarker(() ->{
-                    if (!atwall){
-                        target = hdata[x + 5*(y-1)+2];
-                        if(hdata[x + 5*(y-1)+2] > 1000){
-                            S1.setPosition(.7); //.02
-                            S2.setPosition(.03); ;//.7
-                        }
+                    if (target < 150 && atwall == false){  //if at ground station than drop cone and set slide up
+                        S0.setPosition(0);
+                        target = 800;
                     }
                 })
                 .splineToSplineHeading(new Pose2d(x3-.01, y3-.01, o3 +.01), o3)
                 .build();
 
-        drive.followTrajectorySequenceAsync(traj);
-        drive.update();
-        while (Math.abs(gamepad1.left_stick_x) < .5
-                && Math.abs(gamepad1.left_stick_y) < .5
-                && Math.abs(gamepad1.right_stick_x) < .5
-                && Math.abs(gamepad1.right_stick_y) < .5
-                && drive.isBusy()
-                && !isStopRequested()
-                && Math.abs(gamepad1.right_trigger) < .5
-                && Math.abs(gamepad1.left_trigger) < .5)
 
-        {
+            drive.followTrajectorySequenceAsync(traj);
+
             drive.update();
-            Slide();
-            UI();
-        }
-        if (!atwall){
-            preset += 1;
-            xcordset = xm*xcord[preset-1];
-            ycordset = ycord[preset-1];
-            if (target > 500){
-                S0.setPosition(0);
+            while (Math.abs(gamepad1.left_stick_x) < .5
+                    && Math.abs(gamepad1.left_stick_y) < .5
+                    && Math.abs(gamepad1.right_stick_x) < .5
+                    && Math.abs(gamepad1.right_stick_y) < .5
+                    && drive.isBusy()
+                    && !isStopRequested()
+                    && Math.abs(gamepad1.right_trigger) < .5
+                    && Math.abs(gamepad1.left_trigger) < .5) {
+                drive.update();
+                Slide();
+                UI();
             }
+            if (!atwall) {
+                preset += 1;
+                xcordset = xm * xcord[preset - 1];
+                ycordset = ycord[preset - 1];
+                if (target > 500 && !beacon) {
+                    S0.setPosition(0);
+                }
+
         }
 
     }
@@ -260,15 +304,141 @@ public class DriveV9 extends LinearOpMode {
         M0_2.setPower(0);
     }
     public void drop(){
-        S0.setPosition(0);
+
         double pt = target;
         target = target - Sdrop;
         UntilSlide();
-        S0.setPosition(0);
+        if (beacon){
+            //only drop beacon
+            beacon = false;
+        }
+        else {
+            S0.setPosition(0);
+        }
         S1.setPosition(0.02); //.02
         S2.setPosition(.7); ;//.7
         target = pt;
         UntilSlide();
+    }
+
+    public void UI() {
+        if (D5.getState() == false && D1.getDistance(DistanceUnit.MM) < 33 && target <= 1000){
+            ServoClamp();
+        }
+
+        //Manual Servo
+        if (gamepad1.left_bumper) {
+            S0.setPosition(0.05);
+        }
+        if (gamepad1.right_bumper ) {
+            if (atwall) {
+                ServoClamp();
+            } else {
+                drop();
+            }
+        }
+
+        //Manual Slide
+        if (gamepad1.a) target = starget;
+        if (gamepad1.b) target = 2550;
+        if (gamepad1.y) target = 1950;
+        if (gamepad1.x) target = 1300;
+
+        //Mauanl Umbrella
+        if (gamepad2.left_stick_button){
+            S1.setPosition(.7); //.02
+            S2.setPosition(.03); ;//.7
+        }if (gamepad2.right_stick_button){
+            S1.setPosition(0.02); //.02
+            S2.setPosition(.7); ;//.7
+        }
+
+
+        //Cordianates
+        if (!gamepad2.dpad_up) dup = true;
+        if (!gamepad2.dpad_down) ddown = true;
+        if (!gamepad2.dpad_left) dleft = true;
+        if (!gamepad2.dpad_right) dright = true;
+        if (!gamepad2.right_bumper) dbright = true;
+        if (!gamepad2.left_bumper) dbleft = true;
+        if (!gamepad1.dpad_right) dright2 = true;
+        if (!gamepad1.dpad_left) dleft2 = true;
+
+        if (gamepad2.x && preset < xcord.length) gx = true;
+        if (gamepad2.y && preset > 1) gy = true;
+        if (gamepad2.right_bumper && w < 4 && dbright) {
+            dbright = false;
+            wcordset += 1;
+        }
+        if (gamepad2.left_bumper && w > 1 && dbleft) {
+            dbleft = false;
+            wcordset -= 1;
+        }
+        if ((gamepad2.dpad_up) && dup) {
+            dup = false;
+            ycordset += 1;
+        }
+        if ((gamepad2.dpad_down) && ddown) {
+            ddown = false;
+            ycordset -= 1;
+        }
+        if ((gamepad2.dpad_right) && dright) {
+            dright = false;
+            xcordset += 1;
+        }
+        if ((gamepad2.dpad_left) && dleft) {
+            dleft = false;
+            xcordset -= 1;
+
+        }
+        if((gamepad2.x) && gx){
+            preset += 1;
+            xcordset = xm*xcord[preset-1];
+            ycordset = ycord[preset-1];
+
+            gx = false;
+        }
+        if((gamepad2.y) && gy){
+            preset -= 1;
+            xcordset = xm*xcord[preset-1];
+            ycordset = ycord[preset-1];
+
+            gy = false;
+        }
+        if(gamepad2.right_stick_y > .5){
+            beacon = true;
+        }
+        if(gamepad2.right_stick_y < .5){
+            beacon = false;
+        }
+        if(gamepad2.a){
+            xcordset = 0;
+            ycordset = 2;
+        }
+        if(gamepad2.left_trigger > 0.6){
+            atwall = true;
+        }
+        if((gamepad1.dpad_right) && dright2){
+
+            dright2 = false;
+            Drive();
+        }
+        if(gamepad2.right_trigger > 0.6){
+            slidecalibrated = false;
+        }
+        if(!gamepad2.b) Bbutton = true;
+        if(gamepad2.b && Bbutton){
+            Bbutton = false;
+            math();
+        }
+        telemetry.addData("x", x);
+        telemetry.addData("", "");
+        telemetry.addData("y", y);
+        telemetry.addData("", "");
+        telemetry.addData("w", w);
+        telemetry.addData("", "");
+        telemetry.addData("atwall", atwall);
+        telemetry.update();
     }
     public void math() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -432,118 +602,7 @@ public class DriveV9 extends LinearOpMode {
             atwall = true;
         }
     }
-    public void UI() {
-        //autoservo
-        /*if ((target <= 850) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
-           ServoClamp();
-        }
-
-         */
-
-        //Manual Servo
-        if (gamepad1.left_bumper) {
-            S0.setPosition(0.05);
-        }
-        if (gamepad1.right_bumper && atwall) {
-            ServoClamp();
-        }
-
-        //Manual Slide
-        if (gamepad1.a) target = starget;
-        if (gamepad1.b) target = 2550;
-        if (gamepad1.y) target = 1950;
-        if (gamepad1.x) target = 1300;
-
-        //Mauanl Umbrella
-        if (gamepad2.left_stick_button){
-            S1.setPosition(.7); //.02
-            S2.setPosition(.03); ;//.7
-        }if (gamepad2.right_stick_button){
-            S1.setPosition(0.02); //.02
-            S2.setPosition(.7); ;//.7
-        }
-
-
-        //Cordianates
-        if (!gamepad2.dpad_up) dup = true;
-        if (!gamepad2.dpad_down) ddown = true;
-        if (!gamepad2.dpad_left) dleft = true;
-        if (!gamepad2.dpad_right) dright = true;
-        if (!gamepad2.right_bumper) dbright = true;
-        if (!gamepad2.left_bumper) dbleft = true;
-        if (!gamepad1.dpad_right) dright2 = true;
-        if (!gamepad1.dpad_left) dleft2 = true;
-
-        if (gamepad2.x && preset < xcord.length) gx = true;
-        if (gamepad2.y && preset > 1) gy = true;
-        if (gamepad2.right_bumper && w < 4 && dbright) {
-            dbright = false;
-            wcordset += 1;
-        }
-        if (gamepad2.left_bumper && w > 1 && dbleft) {
-            dbleft = false;
-            wcordset -= 1;
-        }
-        if ((gamepad2.dpad_up) && dup) {
-            dup = false;
-            ycordset += 1;
-        }
-        if ((gamepad2.dpad_down) && ddown) {
-            ddown = false;
-            ycordset -= 1;
-        }
-        if ((gamepad2.dpad_right) && dright) {
-            dright = false;
-            xcordset += 1;
-        }
-        if ((gamepad2.dpad_left) && dleft) {
-            dleft = false;
-            xcordset -= 1;
-
-        }
-        if((gamepad2.x) && gx){
-            preset += 1;
-            xcordset = xm*xcord[preset-1];
-            ycordset = ycord[preset-1];
-
-            gx = false;
-        }
-        if((gamepad2.y) && gy){
-            preset -= 1;
-            xcordset = xm*xcord[preset-1];
-            ycordset = ycord[preset-1];
-
-            gy = false;
-        }
-        if(gamepad2.a){
-            xcordset = 0;
-            ycordset = 2;
-        }
-        if(gamepad2.left_trigger > 0.6){
-            atwall = true;
-        }
-        if((gamepad1.dpad_right) && dright2){
-
-            dright2 = false;
-            Drive();
-        }
-        if(gamepad2.right_trigger > 0.6){
-            slidecalibrated = false;
-        }
-        if(!gamepad2.b) Bbutton = true;
-        if(gamepad2.b && Bbutton){
-            Bbutton = false;
-            math();
-        }
-        telemetry.addData("x", x);
-        telemetry.addData("", "");
-        telemetry.addData("y", y);
-        telemetry.addData("", "");
-        telemetry.addData("w", w);
-        telemetry.addData("", "");
-        telemetry.addData("atwall", atwall);
-        telemetry.update();
-    }
 
 }
+
 
