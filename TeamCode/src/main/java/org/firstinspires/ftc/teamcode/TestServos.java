@@ -40,8 +40,9 @@ public class TestServos extends LinearOpMode {
     DistanceSensor D3;
     DistanceSensor D4;
 
-    public static double camClamped = 0.25;
-    public static double camDrop = 0;
+    public static double camBothClosed = 0.08;
+    public static double camTopOpen= 0.27;
+    public static double camBothOpen= 0.37;
     public static double UmbrellaMin1 = 0.02;
     public static double UmbrellaMin2 = 0.03;
     public static double UmbrellaMax1 = 0.7;
@@ -120,12 +121,6 @@ public class TestServos extends LinearOpMode {
 
          */
         //Manual Servo
-        if (gamepad1.dpad_left) {
-            S0.setPosition(camDrop);
-        }
-        if (gamepad1.dpad_right){
-            S0.setPosition(camClamped);
-        }
         if (gamepad1.dpad_up) {
             S1.setPosition(UmbrellaMin1); //.02
             S2.setPosition(UmbrellaMax2); ;//.7
@@ -140,6 +135,10 @@ public class TestServos extends LinearOpMode {
         }
 
         //Manual Slide
+        if (gamepad2.y) S0.setPosition(camBothClosed);
+        if (gamepad2.b) S0.setPosition(camTopOpen);
+        if (gamepad2.a) S0.setPosition(camBothOpen);
+
         if (gamepad1.a) target = 500;
         if (gamepad1.b) target = 2550;
         if (gamepad1.y) target = 1950;

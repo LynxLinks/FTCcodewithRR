@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Config
-@TeleOp(name = "DriveV8", group="Linear Opmode")
+@TeleOp(name = "DriveV9", group="Linear Opmode")
 public class DriveV9 extends LinearOpMode {
     DcMotor M0;
     FtcDashboard dashboard;
