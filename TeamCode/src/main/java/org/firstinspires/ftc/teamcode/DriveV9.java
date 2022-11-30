@@ -10,10 +10,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import static org.firstinspires.ftc.teamcode.Auto12.sidered;
-import static org.firstinspires.ftc.teamcode.Auto12.vopark;
-import static org.firstinspires.ftc.teamcode.Auto12.slidespeed;
-import static org.firstinspires.ftc.teamcode.Auto12.autopose;
+import static org.firstinspires.ftc.teamcode.Auto13.sidered;
+import static org.firstinspires.ftc.teamcode.Auto13.vopark;
+import static org.firstinspires.ftc.teamcode.Auto13.slidespeed;
+import static org.firstinspires.ftc.teamcode.Auto13.slideoffset;
+import static org.firstinspires.ftc.teamcode.Auto13.autopose;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -36,24 +37,34 @@ public class DriveV9 extends LinearOpMode {
     DistanceSensor D4;
     DigitalChannel D5;
 
+    TrajectorySequence traj;
+    TrajectorySequence setuptraj;
+    Pose2d currentpose;
+
     public static double d1 = 11.5;
     public static double d2 = .2;
     public static double Sdrop = 350;
     public static double offset = 9;
     public static double reverseoffset = 8;
-    public static double slideoffset = 300;
     public static boolean usepreset = false;
 
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
 
+    int preset = 1;
+    boolean atwall = true;
+    double starget = 850;
+    int[] hdata = {100, 1300, 100, 1300, 100,
+            1300, 1950, 2550, 1950, 1300,
+            100, 2550, 100, 2550, 100,
+            1300, 1950, 2550, 1950, 1300,
+            100, 1300, 100, 1300, 100
+            ,200,200,200,200,200,200,200,200,200,200,200};
+
     int x;
     int y;
     int w;
-    int preset = 1;
-    boolean atwall = true;
     double target;
-    double starget = 850;
     double vx;
     double vo;
     double vy;
@@ -89,15 +100,6 @@ public class DriveV9 extends LinearOpMode {
     int ycordset;
     int xcordset;
 
-    TrajectorySequence traj;
-    TrajectorySequence setuptraj;
-    Pose2d currentpose;
-    int[] hdata = {100, 1300, 100, 1300, 100,
-            1300, 1950, 2550, 1950, 1300,
-            100, 2550, 100, 2550, 100,
-            1300, 1950, 2550, 1950, 1300,
-            100, 1300, 100, 1300, 100
-            ,200,200,200,200,200,200,200,200,200,200,200};
     public void runOpMode() {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -353,8 +355,7 @@ public class DriveV9 extends LinearOpMode {
             S2.setPosition(.7); ;//.7
         }
 
-
-        //Cordianates
+        //coordinates
         if (!gamepad2.dpad_up) dup = true;
         if (!gamepad2.dpad_down) ddown = true;
         if (!gamepad2.dpad_left) dleft = true;
