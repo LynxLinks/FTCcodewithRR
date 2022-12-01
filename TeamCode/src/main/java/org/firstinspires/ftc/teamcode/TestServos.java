@@ -114,6 +114,7 @@ public class TestServos extends LinearOpMode {
         }
     }
     public void UI() {
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //autoservo
         /*if ((target <= 850) && (D1.getDistance(DistanceUnit.MM) <= 33)) {
            ServoClamp();
@@ -121,17 +122,36 @@ public class TestServos extends LinearOpMode {
 
          */
         //Manual Servo
+        if (gamepad1.dpad_right){
+            TrajectorySequence traj = drive.trajectorySequenceBuilder(new Pose2d())
+                    .lineToLinearHeading(new Pose2d(-24, 0,Math.toRadians(180)))
+                    .build();
+            drive.followTrajectorySequenceAsync(traj);
+            drive.update();
+            while (Math.abs(gamepad1.left_stick_x) < .5
+                    && Math.abs(gamepad1.left_stick_y) < .5
+                    && Math.abs(gamepad1.right_stick_x) < .5
+                    && Math.abs(gamepad1.right_stick_y) < .5
+                    && drive.isBusy()
+                    && !isStopRequested()
+                    && Math.abs(gamepad1.right_trigger) < .5
+                    && Math.abs(gamepad1.left_trigger) < .5) {
+                drive.update();
+                Slide();
+                UI();
+            }
+        }
         if (gamepad1.dpad_up) {
             S1.setPosition(UmbrellaMin1); //.02
-            S2.setPosition(UmbrellaMax2); ;//.7
+            S2.setPosition(UmbrellaMax2); //.7
             S1.setPosition(0.02); //.02
-            S2.setPosition(.7); ;//.7
+            S2.setPosition(.7); //.7
         }
         if (gamepad1.dpad_down){
             S1.setPosition(UmbrellaMax1); //.7
             S2.setPosition(UmbrellaMin2); //.03
             S1.setPosition(.7); //.02
-            S2.setPosition(.03); ;//.7
+            S2.setPosition(.03); //.7
         }
 
         //Manual Slide
@@ -147,5 +167,13 @@ public class TestServos extends LinearOpMode {
         if (slidecalibrated && gamepad1.left_bumper) {
             slidecalibrated = false;
         }
+
+        telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+        telemetry.addData("back", D3.getDistance(DistanceUnit.INCH));
+        telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+        telemetry.addData("target", target);
+        telemetry.addData("encoder", M0_2.getCurrentPosition());
+        telemetry.update();
     }
 }
