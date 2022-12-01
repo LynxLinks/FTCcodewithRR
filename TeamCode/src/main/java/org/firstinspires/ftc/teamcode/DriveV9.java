@@ -17,6 +17,7 @@ import static org.firstinspires.ftc.teamcode.Auto13.slideoffset;
 import static org.firstinspires.ftc.teamcode.Auto13.autopose;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Config
 @TeleOp(name = "DriveV9", group="Linear Opmode")
@@ -55,9 +56,9 @@ public class DriveV9 extends LinearOpMode {
     boolean atwall = true;
     double starget = 850;
     int[] hdata = {100, 1300, 100, 1300, 100,
-            1300, 1950, 2550, 1950, 1300,
-            100, 2550, 100, 2550, 100,
-            1300, 1950, 2550, 1950, 1300,
+            1300, 1950, 2400, 1950, 1300,
+            100, 2400, 100, 2400, 100,
+            1300, 1950, 2400, 1950, 1300,
             100, 1300, 100, 1300, 100
             ,200,200,200,200,200,200,200,200,200,200,200};
 
@@ -222,8 +223,8 @@ public class DriveV9 extends LinearOpMode {
 
         if(atwall)target = 850;
         else drop();
-
         math();
+        drive.setPoseEstimate(currentpose);
         traj = drive.trajectorySequenceBuilder(currentpose)
                 .lineToLinearHeading(new Pose2d(x1, y1,o1))
                 .addDisplacementMarker(() ->{
@@ -281,18 +282,16 @@ public class DriveV9 extends LinearOpMode {
     public void manual(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //manual drive
-        double yAxis;
-        double xAxis;
-        double Rotate;
-        yAxis = gamepad1.left_stick_y * .8 + gamepad1.right_stick_y / 3;
-        xAxis = gamepad1.left_stick_x * .8 + gamepad1.right_stick_x / 3;
-        Rotate = -gamepad1.left_trigger / 2 + gamepad1.right_trigger / 2;
-        if (!drive.isBusy()) {
-            M0.setPower((Rotate + (-yAxis + xAxis)));
-            M3.setPower((Rotate + (-yAxis - xAxis)));
-            M1.setPower(-(Rotate + (yAxis + xAxis)));
-            M2.setPower(-(Rotate + (yAxis - xAxis)));
-        }
+        drive.setWeightedDrivePower(
+                new Pose2d(
+                        -gamepad1.left_stick_y -0.2*gamepad1.right_stick_y,
+                        -gamepad1.left_stick_x-0.2*gamepad1.right_stick_x,
+                        gamepad1.left_trigger - gamepad1.right_trigger
+                )
+        );
+
+        drive.update();
+
     }
     public void UntilSlide() {
         if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
@@ -324,6 +323,8 @@ public class DriveV9 extends LinearOpMode {
     }
 
     public void UI() {
+        StandardTrackingWheelLocalizer myLocalizer = new StandardTrackingWheelLocalizer(hardwareMap);
+
         if (D5.getState() == false && D1.getDistance(DistanceUnit.MM) < 33 && target <= 1000){
             ServoClamp();
         }
@@ -342,9 +343,9 @@ public class DriveV9 extends LinearOpMode {
 
         //Manual Slide
         if (gamepad1.a) target = starget;
-        if (gamepad1.b) target = 2550;
+        if (gamepad1.b) target = 2400;
         if (gamepad1.y) target = 1950;
-        if (gamepad1.x) target = 1300;
+        if (gamepad1.x) target = 1350;
 
         //Mauanl Umbrella
         if (gamepad2.left_stick_button){
@@ -420,7 +421,6 @@ public class DriveV9 extends LinearOpMode {
             atwall = true;
         }
         if((gamepad1.dpad_right) && dright2){
-
             dright2 = false;
             Drive();
         }
@@ -432,6 +432,10 @@ public class DriveV9 extends LinearOpMode {
             Bbutton = false;
             math();
         }
+        myLocalizer.update();
+
+        Pose2d myPose = myLocalizer.getPoseEstimate();
+
         telemetry.addData("x", xcordset);
         telemetry.addData("", "");
         telemetry.addData("y", ycordset);
@@ -439,7 +443,11 @@ public class DriveV9 extends LinearOpMode {
         telemetry.addData("w", wcordset);
         telemetry.addData("", "");
         telemetry.addData("atwall", atwall);
+        telemetry.addData("x", myPose.getX());
+        telemetry.addData("y", myPose.getY());
+        telemetry.addData("heading", myPose.getHeading());
         telemetry.update();
+
     }
     //z
     public void math() {
@@ -555,6 +563,9 @@ public class DriveV9 extends LinearOpMode {
             x2 = vx + d * Math.cos(vo);
             y2 = vy + d * Math.sin(vo);
             o2 = vo;
+            x3 =x2;
+            y3 = y2;
+            o3 = o2;
             currentpose = new Pose2d(ix, iy, io);
             atwall = false;
 
@@ -600,7 +611,8 @@ public class DriveV9 extends LinearOpMode {
             x3 = ix;
             y3 = iy;
             o3 = io;
-            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), drive.getRawExternalHeading());
+
+            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
             atwall = true;
         }
     }

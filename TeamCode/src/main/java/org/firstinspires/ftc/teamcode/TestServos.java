@@ -47,6 +47,11 @@ public class TestServos extends LinearOpMode {
     public static double UmbrellaMin2 = 0.03;
     public static double UmbrellaMax1 = 0.7;
     public static double UmbrellaMax2 = 0.7;
+    public static double zero = 0;
+    public static double coneheight = 200;
+    public static double low = 800;
+    public static double medium = 1000;
+    public static double high = 1300;
 
     boolean slidecalibrated = true;
     boolean beenoff = false;
@@ -143,15 +148,11 @@ public class TestServos extends LinearOpMode {
         }
         if (gamepad1.dpad_up) {
             S1.setPosition(UmbrellaMin1); //.02
-            S2.setPosition(UmbrellaMax2); //.7
-            S1.setPosition(0.02); //.02
-            S2.setPosition(.7); //.7
+            S2.setPosition(UmbrellaMax2); ;//.7
         }
         if (gamepad1.dpad_down){
             S1.setPosition(UmbrellaMax1); //.7
             S2.setPosition(UmbrellaMin2); //.03
-            S1.setPosition(.7); //.02
-            S2.setPosition(.03); //.7
         }
 
         //Manual Slide
@@ -159,10 +160,11 @@ public class TestServos extends LinearOpMode {
         if (gamepad2.b) S0.setPosition(camTopOpen);
         if (gamepad2.a) S0.setPosition(camBothOpen);
 
-        if (gamepad1.a) target = 500;
-        if (gamepad1.b) target = 2550;
-        if (gamepad1.y) target = 1950;
-        if (gamepad1.x) target = 1300;
+        if (gamepad1.a) target = coneheight;
+        if (gamepad1.b) target = high;
+        if (gamepad1.y) target = medium;
+        if (gamepad1.x) target = low;
+        if (gamepad1.right_bumper) target = zero;
 
         if (slidecalibrated && gamepad1.left_bumper) {
             slidecalibrated = false;
