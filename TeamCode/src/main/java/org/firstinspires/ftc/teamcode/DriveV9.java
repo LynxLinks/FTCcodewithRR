@@ -189,7 +189,7 @@ public class DriveV9 extends LinearOpMode {
             else{
                 //close both
             }
-            M0_2.setPower(1);
+            M0_2.setPower(0);
             target = M0_2.getCurrentPosition() + slideoffset;
             UntilSlide();
 

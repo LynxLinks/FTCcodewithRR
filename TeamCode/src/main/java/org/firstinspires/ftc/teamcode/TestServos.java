@@ -14,6 +14,8 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import static org.firstinspires.ftc.teamcode.Auto12.sidered;
 import static org.firstinspires.ftc.teamcode.Auto12.slidespeed;
+import static org.firstinspires.ftc.teamcode.Auto13.slideoffset;
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -25,6 +27,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 public class TestServos extends LinearOpMode {
 
+    DigitalChannel D5;
     DcMotor M0;
     FtcDashboard dashboard;
     DcMotor M1;
@@ -40,18 +43,18 @@ public class TestServos extends LinearOpMode {
     DistanceSensor D3;
     DistanceSensor D4;
 
-    public static double camBothClosed = 0.08;
-    public static double camTopOpen= 0.27;
-    public static double camBothOpen= 0.37;
+    public static double camBothClosed = 0.18;
+    public static double camTopOpen= 0.37;
+    public static double camBothOpen= 0.47;
     public static double UmbrellaMin1 = 0.02;
     public static double UmbrellaMin2 = 0.03;
     public static double UmbrellaMax1 = 0.7;
     public static double UmbrellaMax2 = 0.7;
     public static double zero = 0;
-    public static double coneheight = 200;
-    public static double low = 800;
-    public static double medium = 1000;
-    public static double high = 1300;
+    public static double coneheight = 500;
+    public static double low = 1200;
+    public static double medium = 1800;
+    public static double high = 2200;
 
     boolean slidecalibrated = true;
     boolean beenoff = false;
@@ -75,6 +78,7 @@ public class TestServos extends LinearOpMode {
         D2 = hardwareMap.get(DistanceSensor.class, "D2");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
         D3 = hardwareMap.get(DistanceSensor.class, "D3");
+        D5 = hardwareMap.get(DigitalChannel.class, "D5");
         M0.setDirection(DcMotor.Direction.FORWARD);
         M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M1.setDirection(DcMotor.Direction.FORWARD);
@@ -98,13 +102,13 @@ public class TestServos extends LinearOpMode {
     public void Slide () {
 
         if (slidecalibrated) {
-            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
+            M0_2.setPower(-1 * ((1 - Math.pow(5, ((target - 1.4*M0_2.getCurrentPosition()) / 500))) / (1 + Math.pow(5, ((target - 1.4*M0_2.getCurrentPosition()) / 500)))));
         } else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
-                M0_2.setPower(.4);
+                M0_2.setPower(.2);
             }
             if (D0.getState() == false) { //if slide is above limit
-                M0_2.setPower(-0.4);
+                M0_2.setPower(-0.2);
                 beenoff = true;
             }
             if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
@@ -154,6 +158,20 @@ public class TestServos extends LinearOpMode {
             S1.setPosition(UmbrellaMax1); //.7
             S2.setPosition(UmbrellaMin2); //.03
         }
+        if(gamepad2.right_bumper){
+            S0.setPosition(0.18);
+            M0_2.setPower(-.5);
+            while (D5.getState() == false){
+            }
+            S0.setPosition(.47);
+            target = M0_2.getCurrentPosition() - 10;
+            UntilSlide();
+            target = target + slideoffset;
+            UntilSlide();
+
+
+
+        }
 
         //Manual Slide
         if (gamepad2.y) S0.setPosition(camBothClosed);
@@ -177,5 +195,16 @@ public class TestServos extends LinearOpMode {
         telemetry.addData("target", target);
         telemetry.addData("encoder", M0_2.getCurrentPosition());
         telemetry.update();
+    }
+    public void UntilSlide() {
+        if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
+            M0_2.setPower(Auto13.slidespeed);
+            while (target > 1.4*M0_2.getCurrentPosition()) ;
+        }
+        else{
+            M0_2.setPower(-Auto13.slidespeed );
+            while (target < 1.4*M0_2.getCurrentPosition());
+        }
+        M0_2.setPower(0);
     }
 }
