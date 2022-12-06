@@ -55,6 +55,7 @@ public class TestServos extends LinearOpMode {
     public static double low = 1200;
     public static double medium = 1800;
     public static double high = 2200;
+    public static double bump = 10;
 
     boolean slidecalibrated = true;
     boolean beenoff = false;
@@ -164,13 +165,13 @@ public class TestServos extends LinearOpMode {
             while (D5.getState() == false){
             }
             S0.setPosition(.47);
-            target = M0_2.getCurrentPosition() - 10;
+            telemetry.addData("current",M0_2.getCurrentPosition());
+            target = M0_2.getCurrentPosition() - bump;
+            telemetry.addData("target",target);
+            telemetry.update();
             UntilSlide();
             target = target + slideoffset;
             UntilSlide();
-
-
-
         }
 
         //Manual Slide
@@ -188,13 +189,15 @@ public class TestServos extends LinearOpMode {
             slidecalibrated = false;
         }
 
-        telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        /*telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         telemetry.addData("back", D3.getDistance(DistanceUnit.INCH));
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
         telemetry.addData("target", target);
         telemetry.addData("encoder", M0_2.getCurrentPosition());
         telemetry.update();
+
+         */
     }
     public void UntilSlide() {
         if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
