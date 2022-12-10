@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import static org.firstinspires.ftc.teamcode.Auto13.sidered;
 import static org.firstinspires.ftc.teamcode.Auto13.vopark;
 import static org.firstinspires.ftc.teamcode.Auto13.slidespeed;
-import static org.firstinspires.ftc.teamcode.Auto13.slideoffset;
 import static org.firstinspires.ftc.teamcode.Auto13.autopose;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -48,6 +47,8 @@ public class DriveV9 extends LinearOpMode {
     public static double offset = 9;
     public static double reverseoffset = 8;
     public static boolean usepreset = false;
+    public static double bump = 250;
+    public static double slideoffset = 950;
 
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
@@ -177,11 +178,27 @@ public class DriveV9 extends LinearOpMode {
             Slide();
             UI();
             manual();
+            ServoTrigger();
         }
     }
     public void ServoClamp() {
+        S0.setPosition(0.21);
+        M0_2.setPower(-.5);
+        while (D5.getState() == false && M0_2.getCurrentPosition() > 0){
+            UI();
+            manual();
+        }
+        if (wcordset == 2 || wcordset ==3)S0.setPosition(.47);
+        else S0.setPosition(.37);
 
-            M0_2.setPower(-1);
+        //telemetry.addData("current",M0_2.getCurrentPosition());
+        target = M0_2.getCurrentPosition() - bump;
+        //telemetry.addData("target",target);
+        //telemetry.update();
+        UntilSlide();
+        target = slideoffset;
+        UntilSlide();
+            /*M0_2.setPower(-1);
             while (D5.getState() == false);
             if (w == 4 || w ==1){
                 //close upper
@@ -191,7 +208,7 @@ public class DriveV9 extends LinearOpMode {
             }
             M0_2.setPower(0);
             target = M0_2.getCurrentPosition() + slideoffset;
-            UntilSlide();
+            UntilSlide();*/
 
 
     }
@@ -270,10 +287,15 @@ public class DriveV9 extends LinearOpMode {
             }
             if (!atwall) {
                 preset += 1;
-                xcordset = xm * xcord[preset - 1];
-                ycordset = ycord[preset - 1];
+                if(preset <= xcord.length){
+                    xcordset = xm * xcord[preset - 1];
+                    ycordset = ycord[preset - 1];
+                }
                 if (target > 500 && !beacon) {
-                    S0.setPosition(0);
+                    S0.setPosition(.37);
+                }
+                else{
+                    S0.setPosition(.18);
                 }
 
         }
@@ -296,11 +318,17 @@ public class DriveV9 extends LinearOpMode {
     public void UntilSlide() {
         if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
             M0_2.setPower(slidespeed);
-            while (target > 1.4*M0_2.getCurrentPosition()) ;
+            while (target > 1.4*M0_2.getCurrentPosition()){
+                UI();
+                manual();
+            };
         }
         else{
             M0_2.setPower(-slidespeed );
-            while (target < 1.4*M0_2.getCurrentPosition());
+            while (target < 1.4*M0_2.getCurrentPosition()){
+                UI();
+                manual();
+            }
         }
         M0_2.setPower(0);
     }
@@ -321,24 +349,26 @@ public class DriveV9 extends LinearOpMode {
         target = pt;
         UntilSlide();
     }
-
-    public void UI() {
-        StandardTrackingWheelLocalizer myLocalizer = new StandardTrackingWheelLocalizer(hardwareMap);
-
-        if (D5.getState() == false && D1.getDistance(DistanceUnit.MM) < 33 && target <= 1000){
-            ServoClamp();
-        }
-
-        //Manual Servo
-        if (gamepad1.left_bumper) {
-            S0.setPosition(0.05);
-        }
+    public void ServoTrigger() {
         if (gamepad1.right_bumper ) {
             if (atwall) {
                 ServoClamp();
             } else {
                 drop();
             }
+        }
+        if (D5.getState() == false && D1.getDistance(DistanceUnit.INCH) < 1.75 && atwall){
+            ServoClamp();
+        }
+    }
+
+    public void UI() {
+        StandardTrackingWheelLocalizer myLocalizer = new StandardTrackingWheelLocalizer(hardwareMap);
+
+
+        //Manual Servo
+        if (gamepad1.left_bumper) {
+            S0.setPosition(0.05);
         }
 
         //Manual Slide
@@ -443,9 +473,10 @@ public class DriveV9 extends LinearOpMode {
         telemetry.addData("w", wcordset);
         telemetry.addData("", "");
         telemetry.addData("atwall", atwall);
-        telemetry.addData("x", myPose.getX());
-        telemetry.addData("y", myPose.getY());
-        telemetry.addData("heading", myPose.getHeading());
+       // telemetry.addData("x", myPose.getX());
+       // telemetry.addData("y", myPose.getY());
+        telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        telemetry.addData("Target", target);
         telemetry.update();
 
     }

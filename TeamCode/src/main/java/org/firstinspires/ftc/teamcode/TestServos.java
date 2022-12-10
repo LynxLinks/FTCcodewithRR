@@ -55,7 +55,7 @@ public class TestServos extends LinearOpMode {
     public static double low = 1200;
     public static double medium = 1800;
     public static double high = 2200;
-    public static double bump = 10;
+    public static double bump = 250;
 
     boolean slidecalibrated = true;
     boolean beenoff = false;
@@ -132,6 +132,7 @@ public class TestServos extends LinearOpMode {
 
          */
         //Manual Servo
+        //test
         if (gamepad1.dpad_right){
             TrajectorySequence traj = drive.trajectorySequenceBuilder(new Pose2d())
                     .lineToLinearHeading(new Pose2d(-24, 0,Math.toRadians(180)))
@@ -160,15 +161,15 @@ public class TestServos extends LinearOpMode {
             S2.setPosition(UmbrellaMin2); //.03
         }
         if(gamepad2.right_bumper){
-            S0.setPosition(0.18);
+            S0.setPosition(0.21);
             M0_2.setPower(-.5);
-            while (D5.getState() == false){
+            while (D5.getState() == false && M0_2.getCurrentPosition() > 0){
             }
             S0.setPosition(.47);
-            telemetry.addData("current",M0_2.getCurrentPosition());
+            //telemetry.addData("current",M0_2.getCurrentPosition());
             target = M0_2.getCurrentPosition() - bump;
-            telemetry.addData("target",target);
-            telemetry.update();
+            //telemetry.addData("target",target);
+            //telemetry.update();
             UntilSlide();
             target = target + slideoffset;
             UntilSlide();
