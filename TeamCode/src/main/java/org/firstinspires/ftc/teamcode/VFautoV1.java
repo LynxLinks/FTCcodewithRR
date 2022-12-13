@@ -20,7 +20,6 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 
 
 import java.util.List;
-@Disabled
 @Config
 @Autonomous(name="VFautoV1", group="Linear Opmode")
 
@@ -81,7 +80,7 @@ public class VFautoV1 extends LinearOpMode {
         telemetry.addData("Zone",zone);
         telemetry.update();
         Trajectory t1 = drive.trajectoryBuilder(new Pose2d(0,0,0))
-                .back(28)
+                .back(31)
                 .build();
         Trajectory tleft = drive.trajectoryBuilder(t1.end())
                 .strafeLeft(24)

@@ -47,6 +47,7 @@ public class Auto12 extends LinearOpMode {
     DistanceSensor D2;
     DistanceSensor D3;
     DistanceSensor D4;
+    DigitalChannel D5;
 
     //teleop vars
     TrajectorySequence traj;
@@ -61,6 +62,8 @@ public class Auto12 extends LinearOpMode {
     public static double vo;
     public static Pose2d autopose = new Pose2d();
     boolean yfirst;
+    public static double bump = 250;
+    public static double slideoffset = 950;
     public static double vopark;
     int y;
     int x;
@@ -86,11 +89,11 @@ public class Auto12 extends LinearOpMode {
     boolean beenoff = false;
     boolean slidecalibrated = false;
 
-    int[] hdata = {400, 1300, 400, 1300, 400,
-            1300, 1950, 2550, 1950, 1300,
-            400, 2550, 400, 2550, 400,
-            1300, 1950, 2550, 1950, 1300,
-            400, 1300, 400, 1300, 400
+    int[] hdata = {100, 1300, 100, 1300, 100,
+            1300, 1950, 2200, 1950, 1300,
+            100, 2200, 100, 2200, 100,
+            1300, 1950, 2200, 1950, 1300,
+            100, 1300, 100, 1300, 100
             ,200,200,200,200,200,200,200,200,200,200,200};
 
 
@@ -99,8 +102,8 @@ public class Auto12 extends LinearOpMode {
     double o5;
     double y5;
     double park;
-    int[] xcord = new int[]{-1, -2};
-    int[] ycord = new int[]{2, 2};
+    int[] xcord = new int[]{-1};
+    int[] ycord = new int[]{3};
     public static double dback = 0;
     public static double dwall = 3.5;
     public static double dwall2 = 9;
@@ -148,6 +151,7 @@ public class Auto12 extends LinearOpMode {
         D2 = hardwareMap.get(DistanceSensor.class, "D2");
         D3 = hardwareMap.get(DistanceSensor.class, "D3");
         D4 = hardwareMap.get(DistanceSensor.class, "D4");
+        D5 = hardwareMap.get(DigitalChannel.class, "D5");
         M0.setDirection(DcMotor.Direction.FORWARD);
         M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         M1.setDirection(DcMotor.Direction.FORWARD);
@@ -351,21 +355,22 @@ public class Auto12 extends LinearOpMode {
         }
     }
     public void ServoClamp() {
-        double prevtarget = target;
-        if (w == 1 ){
-            target = 350 + slidei*(5-leftstack);
-            leftstack -= 1;
+        S0.setPosition(0.21);
+        M0_2.setPower(-.5);
+        while (D5.getState() == false && M0_2.getCurrentPosition() > 0){
         }
-        else if(  w ==4) {
-          target = 350 + slidei*(5-rightstack);
-          rightstack -= 1;
+        if (w == 1 || w ==4){
+            S0.setPosition(.37);
         }
         else {
-            target = 0;
+            S0.setPosition(.47);
         }
+        //telemetry.addData("current",M0_2.getCurrentPosition());
+        target = M0_2.getCurrentPosition() - bump;
+        //telemetry.addData("target",target);
+        //telemetry.update();
         UntilSlide();
-        S0.setPosition(0.25);
-        target = prevtarget;
+        target = target + slideoffset;
         UntilSlide();
     }
     public void Drive() {
@@ -633,10 +638,10 @@ public class Auto12 extends LinearOpMode {
 
         else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
-                M0_2.setPower(.4);
+                M0_2.setPower(.35);
             }
             if (D0.getState() == false) { //if slide is above limit
-                M0_2.setPower(-0.4);
+                M0_2.setPower(-0.35);
                 beenoff = true;
             }
             if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);

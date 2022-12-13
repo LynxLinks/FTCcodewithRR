@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 //name and class
-
+@Disabled
 @Config
 @TeleOp(name = "DriveV8", group="Linear Opmode")
 

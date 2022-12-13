@@ -14,7 +14,6 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import static org.firstinspires.ftc.teamcode.Auto12.sidered;
 import static org.firstinspires.ftc.teamcode.Auto12.slidespeed;
-import static org.firstinspires.ftc.teamcode.Auto13.slideoffset;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -25,7 +24,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Config
 @TeleOp(name = "TestServos", group="Linear Opmode")
 
-public class TestServos extends LinearOpMode {
+public class    TestServos extends LinearOpMode {
 
     DigitalChannel D5;
     DcMotor M0;
@@ -52,11 +51,11 @@ public class TestServos extends LinearOpMode {
     public static double UmbrellaMax2 = 0.7;
     public static double zero = 0;
     public static double coneheight = 500;
-    public static double low = 1200;
-    public static double medium = 1800;
-    public static double high = 2200;
+    public static double low = 1300;
+    public static double medium = 1900;
+    public static double high = 2450;
     public static double bump = 250;
-
+    public static double slideoffset = 950;
     boolean slidecalibrated = true;
     boolean beenoff = false;
 
