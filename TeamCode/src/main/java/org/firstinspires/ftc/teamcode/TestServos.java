@@ -49,17 +49,17 @@ public class    TestServos extends LinearOpMode {
     public static double UmbrellaMin2 = 0.03;
     public static double UmbrellaMax1 = 0.7;
     public static double UmbrellaMax2 = 0.7;
-    public static double zero = 0;
-    public static double coneheight = 500;
-    public static double low = 1300;
-    public static double medium = 1900;
-    public static double high = 2450;
-    public static double bump = 250;
-    public static double slideoffset = 950;
+    public static int zero = 0;
+    public static int coneheight = 500;
+    public static int low = 1300;
+    public static int medium = 1900;
+    public static int high = 2450;
+    public static int bump = 250;
+    public static int slideoffset = 950;
     boolean slidecalibrated = true;
     boolean beenoff = false;
 
-    double target;
+    int target;
 
     public void runOpMode() {
 
@@ -102,6 +102,7 @@ public class    TestServos extends LinearOpMode {
     public void Slide () {
 
         if (slidecalibrated) {
+
             M0_2.setPower(-1 * ((1 - Math.pow(5, ((target - 1.4*M0_2.getCurrentPosition()) / 500))) / (1 + Math.pow(5, ((target - 1.4*M0_2.getCurrentPosition()) / 500)))));
         } else {
             if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
