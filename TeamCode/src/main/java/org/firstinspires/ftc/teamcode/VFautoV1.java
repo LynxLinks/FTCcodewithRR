@@ -20,6 +20,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 
 
 import java.util.List;
+@Disabled
 @Config
 @Autonomous(name="VFautoV1", group="Linear Opmode")
 

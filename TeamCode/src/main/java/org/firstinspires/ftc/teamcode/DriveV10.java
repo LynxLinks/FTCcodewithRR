@@ -14,12 +14,16 @@ import static org.firstinspires.ftc.teamcode.Auto13.sidered;
 import static org.firstinspires.ftc.teamcode.Auto13.vopark;
 import static org.firstinspires.ftc.teamcode.Auto13.slidespeed;
 import static org.firstinspires.ftc.teamcode.Auto13.autopose;
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Config
-@Disabled
 @TeleOp(name = "DriveV10", group="Linear Opmode")
 public class DriveV10 extends LinearOpMode {
     DcMotor M0;
@@ -44,10 +48,11 @@ public class DriveV10 extends LinearOpMode {
 
     public static double d1 = 11.5;
     public static double d2 = .2;
-    public static double Sdrop = 350;
-    public static double offset = 9;
-    public static double reverseoffset = 8;
+    public static double Sdrop = 150;
+    public static double offset = 12;
+    public static double reverseoffset = 3;
     public static boolean usepreset = false;
+    public static boolean useiteration = false;
     public static double bump = 250;
     public static double slideoffset = 950;
 
@@ -57,11 +62,11 @@ public class DriveV10 extends LinearOpMode {
     int preset = 1;
     boolean atwall = true;
     double starget = 850;
-    int[] hdata = {100, 1300, 100, 1300, 100,
-            1300, 1950, 2400, 1950, 1300,
-            100, 2400, 100, 2400, 100,
-            1300, 1950, 2400, 1950, 1300,
-            100, 1300, 100, 1300, 100
+    int[] hdata = {100, 1150, 100, 1150, 100,
+            1150, 1750, 2300, 1750, 1150,
+            100, 2300, 100, 2300, 100,
+            1150, 1750, 2300, 1750, 1150,
+            100, 1150, 100, 1150, 100
             ,200,200,200,200,200,200,200,200,200,200,200};
 
     int x;
@@ -141,9 +146,11 @@ public class DriveV10 extends LinearOpMode {
 
         if (sidered){
             wcordset = 1;
+            w = 1;
             xm = 1;
         } else {
             wcordset = 4;
+            w = 4;
             xm = -1;
         }
         ycordset = ycord[0];
@@ -185,31 +192,22 @@ public class DriveV10 extends LinearOpMode {
     public void ServoClamp() {
         S0.setPosition(0.21);
         M0_2.setPower(-.5);
-        while (D5.getState() == false && M0_2.getCurrentPosition() > 0){
-            UI();
-            manual();
+        while (D5.getState() == false && M0_2.getCurrentPosition() > -150){
         }
-        if (wcordset == 2 || wcordset ==3)S0.setPosition(.47);
-        else S0.setPosition(.37);
-
+        if (w == 1 || w ==4){
+            S0.setPosition(.37);
+        }
+        else {
+            S0.setPosition(.47);
+        }
         //telemetry.addData("current",M0_2.getCurrentPosition());
         target = M0_2.getCurrentPosition() - bump;
         //telemetry.addData("target",target);
         //telemetry.update();
         UntilSlide();
-        target = slideoffset;
+        target = target + slideoffset;
         UntilSlide();
-            /*M0_2.setPower(-1);
-            while (D5.getState() == false);
-            if (w == 4 || w ==1){
-                //close upper
-            }
-            else{
-                //close both
-            }
-            M0_2.setPower(0);
-            target = M0_2.getCurrentPosition() + slideoffset;
-            UntilSlide();*/
+
 
 
     }
@@ -288,7 +286,7 @@ public class DriveV10 extends LinearOpMode {
         }
         if (!atwall) {
             preset += 1;
-            if(preset <= xcord.length){
+            if(preset <= xcord.length && useiteration){
                 xcordset = xm * xcord[preset - 1];
                 ycordset = ycord[preset - 1];
             }
@@ -338,15 +336,14 @@ public class DriveV10 extends LinearOpMode {
         double pt = target;
         target = target - Sdrop;
         UntilSlide();
+        S1.setPosition(0.02); //.02
+        S2.setPosition(.7); ;//.7
         if (beacon){
-            //only drop beacon
-            beacon = false;
+            S0.setPosition(0);
         }
         else {
             S0.setPosition(0);
         }
-        S1.setPosition(0.02); //.02
-        S2.setPosition(.7); ;//.7
         target = pt;
         UntilSlide();
     }
@@ -369,22 +366,22 @@ public class DriveV10 extends LinearOpMode {
 
         //Manual Servo
         if (gamepad1.left_bumper) {
-            S0.setPosition(0.05);
+            S0.setPosition(0.18);
         }
 
         //Manual Slide
         if (gamepad1.a) target = starget;
-        if (gamepad1.b) target = 2400;
-        if (gamepad1.y) target = 1950;
+        if (gamepad1.b) target = 2250;
+        if (gamepad1.y) target = 1750;
         if (gamepad1.x) target = 1350;
 
         //Mauanl Umbrella
         if (gamepad2.left_stick_button){
-            S1.setPosition(.7); //.02
-            S2.setPosition(.03); ;//.7
+            S1.setPosition(UmbrellaMax1); //.7
+            S2.setPosition(UmbrellaMin2); //.03
         }if (gamepad2.right_stick_button){
-            S1.setPosition(0.02); //.02
-            S2.setPosition(.7); ;//.7
+            S1.setPosition(UmbrellaMin1); //.02
+            S2.setPosition(UmbrellaMax2); ;//.7
         }
 
         //coordinates
@@ -399,15 +396,15 @@ public class DriveV10 extends LinearOpMode {
 
         if (gamepad2.x && preset < xcord.length) gx = true;
         if (gamepad2.y && preset > 1) gy = true;
-        if (gamepad2.right_bumper && w < 4 && dbright) {
+        if (gamepad2.right_bumper && wcordset < 4 && dbright) {
             dbright = false;
             wcordset += 1;
         }
-        if (gamepad2.left_bumper && w > 1 && dbleft) {
+        if (gamepad2.left_bumper && wcordset > 1 && dbleft) {
             dbleft = false;
             wcordset -= 1;
         }
-        if ((gamepad2.dpad_up) && dup) {
+        if ((gamepad2.dpad_up) && dup && wcordset < 4) {
             dup = false;
             ycordset += 1;
         }
@@ -448,9 +445,6 @@ public class DriveV10 extends LinearOpMode {
             xcordset = 0;
             ycordset = 2;
         }
-        if(gamepad2.left_trigger > 0.6){
-            atwall = true;
-        }
         if((gamepad1.dpad_right) && dright2){
             dright2 = false;
             Drive();
@@ -474,10 +468,12 @@ public class DriveV10 extends LinearOpMode {
         telemetry.addData("w", wcordset);
         telemetry.addData("", "");
         telemetry.addData("atwall", atwall);
+        telemetry.addData("", "");
+        telemetry.addData("beacon", beacon);
         // telemetry.addData("x", myPose.getX());
         // telemetry.addData("y", myPose.getY());
-        telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
-        telemetry.addData("Target", target);
+        //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("Target", target);
         telemetry.update();
 
     }
@@ -645,7 +641,9 @@ public class DriveV10 extends LinearOpMode {
             o3 = io;
 
             currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
-            atwall = true;
+            if (!beacon){
+                atwall = true;
+            }
         }
     }
 

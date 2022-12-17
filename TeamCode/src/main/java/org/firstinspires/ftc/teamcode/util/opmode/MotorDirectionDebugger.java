@@ -39,7 +39,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
  * Uncomment the @Disabled tag below to use this opmode.
  */
 //@Disabled
-
+@Disabled
 @Config
 @TeleOp(name = "motordebug", group = "drive")
 public class MotorDirectionDebugger extends LinearOpMode {
