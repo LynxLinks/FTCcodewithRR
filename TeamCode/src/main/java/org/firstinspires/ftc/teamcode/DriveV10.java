@@ -89,6 +89,7 @@ public class DriveV10 extends LinearOpMode {
     double o1;
     double o2;
     double o3;
+    double prevheading = 0;
     boolean beacon;
     boolean dup;
     boolean ddown;
@@ -283,6 +284,7 @@ public class DriveV10 extends LinearOpMode {
             drive.update();
             Slide();
             UI();
+            prevheading = drive.getPoseEstimate().getHeading();
         }
         if (!atwall) {
             preset += 1;
@@ -361,7 +363,7 @@ public class DriveV10 extends LinearOpMode {
     }
 
     public void UI() {
-        StandardTrackingWheelLocalizer myLocalizer = new StandardTrackingWheelLocalizer(hardwareMap);
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
 
         //Manual Servo
@@ -457,10 +459,9 @@ public class DriveV10 extends LinearOpMode {
             Bbutton = false;
             math();
         }
-        myLocalizer.update();
 
-        Pose2d myPose = myLocalizer.getPoseEstimate();
 
+        drive.update();
         telemetry.addData("x", xcordset);
         telemetry.addData("", "");
         telemetry.addData("y", ycordset);
@@ -470,7 +471,7 @@ public class DriveV10 extends LinearOpMode {
         telemetry.addData("atwall", atwall);
         telemetry.addData("", "");
         telemetry.addData("beacon", beacon);
-        // telemetry.addData("x", myPose.getX());
+        telemetry.addData("prevheading", prevheading);
         // telemetry.addData("y", myPose.getY());
         //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         //telemetry.addData("Target", target);
@@ -640,7 +641,7 @@ public class DriveV10 extends LinearOpMode {
             y3 = iy;
             o3 = io;
 
-            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
+            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), prevheading);
             if (!beacon){
                 atwall = true;
             }

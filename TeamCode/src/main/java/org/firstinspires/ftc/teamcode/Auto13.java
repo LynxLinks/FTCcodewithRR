@@ -69,7 +69,7 @@ public class Auto13 extends LinearOpMode {
     public static double vopark;
     public static Pose2d autopose = new Pose2d();
 
-    int[] xcord = new int[]{0, -1,-2};
+    int[] xcord = new int[]{-2, -1,0};
     int[] ycord = new int[]{2, 3,2};
 
     int[] hdata = {100, 1150, 100, 1150, 100,
@@ -569,7 +569,7 @@ public class Auto13 extends LinearOpMode {
             y3 = iy;
             o3 = io;
 
-            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
+            currentpose = drive.getPoseEstimate();//new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
             if (!beacon){
                 atwall = true;
             }
