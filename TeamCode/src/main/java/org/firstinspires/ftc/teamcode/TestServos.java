@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import static org.firstinspires.ftc.teamcode.Auto12.sidered;
+
 import static org.firstinspires.ftc.teamcode.Auto12.slidespeed;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -49,6 +49,7 @@ public class    TestServos extends LinearOpMode {
     public static double UmbrellaMin2 = 0.03;
     public static double UmbrellaMax1 = 0.7;
     public static double UmbrellaMax2 = 0.7;
+    public static double centerpos = 51.5;
     public static int zero = 0;
     public static int coneheight = 500;
     public static int low = 1300;
@@ -58,6 +59,8 @@ public class    TestServos extends LinearOpMode {
     public static int slideoffset = 950;
     boolean slidecalibrated = true;
     boolean beenoff = false;
+    boolean sidered;
+    TrajectorySequence tslam;
 
     int target;
 
@@ -185,12 +188,13 @@ public class    TestServos extends LinearOpMode {
         if (gamepad1.y) target = medium;
         if (gamepad1.x) target = low;
         if (gamepad1.right_bumper) target = zero;
+        if (gamepad2.dpad_down) Center();
 
         if (slidecalibrated && gamepad1.left_bumper) {
             slidecalibrated = false;
         }
 
-        /*telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
+        telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
         telemetry.addData("back", D3.getDistance(DistanceUnit.INCH));
         telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
@@ -198,7 +202,73 @@ public class    TestServos extends LinearOpMode {
         telemetry.addData("encoder", M0_2.getCurrentPosition());
         telemetry.update();
 
-         */
+
+    }
+    public void Center(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive.setPoseEstimate(new Pose2d());
+        if (sidered){
+
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeLeft(100)
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(D4.getDistance(DistanceUnit.INCH) > 300
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+            /////////////////
+            M1.setPower(0);
+            M0.setPower(0);
+            M2.setPower(0);
+            M3.setPower(0);
+            drive.setPoseEstimate(new Pose2d());
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeRight(centerpos-D4.getDistance(DistanceUnit.INCH))
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(drive.isBusy()
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+        }else{
+
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeRight(100)
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(D2.getDistance(DistanceUnit.INCH) > 300
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+            /////////////////
+            M1.setPower(0);
+            M0.setPower(0);
+            M2.setPower(0);
+            M3.setPower(0);
+            drive.setPoseEstimate(new Pose2d());
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeLeft(centerpos-D2.getDistance(DistanceUnit.INCH))
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(drive.isBusy()
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+
+        }
     }
     public void UntilSlide() {
         if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {

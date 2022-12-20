@@ -62,11 +62,11 @@ public class DriveV10 extends LinearOpMode {
     int preset = 1;
     boolean atwall = true;
     double starget = 850;
-    int[] hdata = {100, 1150, 100, 1150, 100,
-            1150, 1750, 2300, 1750, 1150,
+    int[] hdata = {100, 1250, 100, 1250, 100,
+            1250, 1850, 2300, 1850, 1250,
             100, 2300, 100, 2300, 100,
-            1150, 1750, 2300, 1750, 1150,
-            100, 1150, 100, 1150, 100
+            1250, 1850, 2300, 1850, 1250,
+            100, 1250, 100, 1250, 100
             ,200,200,200,200,200,200,200,200,200,200,200};
 
     int x;
@@ -284,7 +284,7 @@ public class DriveV10 extends LinearOpMode {
             drive.update();
             Slide();
             UI();
-            prevheading = drive.getPoseEstimate().getHeading();
+
         }
         if (!atwall) {
             preset += 1;
@@ -336,16 +336,19 @@ public class DriveV10 extends LinearOpMode {
     public void drop(){
 
         double pt = target;
-        target = target - Sdrop;
-        UntilSlide();
-        S1.setPosition(0.02); //.02
-        S2.setPosition(.7); ;//.7
+        target = target - Sdrop/2;
         if (beacon){
             S0.setPosition(0);
         }
         else {
             S0.setPosition(0);
         }
+        UntilSlide();
+        S1.setPosition(0.02); //.02
+        S2.setPosition(.7); ;//.7
+
+        target = target - Sdrop;
+        UntilSlide();
         target = pt;
         UntilSlide();
     }
@@ -471,7 +474,7 @@ public class DriveV10 extends LinearOpMode {
         telemetry.addData("atwall", atwall);
         telemetry.addData("", "");
         telemetry.addData("beacon", beacon);
-        telemetry.addData("prevheading", prevheading);
+        //telemetry.addData("prevheading", prevheading);
         // telemetry.addData("y", myPose.getY());
         //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
         //telemetry.addData("Target", target);
@@ -641,7 +644,7 @@ public class DriveV10 extends LinearOpMode {
             y3 = iy;
             o3 = io;
 
-            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), prevheading);
+            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
             if (!beacon){
                 atwall = true;
             }
