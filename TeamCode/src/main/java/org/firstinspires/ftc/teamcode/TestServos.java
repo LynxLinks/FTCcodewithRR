@@ -50,6 +50,9 @@ public class    TestServos extends LinearOpMode {
     public static double UmbrellaMax1 = 0.7;
     public static double UmbrellaMax2 = 0.7;
     public static double centerpos = 51.5;
+    public static int Sdrop = 150;
+    public static double calibratespeed = 1;
+    boolean beacon;
     public static int zero = 0;
     public static int coneheight = 500;
     public static int low = 1300;
@@ -105,17 +108,27 @@ public class    TestServos extends LinearOpMode {
     public void Slide () {
 
         if (slidecalibrated) {
+            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
+        }
 
-            M0_2.setPower(-1 * ((1 - Math.pow(5, ((target - 1.4*M0_2.getCurrentPosition()) / 500))) / (1 + Math.pow(5, ((target - 1.4*M0_2.getCurrentPosition()) / 500)))));
-        } else {
-            if (D0.getState() == true && !beenoff) { //if slide is on limit swtich
-                M0_2.setPower(.2);
-            }
-            if (D0.getState() == false) { //if slide is above limit
-                M0_2.setPower(-0.2);
+        else {
+
+            if (D0.getState() == true ) {
+                M0_2.setPower(.3);
                 beenoff = true;
             }
-            if (D0.getState() == true && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
+            if (D0.getState() == false  && !beenoff) {
+                M0_2.setPower(-calibratespeed);
+                    /*if (M0_2.getCurrentPosition() > 100){
+                        M0_2.setPower(-1 * ((1 - Math.pow(10, ((-1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((-1.4*M0_2.getCurrentPosition()) / 250)))));
+                    }else{
+                        M0_2.setPower(-1 * ((1 - Math.pow(10, ((-140) / 250))) / (1 + Math.pow(10, ((-140) / 250)))));
+
+                    }*/
+
+
+            }
+            if (D0.getState() == false && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
                 M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -123,9 +136,31 @@ public class    TestServos extends LinearOpMode {
                 slidecalibrated = true;
                 beenoff = false;
                 M0_2.setPower(0);
+                //}
             }
         }
     }
+    public void drop(){
+
+        int pt = target;
+        target = target - Sdrop;
+
+        UntilSlide();
+        if (beacon){
+            S0.setPosition(0.37);
+        }
+        else {
+            S0.setPosition(0.18);
+        }
+        S1.setPosition(0.02); //.02
+        S2.setPosition(.7); ;//.7
+        if (target > 1500){
+            while(D5.getState()){}
+        }
+            target = pt;
+        UntilSlide();
+    }
+
     public void UI() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //autoservo
@@ -182,7 +217,7 @@ public class    TestServos extends LinearOpMode {
         if (gamepad2.y) S0.setPosition(camBothClosed);
         if (gamepad2.b) S0.setPosition(camTopOpen);
         if (gamepad2.a) S0.setPosition(camBothOpen);
-
+        if (gamepad1.dpad_left) drop();
         if (gamepad1.a) target = coneheight;
         if (gamepad1.b) target = high;
         if (gamepad1.y) target = medium;

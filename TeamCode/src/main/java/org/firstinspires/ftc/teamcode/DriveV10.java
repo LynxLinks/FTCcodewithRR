@@ -48,13 +48,14 @@ public class DriveV10 extends LinearOpMode {
 
     public static double d1 = 11.5;
     public static double d2 = .2;
-    public static double Sdrop = 150;
+    public static double Sdrop = 120;
     public static double offset = 12;
     public static double reverseoffset = 3;
     public static boolean usepreset = false;
     public static boolean useiteration = false;
     public static double bump = 250;
     public static double slideoffset = 950;
+    public static double calibratespeed = .9;
 
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
@@ -62,11 +63,11 @@ public class DriveV10 extends LinearOpMode {
     int preset = 1;
     boolean atwall = true;
     double starget = 850;
-    int[] hdata = {100, 1250, 100, 1250, 100,
-            1250, 1850, 2300, 1850, 1250,
-            100, 2300, 100, 2300, 100,
-            1250, 1850, 2300, 1850, 1250,
-            100, 1250, 100, 1250, 100
+    int[] hdata = {100, 1150, 100, 1150, 100,
+            1150, 1750, 2250, 1750, 1150,
+            100, 2250, 100, 2250, 100,
+            1150, 1750, 2250, 1750, 1150,
+            100, 1150, 100, 1150, 100
             ,200,200,200,200,200,200,200,200,200,200,200};
 
     int x;
@@ -140,7 +141,7 @@ public class DriveV10 extends LinearOpMode {
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        S0.setPosition(0.0);
+        S0.setPosition(0.05);
         S1.setPosition(0.02);
         S2.setPosition(.7);
 
@@ -191,40 +192,49 @@ public class DriveV10 extends LinearOpMode {
         }
     }
     public void ServoClamp() {
-        S0.setPosition(0.21);
-        M0_2.setPower(-.5);
+        S0.setPosition(0.05);
+        M0_2.setPower(-.75);
         while (D5.getState() == false && M0_2.getCurrentPosition() > -150){
         }
         if (w == 1 || w ==4){
-            S0.setPosition(.37);
+            S0.setPosition(.25);
         }
         else {
-            S0.setPosition(.47);
+            S0.setPosition(.3);
         }
         //telemetry.addData("current",M0_2.getCurrentPosition());
         target = M0_2.getCurrentPosition() - bump;
         //telemetry.addData("target",target);
         //telemetry.update();
         UntilSlide();
+        //S0.setPosition(.3);
         target = target + slideoffset;
         UntilSlide();
-
-
-
     }
     public void Slide () {
 
         if (slidecalibrated) {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
-        } else {
-            if (D0.getState() == true && !beenoff) {
-                M0_2.setPower(.4);
-            }
-            if (D0.getState() == false) {
-                M0_2.setPower(-0.4);
+        }
+
+        else {
+
+            if (D0.getState() == true ) {
+                M0_2.setPower(.3);
                 beenoff = true;
             }
-            if (D0.getState() == true && beenoff) {
+            if (D0.getState() == false  && !beenoff) {
+                M0_2.setPower(-calibratespeed);
+                    /*if (M0_2.getCurrentPosition() > 100){
+                        M0_2.setPower(-1 * ((1 - Math.pow(10, ((-1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((-1.4*M0_2.getCurrentPosition()) / 250)))));
+                    }else{
+                        M0_2.setPower(-1 * ((1 - Math.pow(10, ((-140) / 250))) / (1 + Math.pow(10, ((-140) / 250)))));
+
+                    }*/
+
+
+            }
+            if (D0.getState() == false && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
                 M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -232,6 +242,7 @@ public class DriveV10 extends LinearOpMode {
                 slidecalibrated = true;
                 beenoff = false;
                 M0_2.setPower(0);
+                //}
             }
         }
     }
@@ -262,7 +273,7 @@ public class DriveV10 extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                 .addDisplacementMarker(() ->{
                     if (target < 150 && atwall == false){  //if at ground station than drop cone and set slide up
-                        S0.setPosition(0);
+                        S0.setPosition(0.05);
                         target = 800;
                     }
                 })
@@ -293,10 +304,10 @@ public class DriveV10 extends LinearOpMode {
                 ycordset = ycord[preset - 1];
             }
             if (target > 500 && !beacon) {
-                S0.setPosition(.37);
+                S0.setPosition(.25);
             }
             else{
-                S0.setPosition(.18);
+                S0.setPosition(.05);
             }
 
         }
@@ -336,19 +347,20 @@ public class DriveV10 extends LinearOpMode {
     public void drop(){
 
         double pt = target;
-        target = target - Sdrop/2;
+        target = target - Sdrop;
+
+        UntilSlide();
         if (beacon){
-            S0.setPosition(0);
+            S0.setPosition(0.25);
         }
         else {
-            S0.setPosition(0);
+            S0.setPosition(0.05);
         }
-        UntilSlide();
         S1.setPosition(0.02); //.02
         S2.setPosition(.7); ;//.7
-
-        target = target - Sdrop;
-        UntilSlide();
+        if (target > 1500){
+            while(D5.getState()){}
+        }
         target = pt;
         UntilSlide();
     }
@@ -371,7 +383,7 @@ public class DriveV10 extends LinearOpMode {
 
         //Manual Servo
         if (gamepad1.left_bumper) {
-            S0.setPosition(0.18);
+            S0.setPosition(0.05);
         }
 
         //Manual Slide
