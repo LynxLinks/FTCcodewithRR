@@ -61,15 +61,15 @@ public class Auto13 extends LinearOpMode {
     public static double ywall = 52.6;
     public static double dslam = 4;
     public static double offset = 12;
-    public static double slideoffset = 250;
+    public static double slideoffset = 100;
     public static double slidespeed = .6;
     public static double reverseoffset = 10.2      ;
-    public static double bump = 0;
+    public static double bump = 150;
     public static double calibratespeed = 1;
-    public static double centerpos = 48;
+    public static double centerpos = 50.2;
     public static double defaultcenter = 50;
     boolean useiteration = false;
-
+boolean translate;
     public static double vopark;
     public static Pose2d autopose = new Pose2d();
 
@@ -120,6 +120,7 @@ public class Auto13 extends LinearOpMode {
     boolean atwall = true;
     boolean beenoff = false;
     boolean slidecalibrated = false;
+    boolean usedistance = true;
 
 
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
@@ -275,16 +276,16 @@ public class Auto13 extends LinearOpMode {
         }
 
         if (sidered){
-            vopark = Math.toRadians(180);
+            vopark = Math.toRadians(0);
         }
         else{
-            vopark = Math.toRadians(0);
+            vopark = Math.toRadians(180);
         }
         drive.setPoseEstimate(prevpose);
 
         parktraj = drive.trajectorySequenceBuilder(prevpose)
                 //.lineToLinearHeading(new Pose2d(vx,vy,vo))
-                .back(.1)
+                .back(2)
                 .addDisplacementMarker(() ->{
                     target = 800;
                 })
@@ -323,7 +324,7 @@ public class Auto13 extends LinearOpMode {
             else{
                 drop();
             }
-            telemetry.addData("vy",vy);
+            /*telemetry.addData("vy",vy);
             telemetry.addData("iy", iy);
             telemetry.addData("x2", x2);
             telemetry.addData("y2",y2);
@@ -331,9 +332,10 @@ public class Auto13 extends LinearOpMode {
             telemetry.addData("x3", x3);
             telemetry.addData("y3", y3);
             telemetry.addData("o3", o3);
-
+            telemetry.addData("distanceSensor", distance );
 
             telemetry.update();
+             */
 
         }
     }
@@ -364,7 +366,7 @@ public class Auto13 extends LinearOpMode {
             drive.setPoseEstimate(new Pose2d());
             for(int i = 0;i < 5; i++) {
                 distanceholder = D4.getDistance(DistanceUnit.INCH);
-                if (distanceholder < 80) {
+                if (distanceholder < 55) {
                     distance += distanceholder;
                     count += 1;
                 }
@@ -402,12 +404,16 @@ public class Auto13 extends LinearOpMode {
             drive.setPoseEstimate(new Pose2d());distance = 0;
             for(int i = 0;i < 5; i++) {
                 distanceholder = D2.getDistance(DistanceUnit.INCH);
-                if (distanceholder < 80) {
+                if (distanceholder < 55) {
                     distance += distanceholder;
                     count += 1;
                 }
             }
             distance = distance/count;
+
+            telemetry.addData("distanceSensor", distance );
+            telemetry.update();
+
             tslam = drive.trajectorySequenceBuilder(new Pose2d())
                     .strafeLeft(centerpos-distance)
                     .build();
@@ -447,7 +453,7 @@ public void Slam(){
             S0.setPosition(.25);
         }
         else {
-            S0.setPosition(.3);
+            S0.setPosition(.35);
         }
         //telemetry.addData("current",M0_2.getCurrentPosition());
         target = M0_2.getCurrentPosition() - bump;
@@ -465,7 +471,7 @@ public void Slam(){
         else drop();
         math();
             drive.setPoseEstimate(currentpose);
-        if (!atwall) {
+        if (!atwall || translate) {
             traj = drive.trajectorySequenceBuilder(currentpose)
                     .lineToLinearHeading(new Pose2d(x1, y1, o1))
                     .addDisplacementMarker(() -> {
@@ -552,6 +558,7 @@ public void Slam(){
     }
     public void math() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        translate = true;
         y = ycordset;
         x = xcordset;
         w = wcordset;
@@ -666,35 +673,45 @@ public void Slam(){
             x3 =x2;
             y3 = y2;
             o3 = o2;
-            double distance = 0;
-            double distanceholder = 0;
-            int count = 0;
-            if (sidered){
-                for(int i = 0;i < 5; i++) {
-                    distanceholder = D4.getDistance(DistanceUnit.INCH);
-                    if (distanceholder < 80) {
-                        distance += distanceholder;
-                        count += 1;
+            if (usedistance) {
+                double distance = 0;
+                double distanceholder = 0;
+                int count = 0;
+                if (w == 1 || w == 3) {
+                    for (int i = 0; i < 5; i++) {
+                        distanceholder = D4.getDistance(DistanceUnit.INCH);
+                        if (distanceholder < 55) {
+                            distance += distanceholder;
+                            count += 1;
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < 5; i++) {
+                        distanceholder = D2.getDistance(DistanceUnit.INCH);
+                        if (distanceholder < 55) {
+                            distance += distanceholder;
+                            count += 1;
+                        }
                     }
                 }
-                distance = distance/count;
-            }else{
-                for(int i = 0;i < 5; i++) {
-                    distanceholder = D2.getDistance(DistanceUnit.INCH);
-                    if (distanceholder < 80) {
-                        distance += distanceholder;
-                        count += 1;
-                    }
-                }
-                if (count == 0){
+
+                if (count == 0) {
                     distance = defaultcenter;
+                } else {
+                    distance = distance / count;
+                }
+
+                if (w == 1 || w ==4){
+                    iy = distance - centerpos - 12;
+                }else if (w == 2){
+                    ix = distance - centerpos - 12;
                 }else{
-
-
-                distance = distance/count;}
+                    ix = centerpos - distance + 12;
+                }
+                telemetry.addData("distanceSensor", distance);
+               // telemetry.update();
             }
-
-            currentpose = new Pose2d(ix, (distance - centerpos - 12), io);
+            currentpose = new Pose2d(ix, iy, io);
             atwall = false;
 
         } else {
@@ -716,6 +733,7 @@ public void Slam(){
                     x2 = x3;
                     y2 = y3;
                     o2 = o3;
+                    translate = false;
                 }
             }
             if (w == 2) {
@@ -729,6 +747,7 @@ public void Slam(){
                     x2 = x3;
                     y2 = y3;
                     o2 = o3;
+                    translate = false;
                 }
             }
             if (w == 3) {
@@ -742,6 +761,7 @@ public void Slam(){
                     x2 = x3;
                     y2 = y3;
                     o2 = o3;
+                    translate = false;
                 }
 
             }
@@ -756,6 +776,7 @@ public void Slam(){
                     x2 = x3;
                     y2 = y3;
                     o2 = o3;
+                    translate = false;
                 }
             }
 
