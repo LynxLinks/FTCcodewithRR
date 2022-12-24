@@ -45,10 +45,10 @@ public class    TestServos extends LinearOpMode {
     public static double camBothClosed = 0.18;
     public static double camTopOpen= 0.37;
     public static double camBothOpen= 0.47;
-    public static double UmbrellaMin1 = 0.02;
+    public static double UmbrellaMin1 = 0.055;
     public static double UmbrellaMin2 = 0.03;
-    public static double UmbrellaMax1 = 0.7;
-    public static double UmbrellaMax2 = 0.7;
+    public static double UmbrellaMax1 = 0.68;
+    public static double UmbrellaMax2 = 0.67;
     public static double centerpos = 51.5;
     public static int Sdrop = 150;
     public static double calibratespeed = 1;
@@ -65,7 +65,7 @@ public class    TestServos extends LinearOpMode {
     boolean sidered;
     TrajectorySequence tslam;
 
-    int target;
+    double target;
 
     public void runOpMode() {
 
@@ -141,23 +141,20 @@ public class    TestServos extends LinearOpMode {
         }
     }
     public void drop(){
-
-        int pt = target;
-        target = target - Sdrop;
-
-        UntilSlide();
         if (beacon){
-            S0.setPosition(0.37);
+            S0.setPosition(0.25);
         }
         else {
-            S0.setPosition(0.18);
+            S0.setPosition(0.05);
         }
-        S1.setPosition(0.02); //.02
-        S2.setPosition(.7); ;//.7
-        if (target > 1500){
-            while(D5.getState()){}
-        }
-            target = pt;
+        double pt = target;
+        target = target - Sdrop/2;
+        UntilSlide();
+        S1.setPosition(0.055); //.02
+        S2.setPosition(.67); ;//.7
+        target = target - Sdrop/2;
+        UntilSlide();
+        target = pt;
         UntilSlide();
     }
 

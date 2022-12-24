@@ -14,7 +14,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
+import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -193,8 +196,8 @@ boolean translate;
 
 
         S0.setPosition(0.05);
-        S1.setPosition(0);
-        S2.setPosition(0.70);
+        S1.setPosition(UmbrellaMin1); //.7
+        S2.setPosition(UmbrellaMax2); //.03
         Init();
         Cycle();
         Park();
@@ -482,8 +485,8 @@ public void Slam(){
                         if (!atwall) {
                             target = hdata[x + 5 * (y - 1) + 2];
                             if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
-                                S1.setPosition(.7); //.02
-                                S2.setPosition(.03);
+                                S1.setPosition(UmbrellaMax1); //.7
+                                S2.setPosition(UmbrellaMin2); //.03
                                 ;//.7
                             }
                         }
@@ -508,8 +511,8 @@ public void Slam(){
                         if (!atwall) {
                             target = hdata[x + 5 * (y - 1) + 2];
                             if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
-                                S1.setPosition(.7); //.02
-                                S2.setPosition(.03);
+                                S1.setPosition(UmbrellaMax1); //.7
+                                S2.setPosition(UmbrellaMin2); //.03
                                 ;//.7
                             }
                         }
@@ -902,8 +905,8 @@ public void Slam(){
         double pt = target;
         target = target - Sdrop/2;
         UntilSlide();
-        S1.setPosition(0.02); //.02
-        S2.setPosition(.7); ;//.7
+        S1.setPosition(UmbrellaMin1); //.7
+        S2.setPosition(UmbrellaMax2); //.03
         target = target - Sdrop/2;
         UntilSlide();
         target = pt;

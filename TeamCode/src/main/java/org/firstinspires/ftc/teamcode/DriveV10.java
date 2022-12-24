@@ -145,9 +145,9 @@ public class DriveV10 extends LinearOpMode {
         M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        S0.setPosition(0.05);
-        S1.setPosition(0.02);
-        S2.setPosition(.7);
+        S1.setPosition(UmbrellaMin1); //.7
+        S2.setPosition(UmbrellaMax2); //.03
+        S2.setPosition(.67);
 
 
         if (sidered){
@@ -335,8 +335,8 @@ public class DriveV10 extends LinearOpMode {
                        if (!atwall) {
                            target = hdata[x + 5 * (y - 1) + 2];
                            if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
-                               S1.setPosition(.7); //.02
-                               S2.setPosition(.03);
+                               S1.setPosition(UmbrellaMax1); //.7
+                               S2.setPosition(UmbrellaMin2); //.03
                                ;//.7
                            }
                        }
@@ -361,8 +361,8 @@ public class DriveV10 extends LinearOpMode {
                        if (!atwall) {
                            target = hdata[x + 5 * (y - 1) + 2];
                            if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
-                               S1.setPosition(.7); //.02
-                               S2.setPosition(.03);
+                               S1.setPosition(UmbrellaMax1); //.7
+                               S2.setPosition(UmbrellaMin2); //.03
                                ;//.7
                            }
                        }
@@ -452,8 +452,8 @@ public class DriveV10 extends LinearOpMode {
         else {
             S0.setPosition(0.05);
         }
-        S1.setPosition(0.02); //.02
-        S2.setPosition(.7); ;//.7
+        S1.setPosition(UmbrellaMin1); //.7
+        S2.setPosition(UmbrellaMax2); //.03
         if (target > 1500){
             while(D5.getState()){}
         }
@@ -489,10 +489,10 @@ public class DriveV10 extends LinearOpMode {
         if (gamepad1.x) target = 1350;
 
         //Mauanl Umbrella
-        if (gamepad2.left_stick_button){
+        if (gamepad2.left_stick_button){ //down
             S1.setPosition(UmbrellaMax1); //.7
             S2.setPosition(UmbrellaMin2); //.03
-        }if (gamepad2.right_stick_button){
+        }if (gamepad2.right_stick_button){ // up
             S1.setPosition(UmbrellaMin1); //.02
             S2.setPosition(UmbrellaMax2); ;//.7
         }
