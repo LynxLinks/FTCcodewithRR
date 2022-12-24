@@ -750,6 +750,7 @@ public void Slam(){
                     translate = false;
                 }
             }
+
             if (w == 3) {
                 ix = 12;
                 iy = -64;
