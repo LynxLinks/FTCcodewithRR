@@ -312,5 +312,94 @@ public class    TestServos extends LinearOpMode {
             while (target < 1.4*M0_2.getCurrentPosition());
         }
         M0_2.setPower(0);
-    }
+    }/*
+    public void Center(){
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive.setPoseEstimate(new Pose2d());
+        double distance = 0;
+        double distanceholder = 0;
+        int count = 0;
+        if (sidered){
+
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeLeft(100)
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(D4.getDistance(DistanceUnit.INCH) > 300
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+            /////////////////
+            M1.setPower(0);
+            M0.setPower(0);
+            M2.setPower(0);
+            M3.setPower(0);
+            drive.setPoseEstimate(new Pose2d());
+            for(int i = 0;i < 5; i++) {
+                distanceholder = D4.getDistance(DistanceUnit.INCH);
+                if (distanceholder < 55) {
+                    distance += distanceholder;
+                    count += 1;
+                }
+            }
+            distance = distance/count;
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeRight(centerpos-distance)
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(drive.isBusy()
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+        }else{
+
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeRight(100)
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(D2.getDistance(DistanceUnit.INCH) > 300
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+            /////////////////
+            M1.setPower(0);
+            M0.setPower(0);
+            M2.setPower(0);
+            M3.setPower(0);
+            drive.setPoseEstimate(new Pose2d());distance = 0;
+            for(int i = 0;i < 5; i++) {
+                distanceholder = D2.getDistance(DistanceUnit.INCH);
+                if (distanceholder < 55) {
+                    distance += distanceholder;
+                    count += 1;
+                }
+            }
+            distance = distance/count;
+
+            telemetry.addData("distanceSensor", distance );
+            telemetry.update();
+
+            tslam = drive.trajectorySequenceBuilder(new Pose2d())
+                    .strafeLeft(centerpos-distance)
+                    .build();
+
+            drive.followTrajectorySequenceAsync(tslam);
+            drive.update();
+            while(drive.isBusy()
+                    && !isStopRequested()){
+                drive.update();
+                Slide();
+            }
+
+        }
+    }*/
 }

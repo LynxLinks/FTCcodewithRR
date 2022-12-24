@@ -61,16 +61,17 @@ public class Auto13 extends LinearOpMode {
     public static boolean sidered = true;
     public static double dwall = 16;
     public static double dwall2 = -2;
-    public static double ywall = 52.6;
+    public static double ywall = 50;
     public static double dslam = 5;
     public static double offset = 12;
     public static double slideoffset = 100;
     public static double slidespeed = .6;
-    public static double reverseoffset = 10.2      ;
+    public static double reverseoffset = 8;
     public static double bump = 150;
     public static double calibratespeed = 1;
     public static double centerpos = 50.2;
     public static double defaultcenter = 52;
+    public static double stagger = .8;
     boolean useiteration = false;
 boolean translate;
     public static double vopark;
@@ -80,9 +81,9 @@ boolean translate;
     int[] ycord = new int[]{2,3,2};
 
     int[] hdata = {100, 1150, 100, 1150, 100,
-            1150, 1750, 2250, 1750, 1150,
-            100, 2250, 100, 2250, 100,
-            1150, 1750, 2250, 1750, 1150,
+            1150, 1750, 2275, 1750, 1150,
+            100, 2275, 100, 2275, 100,
+            1150, 1750, 2275, 1750, 1150,
             100, 1150, 100, 1150, 100
             ,200,200,200,200,200,200,200,200,200,200,200};
 
@@ -220,7 +221,7 @@ boolean translate;
             o2 = Math.toRadians(180);
 
             x3 = dwall2 + dslam;
-            y3 = ywall;
+            y3 = y2;
             o3 = o2;
 
 
@@ -235,7 +236,7 @@ boolean translate;
             o2 = Math.toRadians(0);
 
             x3 = dwall2 + dslam;
-            y3 = ywall;
+            y3 = y2;
             o3 = o2;
 
 
@@ -293,13 +294,13 @@ boolean translate;
                 .addDisplacementMarker(() ->{
                     target = 800;
                 })
-                .splineToSplineHeading(new Pose2d(park-.01,vy+3,vopark),vopark)
+                .splineToSplineHeading(new Pose2d(park-.01,vy+2,vopark),vopark)
                 .addDisplacementMarker(() ->{
                 })
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
         vx = park;
-        vy = vy-3;
+        vy = vy-2;
         while( drive.isBusy()
                 && !isStopRequested()){
             drive.update();
@@ -328,108 +329,6 @@ boolean translate;
             else{
                 drop();
             }
-            /*telemetry.addData("vy",vy);
-            telemetry.addData("iy", iy);
-            telemetry.addData("x2", x2);
-            telemetry.addData("y2",y2);
-            telemetry.addData("o2", o2);
-            telemetry.addData("x3", x3);
-            telemetry.addData("y3", y3);
-            telemetry.addData("o3", o3);
-            telemetry.addData("distanceSensor", distance );
-
-            telemetry.update();
-             */
-
-        }
-    }
-    public void Center(){
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        drive.setPoseEstimate(new Pose2d());
-        double distance = 0;
-        double distanceholder = 0;
-        int count = 0;
-        if (sidered){
-
-            tslam = drive.trajectorySequenceBuilder(new Pose2d())
-                    .strafeLeft(100)
-                    .build();
-
-            drive.followTrajectorySequenceAsync(tslam);
-            drive.update();
-            while(D4.getDistance(DistanceUnit.INCH) > 300
-                    && !isStopRequested()){
-                drive.update();
-                Slide();
-            }
-            /////////////////
-            M1.setPower(0);
-            M0.setPower(0);
-            M2.setPower(0);
-            M3.setPower(0);
-            drive.setPoseEstimate(new Pose2d());
-            for(int i = 0;i < 5; i++) {
-                distanceholder = D4.getDistance(DistanceUnit.INCH);
-                if (distanceholder < 55) {
-                    distance += distanceholder;
-                    count += 1;
-                }
-            }
-            distance = distance/count;
-            tslam = drive.trajectorySequenceBuilder(new Pose2d())
-                    .strafeRight(centerpos-distance)
-                    .build();
-
-            drive.followTrajectorySequenceAsync(tslam);
-            drive.update();
-            while(drive.isBusy()
-                    && !isStopRequested()){
-                drive.update();
-                Slide();
-            }
-        }else{
-
-            tslam = drive.trajectorySequenceBuilder(new Pose2d())
-                    .strafeRight(100)
-                    .build();
-
-            drive.followTrajectorySequenceAsync(tslam);
-            drive.update();
-            while(D2.getDistance(DistanceUnit.INCH) > 300
-                    && !isStopRequested()){
-                drive.update();
-                Slide();
-            }
-            /////////////////
-            M1.setPower(0);
-            M0.setPower(0);
-            M2.setPower(0);
-            M3.setPower(0);
-            drive.setPoseEstimate(new Pose2d());distance = 0;
-            for(int i = 0;i < 5; i++) {
-                distanceholder = D2.getDistance(DistanceUnit.INCH);
-                if (distanceholder < 55) {
-                    distance += distanceholder;
-                    count += 1;
-                }
-            }
-            distance = distance/count;
-
-            telemetry.addData("distanceSensor", distance );
-            telemetry.update();
-
-            tslam = drive.trajectorySequenceBuilder(new Pose2d())
-                    .strafeLeft(centerpos-distance)
-                    .build();
-
-            drive.followTrajectorySequenceAsync(tslam);
-            drive.update();
-            while(drive.isBusy()
-                    && !isStopRequested()){
-                drive.update();
-                Slide();
-            }
-
         }
     }
 
@@ -475,7 +374,7 @@ public void Slam(){
         else drop();
         math();
             drive.setPoseEstimate(currentpose);
-        if (!atwall || translate) {
+        if (!atwall){ //|| translate) {changed
             traj = drive.trajectorySequenceBuilder(currentpose)
                     .lineToLinearHeading(new Pose2d(x1, y1, o1))
                     .addDisplacementMarker(() -> {
@@ -505,27 +404,10 @@ public void Slam(){
             traj = drive.trajectorySequenceBuilder(currentpose)
                     .back (d1-reverseoffset)
                     .addDisplacementMarker(() -> {
-                        if (atwall) {
                             slidecalibrated = false;
                             target = starget;
-                        }
-                        if (!atwall) {
-                            target = hdata[x + 5 * (y - 1) + 2];
-                            if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
-                                S1.setPosition(UmbrellaMax1); //.7
-                                S2.setPosition(UmbrellaMin2); //.03
-                                ;//.7
-                            }
-                        }
                     })
-                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                    .addDisplacementMarker(() -> {
-                        if (target < 150 && atwall == false) {  //if at ground station than drop cone and set slide up
-                            S0.setPosition(0.05);
-                            target = 800;
-                        }
-                    })
-                    //.splineToSplineHeading(new Pose2d(x3 - .01, y3 - .01, o3 + .01), o3)
+                    .splineToSplineHeading(new Pose2d(x2, y2-stagger, o2), o2)
                     .build();
         }
 

@@ -202,6 +202,7 @@ public class DriveV10 extends LinearOpMode {
         S0.setPosition(0.05);
         M0_2.setPower(-.75);
         while (D5.getState() == false && M0_2.getCurrentPosition() > -150){
+            UI();
         }
         if (w == 1 || w ==4){
             S0.setPosition(.25);
@@ -417,6 +418,7 @@ public class DriveV10 extends LinearOpMode {
                && Math.abs(gamepad1.left_trigger) < .5) {
            drive.update();
            Slide();
+           UI();
            //prevpose = drive.getPoseEstimate();
        }
        if (!atwall) {
