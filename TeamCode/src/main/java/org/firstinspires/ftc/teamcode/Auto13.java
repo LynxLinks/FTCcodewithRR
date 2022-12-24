@@ -55,14 +55,14 @@ public class Auto13 extends LinearOpMode {
     TrajectorySequence traj;
     Pose2d currentpose;
     Pose2d prevpose;
-    public static double d1 = 11.5;
+    public static double d1 = 10.5;
     public static double d2 = 3;
-    public static double Sdrop = 350;
+    public static double Sdrop = 450;
     public static boolean sidered = true;
-    public static double dwall = 15;
+    public static double dwall = 16;
     public static double dwall2 = -2;
     public static double ywall = 52.6;
-    public static double dslam = 4;
+    public static double dslam = 5;
     public static double offset = 12;
     public static double slideoffset = 100;
     public static double slidespeed = .6;
@@ -70,7 +70,7 @@ public class Auto13 extends LinearOpMode {
     public static double bump = 150;
     public static double calibratespeed = 1;
     public static double centerpos = 50.2;
-    public static double defaultcenter = 50;
+    public static double defaultcenter = 52;
     boolean useiteration = false;
 boolean translate;
     public static double vopark;
@@ -169,7 +169,8 @@ boolean translate;
         dashboard = FtcDashboard.getInstance();
         initVuforia();
         initTfod();
-        if (D2.getDistance(DistanceUnit.INCH)<D2.getDistance(DistanceUnit.INCH)){
+
+        if (D2.getDistance(DistanceUnit.INCH)<D4.getDistance(DistanceUnit.INCH)){
             sidered = true;
             xm = 1;
             wcordset = 1;
@@ -712,7 +713,7 @@ public void Slam(){
                     ix = centerpos - distance + 12;
                 }
                 telemetry.addData("distanceSensor", distance);
-               // telemetry.update();
+                telemetry.update();
             }
             currentpose = new Pose2d(ix, iy, io);
             atwall = false;
@@ -903,12 +904,13 @@ public void Slam(){
             S0.setPosition(0.05);
         }
         double pt = target;
-        target = target - Sdrop/2;
+        //target = target - Sdrop*2/3;
+        target = target - Sdrop;
         UntilSlide();
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
-        target = target - Sdrop/2;
-        UntilSlide();
+        //target = target - Sdrop*1/3;
+       // UntilSlide();
         target = pt;
         UntilSlide();
     }

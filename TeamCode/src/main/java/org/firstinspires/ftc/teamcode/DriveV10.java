@@ -48,9 +48,9 @@ public class DriveV10 extends LinearOpMode {
 
     public static double d1 = 11.5;
     public static double d2 = .2;
-    public static double Sdrop = 120;
+    public static double Sdrop = 250;
     public static double offset = 12;
-    public static double reverseoffset = 3;
+    public static double reverseoffset = 7.5;
     public static boolean usepreset = false;
     public static boolean useiteration = false;
     public static double defaultcenter = 50;
@@ -60,6 +60,7 @@ public class DriveV10 extends LinearOpMode {
     public static double calibratespeed = .9;
     boolean usedistance;
     boolean translate;
+    int wcordset2;
 
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
@@ -68,9 +69,9 @@ public class DriveV10 extends LinearOpMode {
     boolean atwall = true;
     double starget = 850;
     int[] hdata = {100, 1150, 100, 1150, 100,
-            1150, 1750, 2250, 1750, 1150,
-            100, 2250, 100, 2250, 100,
-            1150, 1750, 2250, 1750, 1150,
+            1150, 1750, 2275, 1750, 1150,
+            100, 2275, 100, 2275, 100,
+            1150, 1750, 2275, 1750, 1150,
             100, 1150, 100, 1150, 100
             ,200,200,200,200,200,200,200,200,200,200,200};
 
@@ -97,6 +98,7 @@ public class DriveV10 extends LinearOpMode {
     double prevheading = 0;
     boolean beacon;
     boolean dup;
+    boolean rotate;
     boolean ddown;
     boolean dright;
     boolean dleft;
@@ -161,7 +163,8 @@ public class DriveV10 extends LinearOpMode {
         }
         ycordset = ycord[0];
         xcordset = xm*xcord[0];
-
+            math();
+            math();
         if (usepreset){  //if using automatic move to stack
             drive.setPoseEstimate(autopose);
             setuptraj = drive.trajectorySequenceBuilder(autopose)
@@ -319,12 +322,35 @@ public class DriveV10 extends LinearOpMode {
     }*/
    public void Drive() {
        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
+        wcordset2 = wcordset;
        if(atwall)target = 850;
        else drop();
        math();
        drive.setPoseEstimate(currentpose);
-       if (!atwall || translate) {
+       /*if(rotate){
+           traj = drive.trajectorySequenceBuilder(currentpose)
+                   .lineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1))
+                   .addDisplacementMarker(() ->{
+                       if (atwall){
+                           slidecalibrated = false;
+                           target = starget;
+                       }
+                   })
+                   .lineToLinearHeading(new Pose2d(x1 + .01,y1 + .01,o2))
+                   .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .03,o2))
+                   .addDisplacementMarker(() ->{
+                       if (!atwall){
+                           target = hdata[x + 5*(y-1)+2];
+                           if(hdata[x + 5*(y-1)+2] > 1000){
+                               S1.setPosition(UmbrellaMax1); //.02
+                               S2.setPosition(UmbrellaMin2); ;//.7
+                           }
+                       }
+                   })
+                   .lineToLinearHeading(new Pose2d(x3,y3,o3))
+                   .build();
+       }
+       else */if (!atwall || translate) {
            traj = drive.trajectorySequenceBuilder(currentpose)
                    .lineToLinearHeading(new Pose2d(x1, y1, o1))
                    .addDisplacementMarker(() -> {
@@ -441,22 +467,20 @@ public class DriveV10 extends LinearOpMode {
         M0_2.setPower(0);
     }
     public void drop(){
-
-        double pt = target;
-        target = target - Sdrop;
-
-        UntilSlide();
         if (beacon){
             S0.setPosition(0.25);
         }
         else {
             S0.setPosition(0.05);
         }
+        double pt = target;
+        //target = target - Sdrop*2/3;
+        target = target - Sdrop;
+        UntilSlide();
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
-        if (target > 1500){
-            while(D5.getState()){}
-        }
+        //target = target - Sdrop*1/3;
+        // UntilSlide();
         target = pt;
         UntilSlide();
     }
@@ -484,7 +508,7 @@ public class DriveV10 extends LinearOpMode {
 
         //Manual Slide
         if (gamepad1.a) target = starget;
-        if (gamepad1.b) target = 2250;
+        if (gamepad1.b) target = 2275;
         if (gamepad1.y) target = 1750;
         if (gamepad1.x) target = 1350;
 
@@ -590,6 +614,7 @@ public class DriveV10 extends LinearOpMode {
         telemetry.addData("atwall", atwall);
         telemetry.addData("", "");
         telemetry.addData("beacon", beacon);
+        telemetry.addData("rotate", rotate);
         //telemetry.addData("prevheading", prevheading);
         // telemetry.addData("y", myPose.getY());
         //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
@@ -605,6 +630,7 @@ public class DriveV10 extends LinearOpMode {
         x = xcordset;
         w = wcordset;
         if (atwall) {
+            rotate = false;
             if (y == 6) {
                 d = d2;
             } else {
@@ -757,13 +783,7 @@ public class DriveV10 extends LinearOpMode {
             atwall = false;
 
         } else {
-            x1 = vx + reverseoffset * Math.cos(vo);
-            y1 = vy + reverseoffset * Math.sin(vo);
-            o1 = vo;
-            o2 = io;
-            x3 = ix;
-            y3 = iy;
-            o3 = io;
+
             if (w == 1) {
                 ix = -64;
                 iy = -12;
@@ -771,12 +791,7 @@ public class DriveV10 extends LinearOpMode {
                 starget = 850;
                 y2 = iy;
                 x2 = vx - offset;
-                if (vy == iy){
-                    x2 = x3;
-                    y2 = y3;
-                    o2 = o3;
-                    translate = false;
-                }
+
             }
             if (w == 2) {
                 ix = -12;
@@ -785,12 +800,7 @@ public class DriveV10 extends LinearOpMode {
                 starget = 500;
                 y2 = vy - offset;
                 x2 = ix;
-                if (vx == ix){
-                    x2 = x3;
-                    y2 = y3;
-                    o2 = o3;
-                    translate = false;
-                }
+
             }
             if (w == 3) {
                 ix = 12;
@@ -799,12 +809,6 @@ public class DriveV10 extends LinearOpMode {
                 starget = 500;
                 y2 = vy - offset;
                 x2 = ix;
-                if (vx == ix){
-                    x2 = x3;
-                    y2 = y3;
-                    o2 = o3;
-                    translate = false;
-                }
 
             }
             if (w == 4) {
@@ -814,14 +818,35 @@ public class DriveV10 extends LinearOpMode {
                 starget = 850;
                 y2 = iy;
                 x2 = vx + offset;
-                if (vy == iy){
+
+            }
+            x1 = vx + reverseoffset * Math.cos(vo);
+            y1 = vy + reverseoffset * Math.sin(vo);
+            o1 = vo;
+            o2 = io;
+            x3 = ix;
+            y3 = iy;
+            o3 = io;
+            if (wcordset == wcordset2){
+                rotate = false;
+                if ( w == 4 || w == 1) {
+                    if (vy == iy) {
+                        x2 = x3;
+                        y2 = y3;
+                        o2 = o3;
+                        translate = false;
+                    }
+                }else{
+                    if (vx == ix){
                     x2 = x3;
                     y2 = y3;
                     o2 = o3;
                     translate = false;
+                    }
                 }
+            }else{
+                rotate = true;
             }
-
 
 
 
