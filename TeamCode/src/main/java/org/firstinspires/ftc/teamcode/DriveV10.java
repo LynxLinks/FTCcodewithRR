@@ -7,14 +7,12 @@ import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
+import static org.firstinspires.ftc.teamcode.TestServos.camBothClosed;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Config
 @TeleOp(name = "DriveV10", group="Linear Opmode")
 public class DriveV10 extends Statics {
-
-
-
 
     public static double d1 = 11.5;
     int[] xcord = new int[]{-1,0,-1,0,1,0};
@@ -22,14 +20,11 @@ public class DriveV10 extends Statics {
     public static boolean useiteration = false;
     public static boolean usepreset =false;
 
-
-
     public void runOpMode() {
         StaticInit(false,d1,xcord,ycord,useiteration);
+        S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
-        S2.setPosition(.67);
-
 
         if (position == 2){
             wcordset = 1;
@@ -42,24 +37,17 @@ public class DriveV10 extends Statics {
         }
         ycordset = ycord[0];
         xcordset = xm*xcord[0];
-            math(xcordset,ycordset,wcordset);
-            math(xcordset,ycordset,wcordset);
 
-        if (usepreset) {  //if using automatic move to stack
-            Init();
-        }
+        if (usepreset) Init();
 
         math(xcordset,ycordset,wcordset);
         math(xcordset,ycordset,wcordset);
-
         waitForStart();
-
 
         while (opModeIsActive()) {
             Slide();
             UI();
             manual();
-            ServoTrigger();
         }
     }
     public void Init(){
@@ -91,8 +79,6 @@ public class DriveV10 extends Statics {
                         gamepad1.left_trigger - gamepad1.right_trigger
                 )
         );
-    }
-    public void ServoTrigger() {
         if (gamepad1.right_bumper ) {
             if (atwall) {
                 ServoClamp();
@@ -108,10 +94,9 @@ public class DriveV10 extends Statics {
     public void UI() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-
         //Manual Servo
         if (gamepad1.left_bumper) {
-            S0.setPosition(0.05);
+            S0.setPosition(camBothClosed);
         }
 
         //Manual Slide
@@ -211,7 +196,6 @@ public class DriveV10 extends Statics {
             math(xcordset,ycordset,wcordset);
         }
 
-
         drive.update();
         telemetry.addData("x", xcordset);
         telemetry.addData("", "");
@@ -225,8 +209,6 @@ public class DriveV10 extends Statics {
         telemetry.update();
 
     }
-    //z
-
 }
 
 

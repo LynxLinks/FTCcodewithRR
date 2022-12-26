@@ -29,7 +29,11 @@ import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
+import static org.firstinspires.ftc.teamcode.TestServos.camBothClosed;
+import static org.firstinspires.ftc.teamcode.TestServos.camBothOpen;
+import static org.firstinspires.ftc.teamcode.TestServos.camTopOpen;
 import static org.firstinspires.ftc.teamcode.DriveV10.useiteration;
+import static org.firstinspires.ftc.teamcode.Auto13.stagger;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.List;
@@ -67,7 +71,6 @@ public class Statics extends LinearOpMode {
 
     public static double d2 = 3;
     public static double centerpos = 50.2;
-    public static double stagger = .8;
     public static double defaultcenter = 52;
     public static double offset = 12;
     public static double reverseoffset = 8;
@@ -77,8 +80,6 @@ public class Statics extends LinearOpMode {
     public static double bump = 150;
     public static double calibratespeed = 1;
     public static double vopark;
-
-
 
     int[] hdata = {100, 1150, 100, 1150, 100,
     1150, 1750, 2275, 1750, 1150,
@@ -95,6 +96,9 @@ public class Statics extends LinearOpMode {
     int position;
     int preset;
     int xm;
+    double x4;
+    double y4;
+    double o4;
     boolean gx;
     boolean gy;
     double target;
@@ -146,6 +150,9 @@ public class Statics extends LinearOpMode {
 
     }
     public void StaticInit(boolean autof,double d1f, int[] xcordf, int[]ycordf, boolean useiterationf){
+        if (!autof){
+            stagger = 0;
+        }
         auto = autof;
         d1 = d1f;
         xcord = xcordf;
@@ -186,15 +193,15 @@ public class Statics extends LinearOpMode {
     }
 
     public void ServoClamp() {
-        S0.setPosition(0.05);
+        S0.setPosition(camBothClosed);
         M0_2.setPower(-.75);
         while (D5.getState() == false && M0_2.getCurrentPosition() > -150){
         }
         if (w == 1 || w ==4){
-            S0.setPosition(.25);
+            S0.setPosition(camTopOpen);
         }
         else {
-            S0.setPosition(.35);
+            S0.setPosition(camBothOpen);
         }
         target = M0_2.getCurrentPosition() - bump;
         UntilSlide();
@@ -228,7 +235,7 @@ public class Statics extends LinearOpMode {
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                     .addDisplacementMarker(() -> {
                         if (target < 150 && atwall == false) {  //if at ground station than drop cone and set slide up
-                            S0.setPosition(0.05);
+                            S0.setPosition(camBothClosed);
                             target = 800;
                         }
                     })
@@ -267,10 +274,10 @@ public class Statics extends LinearOpMode {
                 ycordset = ycord[preset - 1];
             }
             if (target > 500 && !beacon) {
-                S0.setPosition(.25);
+                S0.setPosition(camTopOpen);
             }
             else{
-                S0.setPosition(.05);
+                S0.setPosition(camBothClosed);
             }
 
         }
@@ -518,10 +525,10 @@ public class Statics extends LinearOpMode {
     }
     public void drop(){
         if (beacon){
-            S0.setPosition(0.25);
+            S0.setPosition(camTopOpen);
         }
         else {
-            S0.setPosition(0.05);
+            S0.setPosition(camBothClosed);
         }
         double pt = target;
         target = target - Sdrop;

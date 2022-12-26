@@ -10,6 +10,8 @@ import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
+import static org.firstinspires.ftc.teamcode.TestServos.camBothClosed;
+
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -26,6 +28,7 @@ import java.util.List;
 public class Auto13 extends Statics {
 
     public static double d1 = 10.5;
+    public static double stagger = .8;
     public static double parkyoffset = 2;
     public static double dwall = 16;
     public static double dwall2 = -2;
@@ -47,33 +50,18 @@ public class Auto13 extends Statics {
 
     public void runOpMode() {
         StaticInit(true,d1,xcord,ycord,useiteration);
-        S0.setPosition(0.05);
+        S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
         initVuforia();
         initTfod();
         if (D1.getDistance(DistanceUnit.INCH)>2) { // audience side
-            if (D2.getDistance(DistanceUnit.INCH) > D4.getDistance(DistanceUnit.INCH)) {//blue
-                position = 1;
-                xm = 1;
-                wcordset = 4;
-            } else {//red
-                position = 2;
-                xm = -1;
-                wcordset = 1;
-            }
+            if (D2.getDistance(DistanceUnit.INCH) > D4.getDistance(DistanceUnit.INCH)) position = 1;
+            else position = 2;
         }else{ //non audience side
-            if (D2.getDistance(DistanceUnit.INCH) < D4.getDistance(DistanceUnit.INCH)) {//blue
-                position = 3;
-                xm = -1;
-                wcordset = 1;
-            } else {//red
-                position = 4;
-                xm = 1;
-                wcordset = 4;
-            }
+            if (D2.getDistance(DistanceUnit.INCH) < D4.getDistance(DistanceUnit.INCH)) position = 3;
+            else position = 4;
         }
-
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1.0, 16.0 / 12.0);
@@ -82,7 +70,6 @@ public class Auto13 extends Statics {
         while (!isStarted()) {
             IdentifyVuforia();
         }
-
         Init();
         Cycle();
         Park();
@@ -91,44 +78,82 @@ public class Auto13 extends Statics {
     public void Init() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         target = 900;
-        if (position ==2 ) {
+        if (position == 1 || position == 2) {
+            if (position == 1) {
+                xm = 1;
+                wcordset = 4;
+                x1 = (D4.getDistance(DistanceUnit.INCH) - dwall);
+                y1 = 2;
+                o1 = Math.toRadians(-90);
 
+                x2 = (D4.getDistance(DistanceUnit.INCH) - dwall2);
+                y2 = ywall;
+                o2 = Math.toRadians(0);
 
-            x1 = -(D2.getDistance(DistanceUnit.INCH) - dwall);
-            y1 = 2;
-            o1 = Math.toRadians(-90);
+                x3 = dwall2 + dslam;
+                y3 = y2;
+                o3 = o2;
 
-            x2 =  -(D2.getDistance(DistanceUnit.INCH) - dwall2);
-            y2 = ywall;
-            o2 = Math.toRadians(180);
+            } else{
+                xm = -1;
+                wcordset = 1;
+                x1 = -(D2.getDistance(DistanceUnit.INCH) - dwall);
+                y1 = 2;
+                o1 = Math.toRadians(-90);
 
-            x3 = dwall2 + dslam;
-            y3 = y2;
-            o3 = o2;
+                x2 = -(D2.getDistance(DistanceUnit.INCH) - dwall2);
+                y2 = ywall;
+                o2 = Math.toRadians(180);
 
-
-
-        } if (position == 1) {
-            x1 = (D4.getDistance(DistanceUnit.INCH) - dwall);
-            y1 = 2;
-            o1 = Math.toRadians(-90);
-
-            x2 =  (D4.getDistance(DistanceUnit.INCH) - dwall2);
-            y2 = ywall;
-            o2 = Math.toRadians(0);
-
-            x3 = dwall2 + dslam;
-            y3 = y2;
-            o3 = o2;
+                x3 = dwall2 + dslam;
+                y3 = y2;
+                o3 = o2;
+            }
+            drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(-90)));
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
+                    .lineToLinearHeading(new Pose2d(x1,y1,o1))
+                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .build();
 
 
         }
-        drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(-90)));
-        init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
-                .lineToLinearHeading(new Pose2d(x1,y1,o1))
-                .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                .build();
+        if (position == 3) {
+            y1 = -12 - offset;
+            o2 = Math.toRadians(45);
+            x2 = -12 + d1 * Math.cos(o2);
+            y2 = - 36 + d1 * Math.sin(o2);
+            y3 = d1 - reverseoffset;
+            o4 = Math.toRadians(180);
+            x4 = -64;
+            y4 = -12 - stagger;
+            drive.setPoseEstimate(new Pose2d(-36,-64,Math.toRadians(-90)));
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
+                    .back(y1)
+                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .addDisplacementMarker(() -> {
+                        drop();
+                    })
+                    .back(y3)
+                    .splineToSplineHeading(new Pose2d(x4, y4, o4), o4)
+                    .build();
+            xm = -1;
+            xcordset = 1;
+            ycordset = 3;
+            wcordset = 3;
+            Drive(xcordset,ycordset,wcordset);
+            xcordset = -1;
+            ycordset = 3;
+            wcordset = 1;
 
+        } else{
+            drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(-90)));
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
+                    .lineToLinearHeading(new Pose2d(x1,y1,o1))
+                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .build();
+            xm = 1;
+            wcordset = 4;
+        }
         drive.followTrajectorySequenceAsync(init1);
         drive.update();
         while( drive.isBusy()
@@ -136,6 +161,7 @@ public class Auto13 extends Statics {
             drive.update();
             Slide();
         }
+
     }
     public void Park() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
