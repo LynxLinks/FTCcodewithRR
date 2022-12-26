@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import static org.firstinspires.ftc.teamcode.Auto13.sidered;
+import static org.firstinspires.ftc.teamcode.Auto12.sidered;
 import static org.firstinspires.ftc.teamcode.Auto13.vopark;
 import static org.firstinspires.ftc.teamcode.Auto13.slidespeed;
 import static org.firstinspires.ftc.teamcode.Auto13.autopose;

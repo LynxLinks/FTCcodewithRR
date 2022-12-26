@@ -32,7 +32,7 @@ public class    TestServos extends LinearOpMode {
     DcMotor M1;
     DcMotor M2;
     DcMotor M3;
-    DcMotor M0_2;
+    static DcMotor M0_2;
     Servo S0;
     Servo S1;
     Servo S2;
@@ -65,7 +65,7 @@ public class    TestServos extends LinearOpMode {
     boolean sidered;
     TrajectorySequence tslam;
 
-    double target;
+    static double target;
 
     public void runOpMode() {
 
@@ -302,7 +302,7 @@ public class    TestServos extends LinearOpMode {
 
         }
     }
-    public void UntilSlide() {
+    public static void UntilSlide() {
         if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
             M0_2.setPower(Auto13.slidespeed);
             while (target > 1.4*M0_2.getCurrentPosition()) ;

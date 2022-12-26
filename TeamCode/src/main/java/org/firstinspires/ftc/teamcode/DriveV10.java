@@ -1,158 +1,37 @@
 package org.firstinspires.ftc.teamcode;
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.google.gson.annotations.Until;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.Servo;
-import static org.firstinspires.ftc.teamcode.Auto13.sidered;
-import static org.firstinspires.ftc.teamcode.Auto13.vopark;
-import static org.firstinspires.ftc.teamcode.Auto13.slidespeed;
 import static org.firstinspires.ftc.teamcode.Auto13.autopose;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
-
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Config
 @TeleOp(name = "DriveV10", group="Linear Opmode")
-public class DriveV10 extends LinearOpMode {
-    DcMotor M0;
-    FtcDashboard dashboard;
-    DcMotor M1;
-    DcMotor M2;
-    DcMotor M3;
-    DcMotor M0_2;
-    Servo S0;
-    Servo S1;
-    Servo S2;
-    DigitalChannel D0;
-    DistanceSensor D1;
-    DistanceSensor D2;
-    DistanceSensor D3;
-    DistanceSensor D4;
-    DigitalChannel D5;
+public class DriveV10 extends Statics {
 
-    TrajectorySequence traj;
-    TrajectorySequence setuptraj;
-    Pose2d currentpose;
+
+
 
     public static double d1 = 11.5;
-    public static double d2 = .2;
-    public static double Sdrop = 250;
-    public static double offset = 12;
-    public static double reverseoffset = 7.5;
-    public static boolean usepreset = false;
-    public static boolean useiteration = false;
-    public static double defaultcenter = 50;
-    public static double bump = 250;
-    public static double centerpos = 50.2;
-    public static double slideoffset = 950;
-    public static double calibratespeed = .9;
-    boolean usedistance;
-    boolean translate;
-    int wcordset2;
-
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
+    public static boolean useiteration = false;
+    public static boolean usepreset =false;
 
-    int preset = 1;
-    boolean atwall = true;
-    double starget = 850;
-    int[] hdata = {100, 1150, 100, 1150, 100,
-            1150, 1750, 2275, 1750, 1150,
-            100, 2275, 100, 2275, 100,
-            1150, 1750, 2275, 1750, 1150,
-            100, 1150, 100, 1150, 100
-            ,200,200,200,200,200,200,200,200,200,200,200};
 
-    int x;
-    int y;
-    int w;
-    double target;
-    double vx;
-    double vo;
-    double vy;
-    double d;
-    double ix;
-    double iy;
-    double io;
-    double x1;
-    double x2;
-    double x3;
-    double y1;
-    double y2;
-    double y3;
-    double o1;
-    double o2;
-    double o3;
-    double prevheading = 0;
-    boolean beacon;
-    boolean dup;
-    boolean rotate;
-    boolean ddown;
-    boolean dright;
-    boolean dleft;
-    boolean dbright;
-    boolean dleft2;
-    boolean dright2;
-    boolean dbleft;
-    boolean slidecalibrated;
-    boolean beenoff;
-    boolean Bbutton;
-    boolean gx;
-    boolean gy;
-    int xm;
-    int wcordset;
-    int ycordset;
-    int xcordset;
 
     public void runOpMode() {
-
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        dashboard = FtcDashboard.getInstance();
-        M0 = hardwareMap.get(DcMotor.class, "M0");
-        M1 = hardwareMap.get(DcMotor.class, "M1");
-        M2 = hardwareMap.get(DcMotor.class, "M2");
-        M3 = hardwareMap.get(DcMotor.class, "M3");
-        M0_2 = hardwareMap.get(DcMotor.class, "M0_2");
-        S0 = hardwareMap.get(Servo.class, "S0");
-        S1 = hardwareMap.get(Servo.class, "S1");
-        S2 = hardwareMap.get(Servo.class, "S2");
-        D0 = hardwareMap.get(DigitalChannel.class, "D0");
-        D5 = hardwareMap.get(DigitalChannel.class, "D5");
-        D1 = hardwareMap.get(DistanceSensor.class, "D1");
-        D2 = hardwareMap.get(DistanceSensor.class, "D2");
-        D4 = hardwareMap.get(DistanceSensor.class, "D4");
-        D3 = hardwareMap.get(DistanceSensor.class, "D3");
-        M0.setDirection(DcMotor.Direction.FORWARD);
-        M0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        M1.setDirection(DcMotor.Direction.FORWARD);
-        M1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        M2.setDirection(DcMotor.Direction.FORWARD);
-        M2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        M3.setDirection(DcMotor.Direction.FORWARD);
-        M3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        M0_2.setDirection(DcMotor.Direction.FORWARD);
-        M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        StaticInit(false,d1,xcord,ycord,useiteration);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
         S2.setPosition(.67);
 
 
-        if (sidered){
+        if (position == 2){
             wcordset = 1;
             w = 1;
             xm = 1;
@@ -163,30 +42,15 @@ public class DriveV10 extends LinearOpMode {
         }
         ycordset = ycord[0];
         xcordset = xm*xcord[0];
-            math();
-            math();
-        if (usepreset){  //if using automatic move to stack
-            drive.setPoseEstimate(autopose);
-            setuptraj = drive.trajectorySequenceBuilder(autopose)
-                    .lineToLinearHeading(new Pose2d(-65, -12,vopark))
-                    .build();
-            drive.followTrajectorySequenceAsync(setuptraj);
-            while (Math.abs(gamepad1.left_stick_x) < .5
-                    && Math.abs(gamepad1.left_stick_y) < .5
-                    && Math.abs(gamepad1.right_stick_x) < .5
-                    && Math.abs(gamepad1.right_stick_y) < .5
-                    && drive.isBusy()
-                    && !isStopRequested()
-                    && Math.abs(gamepad1.right_trigger) < .5
-                    && Math.abs(gamepad1.left_trigger) < .5) {
-                drive.update();
-                Slide();
-                UI();
-            }
+            math(xcordset,ycordset,wcordset);
+            math(xcordset,ycordset,wcordset);
+
+        if (usepreset) {  //if using automatic move to stack
+            Init();
         }
 
-        math();
-        math();
+        math(xcordset,ycordset,wcordset);
+        math(xcordset,ycordset,wcordset);
 
         waitForStart();
 
@@ -198,100 +62,13 @@ public class DriveV10 extends LinearOpMode {
             ServoTrigger();
         }
     }
-    public void ServoClamp() {
-        S0.setPosition(0.05);
-        M0_2.setPower(-.75);
-        while (D5.getState() == false && M0_2.getCurrentPosition() > -150){
-            UI();
-        }
-        if (w == 1 || w ==4){
-            S0.setPosition(.25);
-        }
-        else {
-            S0.setPosition(.35);
-        }
-        //telemetry.addData("current",M0_2.getCurrentPosition());
-        target = M0_2.getCurrentPosition() - bump;
-        //telemetry.addData("target",target);
-        //telemetry.update();
-        UntilSlide();
-        //S0.setPosition(.3);
-        target = target + slideoffset;
-        UntilSlide();
-    }
-    public void Slide () {
-
-        if (slidecalibrated) {
-            M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - 1.4*M0_2.getCurrentPosition()) / 250)))));
-        }
-
-        else {
-
-            if (D0.getState() == true ) {
-                M0_2.setPower(.3);
-                beenoff = true;
-            }
-            if (D0.getState() == false  && !beenoff) {
-                M0_2.setPower(-calibratespeed);
-                    /*if (M0_2.getCurrentPosition() > 100){
-                        M0_2.setPower(-1 * ((1 - Math.pow(10, ((-1.4*M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((-1.4*M0_2.getCurrentPosition()) / 250)))));
-                    }else{
-                        M0_2.setPower(-1 * ((1 - Math.pow(10, ((-140) / 250))) / (1 + Math.pow(10, ((-140) / 250)))));
-
-                    }*/
-
-
-            }
-            if (D0.getState() == false && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
-                M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-                slidecalibrated = true;
-                beenoff = false;
-                M0_2.setPower(0);
-                //}
-            }
-        }
-    }
-   /* public void Drive() {
+    public void Init(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
-        if(atwall)target = 850;
-        else drop();
-        math();
-        drive.setPoseEstimate(currentpose);
-        traj = drive.trajectorySequenceBuilder(currentpose)
-                .lineToLinearHeading(new Pose2d(x1, y1,o1))
-                .addDisplacementMarker(() ->{
-                    if (atwall){
-                        slidecalibrated = false;
-                        target = starget;
-                    }
-                    if (!atwall){
-
-
-                        target = hdata[x + 5*(y-1)+2];
-                        if(hdata[x + 5*(y-1)+2] > 1000){
-                            S1.setPosition(.7); //.02
-                            S2.setPosition(.03); ;//.7
-                        }
-                    }
-                })
-                .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                .addDisplacementMarker(() ->{
-                    if (target < 150 && atwall == false){  //if at ground station than drop cone and set slide up
-                        S0.setPosition(0.05);
-                        target = 800;
-                    }
-                })
-                .splineToSplineHeading(new Pose2d(x3-.01, y3-.01, o3 +.01), o3)
+        drive.setPoseEstimate(autopose);
+        traj = drive.trajectorySequenceBuilder(autopose)
+                .lineToLinearHeading(new Pose2d(-65, -12,vopark))
                 .build();
-
-
         drive.followTrajectorySequenceAsync(traj);
-
-        drive.update();
         while (Math.abs(gamepad1.left_stick_x) < .5
                 && Math.abs(gamepad1.left_stick_y) < .5
                 && Math.abs(gamepad1.right_stick_x) < .5
@@ -303,143 +80,10 @@ public class DriveV10 extends LinearOpMode {
             drive.update();
             Slide();
             UI();
-
         }
-        if (!atwall) {
-            preset += 1;
-            if(preset <= xcord.length && useiteration){
-                xcordset = xm * xcord[preset - 1];
-                ycordset = ycord[preset - 1];
-            }
-            if (target > 500 && !beacon) {
-                S0.setPosition(.25);
-            }
-            else{
-                S0.setPosition(.05);
-            }
-
-        }
-
-    }*/
-   public void Drive() {
-       SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        wcordset2 = wcordset;
-       if(atwall)target = 850;
-       else drop();
-       math();
-       drive.setPoseEstimate(currentpose);
-       /*if(rotate){
-           traj = drive.trajectorySequenceBuilder(currentpose)
-                   .lineToLinearHeading(new Pose2d(x1 + 0.02,y1 + 0.02,o1))
-                   .addDisplacementMarker(() ->{
-                       if (atwall){
-                           slidecalibrated = false;
-                           target = starget;
-                       }
-                   })
-                   .lineToLinearHeading(new Pose2d(x1 + .01,y1 + .01,o2))
-                   .lineToLinearHeading(new Pose2d(x2 + .01,y2 + .03,o2))
-                   .addDisplacementMarker(() ->{
-                       if (!atwall){
-                           target = hdata[x + 5*(y-1)+2];
-                           if(hdata[x + 5*(y-1)+2] > 1000){
-                               S1.setPosition(UmbrellaMax1); //.02
-                               S2.setPosition(UmbrellaMin2); ;//.7
-                           }
-                       }
-                   })
-                   .lineToLinearHeading(new Pose2d(x3,y3,o3))
-                   .build();
-       }
-       else */if (!atwall || translate) {
-           traj = drive.trajectorySequenceBuilder(currentpose)
-                   .lineToLinearHeading(new Pose2d(x1, y1, o1))
-                   .addDisplacementMarker(() -> {
-                       if (atwall) {
-                           slidecalibrated = false;
-                           target = starget;
-                       }
-                       if (!atwall) {
-                           target = hdata[x + 5 * (y - 1) + 2];
-                           if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
-                               S1.setPosition(UmbrellaMax1); //.7
-                               S2.setPosition(UmbrellaMin2); //.03
-                               ;//.7
-                           }
-                       }
-                   })
-                   .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                   .addDisplacementMarker(() -> {
-                       if (target < 150 && atwall == false) {  //if at ground station than drop cone and set slide up
-                           S0.setPosition(0.05);
-                           target = 800;
-                       }
-                   })
-                   .splineToSplineHeading(new Pose2d(x3 - .01, y3 - .03, o3 + .01), o3)
-                   .build();
-       }else{
-           traj = drive.trajectorySequenceBuilder(currentpose)
-                   .back (d1-reverseoffset)
-                   .addDisplacementMarker(() -> {
-                       if (atwall) {
-                           slidecalibrated = false;
-                           target = starget;
-                       }
-                       if (!atwall) {
-                           target = hdata[x + 5 * (y - 1) + 2];
-                           if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
-                               S1.setPosition(UmbrellaMax1); //.7
-                               S2.setPosition(UmbrellaMin2); //.03
-                               ;//.7
-                           }
-                       }
-                   })
-                   .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                   .addDisplacementMarker(() -> {
-                       if (target < 150 && atwall == false) {  //if at ground station than drop cone and set slide up
-                           S0.setPosition(0.05);
-                           target = 800;
-                       }
-                   })
-                   //.splineToSplineHeading(new Pose2d(x3 - .01, y3 - .01, o3 + .01), o3)
-                   .build();
-       }
-
-       drive.followTrajectorySequenceAsync(traj);
-
-       drive.update();
-       while (Math.abs(gamepad1.left_stick_x) < .5
-               && Math.abs(gamepad1.left_stick_y) < .5
-               && Math.abs(gamepad1.right_stick_x) < .5
-               && Math.abs(gamepad1.right_stick_y) < .5
-               && drive.isBusy()
-               && !isStopRequested()
-               && Math.abs(gamepad1.right_trigger) < .5
-               && Math.abs(gamepad1.left_trigger) < .5) {
-           drive.update();
-           Slide();
-           UI();
-           //prevpose = drive.getPoseEstimate();
-       }
-       if (!atwall) {
-           preset += 1;
-           if(preset <= xcord.length && useiteration){
-               xcordset = xm * xcord[preset - 1];
-               ycordset = ycord[preset - 1];
-           }
-           if (target > 500 && !beacon) {
-               S0.setPosition(.25);
-           }
-           else{
-               S0.setPosition(.05);
-           }
-
-       }
-
-   }
+    }
     public void manual(){
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        //manual drive
         drive.setWeightedDrivePower(
                 new Pose2d(
                         -gamepad1.left_stick_y*.5 - 0.1*gamepad1.right_stick_y,
@@ -447,44 +91,6 @@ public class DriveV10 extends LinearOpMode {
                         gamepad1.left_trigger - gamepad1.right_trigger
                 )
         );
-
-        drive.update();
-
-    }
-    public void UntilSlide() {
-        if ((target - 1.4*M0_2.getCurrentPosition()) > 0) {
-            M0_2.setPower(slidespeed);
-            while (target > 1.4*M0_2.getCurrentPosition()){
-                UI();
-                manual();
-            };
-        }
-        else{
-            M0_2.setPower(-slidespeed );
-            while (target < 1.4*M0_2.getCurrentPosition()){
-                UI();
-                manual();
-            }
-        }
-        M0_2.setPower(0);
-    }
-    public void drop(){
-        if (beacon){
-            S0.setPosition(0.25);
-        }
-        else {
-            S0.setPosition(0.05);
-        }
-        double pt = target;
-        //target = target - Sdrop*2/3;
-        target = target - Sdrop;
-        UntilSlide();
-        S1.setPosition(UmbrellaMin1); //.7
-        S2.setPosition(UmbrellaMax2); //.03
-        //target = target - Sdrop*1/3;
-        // UntilSlide();
-        target = pt;
-        UntilSlide();
     }
     public void ServoTrigger() {
         if (gamepad1.right_bumper ) {
@@ -587,13 +193,13 @@ public class DriveV10 extends LinearOpMode {
         if((gamepad1.dpad_right) && dright2){
             dright2 = false;
             usedistance = true;
-            Drive();
+            Drive(xcordset,ycordset,wcordset);
 
         }
         if((gamepad1.dpad_left) && dleft2){
             dleft2 = false;
             usedistance = false;
-            Drive();
+            Drive(xcordset,ycordset,wcordset);
 
         }
         if(gamepad2.right_trigger > 0.6){
@@ -602,7 +208,7 @@ public class DriveV10 extends LinearOpMode {
         if(!gamepad2.b) Bbutton = true;
         if(gamepad2.b && Bbutton){
             Bbutton = false;
-            math();
+            math(xcordset,ycordset,wcordset);
         }
 
 
@@ -616,248 +222,11 @@ public class DriveV10 extends LinearOpMode {
         telemetry.addData("atwall", atwall);
         telemetry.addData("", "");
         telemetry.addData("beacon", beacon);
-        telemetry.addData("rotate", rotate);
-        //telemetry.addData("prevheading", prevheading);
-        // telemetry.addData("y", myPose.getY());
-        //telemetry.addData("front", D1.getDistance(DistanceUnit.INCH));
-        //telemetry.addData("Target", target);
         telemetry.update();
 
     }
     //z
-    public void math() {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        translate = true;
-        y = ycordset;
-        x = xcordset;
-        w = wcordset;
-        if (atwall) {
-            rotate = false;
-            if (y == 6) {
-                d = d2;
-            } else {
-                d = d1;
-            }
-            if (w == 1) {
-                if (y >= 3) {
-                    vy = 24 * (y - 3) - 12;
-                    if (x <= -2) {
-                        vx = 24 * (x + 1) - 12;
-                        vo = Math.toRadians(135);
-                    } else {
-                        vx = 24 * x - 12;
-                        vo = Math.toRadians(45);
-                    }
-                } else {
-                    vy = 24 * (y - 2) - 12;
-                    if (x <= -2) {
-                        vx = 24 * (x + 1) - 12;
-                        vo = Math.toRadians(-135);
-                    } else {
-                        vx = 24 * x - 12;
-                        vo = Math.toRadians(-45);
-                    }
-                }
-                x1 = vx - offset;
-                y1 = iy;
-                o1 = io;
-            }
-            if (w == 2) {
-                if (x >= 0) {
-                    vx = 24 * x - 12;
-                    if (y <= 1) {
-                        vy = 24 * (y - 2) - 12;
-                        vo = Math.toRadians(-45);
-                    } else {
-                        vy = 24 * (y - 3) - 12;
-                        vo = Math.toRadians(45);
-                    }
-                } else {
-                    vx = 24 * (x + 1) - 12;
-                    if (y <= 1) {
-                        vy = 24 * (y - 2) - 12;
-                        vo = Math.toRadians(-135);
-                    } else {
-                        vy = 24 * (y - 3) - 12;
-                        vo = Math.toRadians(135);
-                    }
-                }
-                x1 = ix;
-                y1 = vy - offset;
-                o1 = io;
-            }
-            if (w == 3) {
-                if (x >= 1) {
-                    vx = 24 * (x - 1) + 12;
-                    if (y <= 1) {
-                        vy = 24 * (y - 2) - 12;
-                        vo = Math.toRadians(-45);
-                    } else {
-                        vy = 24 * (y - 3) - 12;
-                        vo = Math.toRadians(45);
-                    }
-                } else {
-                    vx = 24 * x + 12;
-                    if (y <= 1) {
-                        vy = 24 * (y - 2) - 12;
-                        vo = Math.toRadians(-135);
-                    } else {
-                        vy = 24 * (y - 3) - 12;
-                        vo = Math.toRadians(135);
-                    }
-                }
-                x1 = ix;
-                y1 = vy - offset;
-                o1 = io;
-            }
-            if (w == 4) {
-                if (y >= 3) {
-                    vy = 24 * (y - 3) - 12;
-                    if (x >= 2) {
-                        vx = 24 * (x-1 ) + 12;
-                        vo = Math.toRadians(45);
-                    } else {
-                        vx = 24 * x + 12;
-                        vo = Math.toRadians(135);
-                    }
-                } else {
-                    vy = 24 * (y - 2) - 12;
-                    if (x >= 2) {
-                        vx = 24 * (x -1) + 12;
-                        vo = Math.toRadians(-45);
-                    } else {
-                        vx = 24 * x + 12;
-                        vo = Math.toRadians(-135);
-                    }
-                }
-                x1 = vx + offset;
-                y1 = iy;
-                o1 = io;
-            }
-            if (y == 6) {
-                vx = vx - 2 * xm;
-            }
-            x2 = vx + d * Math.cos(vo);
-            y2 = vy + d * Math.sin(vo);
-            o2 = vo;
-            x3 =x2;
-            y3 = y2;
-            o3 = o2;
-            if (usedistance) {
-                double distance = 0;
-                double distanceholder = 0;
-                int count = 0;
-                if (w == 1 || w == 3) {
-                    for (int i = 0; i < 5; i++) {
-                        distanceholder = D4.getDistance(DistanceUnit.INCH);
-                        if (distanceholder < 55) {
-                            distance += distanceholder;
-                            count += 1;
-                        }
-                    }
-                } else {
-                    for (int i = 0; i < 5; i++) {
-                        distanceholder = D2.getDistance(DistanceUnit.INCH);
-                        if (distanceholder < 55) {
-                            distance += distanceholder;
-                            count += 1;
-                        }
-                    }
-                }
 
-                if (count == 0) {
-                    distance = defaultcenter;
-                } else {
-                    distance = distance / count;
-                }
-
-                if (w == 1 || w ==4){
-                    iy = distance - centerpos - 12;
-                }else if (w == 2){
-                    ix = distance - centerpos - 12;
-                }else{
-                    ix = centerpos - distance + 12;
-                }
-                telemetry.addData("distanceSensor", distance);
-                // telemetry.update();
-            }
-            currentpose = new Pose2d(ix, iy, io);
-            atwall = false;
-
-        } else {
-
-            if (w == 1) {
-                ix = -64;
-                iy = -12;
-                io = Math.toRadians(180);
-                starget = 850;
-                y2 = iy;
-                x2 = vx - offset;
-
-            }
-            if (w == 2) {
-                ix = -12;
-                iy = -64;
-                io = Math.toRadians(-90);
-                starget = 500;
-                y2 = vy - offset;
-                x2 = ix;
-
-            }
-            if (w == 3) {
-                ix = 12;
-                iy = -64;
-                io = Math.toRadians(-90);
-                starget = 500;
-                y2 = vy - offset;
-                x2 = ix;
-
-            }
-            if (w == 4) {
-                ix = 64;
-                iy = -12;
-                io = 0;
-                starget = 850;
-                y2 = iy;
-                x2 = vx + offset;
-
-            }
-            x1 = vx + reverseoffset * Math.cos(vo);
-            y1 = vy + reverseoffset * Math.sin(vo);
-            o1 = vo;
-            o2 = io;
-            x3 = ix;
-            y3 = iy;
-            o3 = io;
-            if (wcordset == wcordset2){
-                rotate = false;
-                if ( w == 4 || w == 1) {
-                    if (vy == iy) {
-                        x2 = x3;
-                        y2 = y3;
-                        o2 = o3;
-                        translate = false;
-                    }
-                }else{
-                    if (vx == ix){
-                    x2 = x3;
-                    y2 = y3;
-                    o2 = o3;
-                    translate = false;
-                    }
-                }
-            }else{
-                rotate = true;
-            }
-
-
-
-            currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
-            if (!beacon){
-                atwall = true;
-            }
-        }
-    }
 }
 
 
