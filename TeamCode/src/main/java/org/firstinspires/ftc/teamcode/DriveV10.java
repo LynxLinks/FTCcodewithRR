@@ -9,7 +9,6 @@ import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
 import static org.firstinspires.ftc.teamcode.TestServos.camBothClosed;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Config
 @TeleOp(name = "DriveV10", group="Linear Opmode")
 public class DriveV10 extends Statics {
@@ -19,6 +18,7 @@ public class DriveV10 extends Statics {
     int [] ycord = new int[]{3,2,1,1,2,1,2};
     public static boolean useiteration = false;
     public static boolean usepreset =false;
+    public static boolean savepos = true;
 
     public void runOpMode() {
         StaticInit(false,d1,xcord,ycord,useiteration);
@@ -40,10 +40,10 @@ public class DriveV10 extends Statics {
 
         if (usepreset) Init();
 
-        math(xcordset,ycordset,wcordset);
-        math(xcordset,ycordset,wcordset);
+        math(xcordset,ycordset,wcordset,savepos);
+        math(xcordset,ycordset,wcordset,savepos);
         waitForStart();
-
+rrinnit();
         while (opModeIsActive()) {
             Slide();
             UI();
@@ -51,7 +51,6 @@ public class DriveV10 extends Statics {
         }
     }
     public void Init(){
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         drive.setPoseEstimate(autopose);
         traj = drive.trajectorySequenceBuilder(autopose)
                 .lineToLinearHeading(new Pose2d(-65, -12,vopark))
@@ -71,7 +70,7 @@ public class DriveV10 extends Statics {
         }
     }
     public void manual(){
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
         drive.setWeightedDrivePower(
                 new Pose2d(
                         -gamepad1.left_stick_y*.5 - 0.1*gamepad1.right_stick_y,
@@ -92,7 +91,7 @@ public class DriveV10 extends Statics {
     }
 
     public void UI() {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
 
         //Manual Servo
         if (gamepad1.left_bumper) {
@@ -178,13 +177,13 @@ public class DriveV10 extends Statics {
         if((gamepad1.dpad_right) && dright2){
             dright2 = false;
             usedistance = true;
-            Drive(xcordset,ycordset,wcordset);
+            Drive(xcordset,ycordset,wcordset,savepos);
 
         }
         if((gamepad1.dpad_left) && dleft2){
             dleft2 = false;
             usedistance = false;
-            Drive(xcordset,ycordset,wcordset);
+            Drive(xcordset,ycordset,wcordset,savepos);
 
         }
         if(gamepad2.right_trigger > 0.6){
@@ -193,7 +192,7 @@ public class DriveV10 extends Statics {
         if(!gamepad2.b) Bbutton = true;
         if(gamepad2.b && Bbutton){
             Bbutton = false;
-            math(xcordset,ycordset,wcordset);
+            math(xcordset,ycordset,wcordset,savepos);
         }
 
         drive.update();
