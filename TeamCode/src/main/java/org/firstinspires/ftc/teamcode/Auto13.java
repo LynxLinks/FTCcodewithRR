@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
 import static org.firstinspires.ftc.teamcode.TestServos.camBothClosed;
+import static org.firstinspires.ftc.teamcode.TestServos.camBothOpen;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -25,17 +26,16 @@ import java.util.List;
 
 public class Auto13 extends Statics {
 
-    public static double d1 = 10.5;
-    public static double stagger = .8;
-    public static double parkyoffset = 2;
+    public static double d1 = 10.75;
+    public static double stagger = 1.5;
+    public static double parkyoffset = 0;
     public static double dwall = 16;
     public static double dwall2 = -2;
     public static double ywall = 50;
     public static double dslam = 5;
-    public static int[] xcord = new int[]{1,1,0};
-    public static int[] ycord = new int[]{2,3,2};
     boolean useiteration = true;
 
+    public static Pose2d pose = new Pose2d();
     public static Pose2d autopose = new Pose2d();
     boolean savepos;
 
@@ -45,6 +45,9 @@ public class Auto13 extends Statics {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
     String zone = "3";
+
+    int[] ycord;
+    int[] xcord;
 
 
     public void runOpMode() {
@@ -57,10 +60,15 @@ public class Auto13 extends Statics {
         if (D1.getDistance(DistanceUnit.INCH)>2) { // audience side
             if (D2.getDistance(DistanceUnit.INCH) > D4.getDistance(DistanceUnit.INCH)) position = 1;
             else position = 2;
+            xcord = new int[]{1,1,0};
+            ycord = new int[]{2,3,2};
         }else{ //non audience side
             if (D2.getDistance(DistanceUnit.INCH) < D4.getDistance(DistanceUnit.INCH)) position = 3;
             else position = 4;
+            xcord = new int[]{1,0,2};
+            ycord = new int[]{2,2,2};
         }
+        StaticInit(true,d1,xcord,ycord,useiteration);
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1.0, 16.0 / 12.0);
@@ -79,6 +87,8 @@ public class Auto13 extends Statics {
 
         target = 900;
         if (position == 1 || position == 2) {
+
+            drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(-90)));
             if (position == 1) {
                 xm = 1;
                 wcordset = 4;
@@ -89,7 +99,7 @@ public class Auto13 extends Statics {
                 y2 = ywall;
                 o2 = Math.toRadians(0);
 
-            } else{
+            } else {
                 xm = -1;
                 wcordset = 1;
                 x1 = -(D2.getDistance(DistanceUnit.INCH) - dwall);
@@ -101,67 +111,79 @@ public class Auto13 extends Statics {
                 o2 = Math.toRadians(180);
 
             }
-            drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(-90)));
-            init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
-                    .lineToLinearHeading(new Pose2d(x1,y1,o1))
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90)))
+                    .lineToLinearHeading(new Pose2d(x1, y1, o1))
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                     .build();
-            drive.followTrajectorySequenceAsync(init1);
-            drive.update();
-            while( drive.isBusy()
-                    && !isStopRequested()){
-                drive.update();
-                Slide();
+        }
+
+
+        if (position == 3 || position == 4) {
+            S0.setPosition(camBothOpen);
+            if (position == 4) {
+                xm = 1;
+                wcordset = 4;
+                pose = (new Pose2d( 29 - D4.getDistance(DistanceUnit.INCH), 0, Math.toRadians(-90)));
+                o2 = Math.toRadians(135);
+                o4 = Math.toRadians(0);
+                x4 = 28;
+            }if (position == 3) {
+                xm = -1;
+                wcordset = 1;
+                pose = (new Pose2d(  D2.getDistance(DistanceUnit.INCH) - 29, 0, Math.toRadians(-90)));
+                o2 = Math.toRadians(45);
+                o4 = Math.toRadians(180);
+                x4 = -28;
+
             }
+            y1 = 52 - 18;
+            x2 = d1 * Math.cos(o2);
+            y2 = 52 + (d1 * Math.sin(o2));
+            y3 = reverseoffset;
+            y4 = 52 - stagger;
 
-
-        }
-        if (position == 3) {
-            savepos = false;
-            xm = -1;
-            xcordset = 1;
-            ycordset = 3;
-            wcordset = 3;
-            Drive(xcordset,ycordset,wcordset,savepos);
-            xcordset = -1;
-            ycordset = 3;
-            wcordset = 1;
-            math(xcordset,ycordset,wcordset,savepos);
-            math(xcordset,ycordset,wcordset,savepos);
-            Drive(xcordset,ycordset,wcordset,savepos);
-
-        } if (position == 4){
-            savepos = false;
-            xm = 1;
-            xcordset = -1;
-            ycordset = 3;
-            wcordset = 2;
-            Drive(xcordset,ycordset,wcordset,savepos);
-            xcordset = 1;
-            ycordset = 3;
-            wcordset = 4;
-            math(xcordset,ycordset,wcordset,savepos);
-            math(xcordset,ycordset,wcordset,savepos);
-            Drive(xcordset,ycordset,wcordset,savepos);
+            drive.setPoseEstimate(pose);
+            init1 = drive.trajectorySequenceBuilder(pose)
+                    .back(y1)
+                    .addDisplacementMarker(() -> {
+                        target = hdata[7];
+                        S1.setPosition(UmbrellaMax1); //.7
+                        S2.setPosition(UmbrellaMin2); //.03
+                    })
+                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .addDisplacementMarker(() -> {
+                        drop();
+                    })
+                    .back(y3)
+                    .addDisplacementMarker(() -> {
+                        target = 900;
+                    })
+                    .splineToSplineHeading(new Pose2d(x4, y4, o4), o4)
+                    .build();
         }
 
+
+        drive.followTrajectorySequenceAsync(init1);
+        drive.update();
+        while (drive.isBusy()
+                && !isStopRequested()) {
+            drive.update();
+            Slide();
+        }
     }
+
     public void Park() {
 
-        if (position == 1){
+        if (position == 1 || position == 4){
             if (zone == "1") park = 12;
             if (zone == "2") park = 36;
             if (zone == "3") park = 58;
             vopark = Math.toRadians(0);
-        }if (position == 2) {
+        }if (position == 2 || position == 3) {
             if (zone == "1") park = -58;
             if (zone == "2") park = -36;
             if (zone == "3") park = -12;
             vopark = Math.toRadians(180);
-        }if (position == 3){
-
-        }if (position == 4){
-
         }
         drive.setPoseEstimate(prevpose);
         parktraj = drive.trajectorySequenceBuilder(prevpose)
@@ -177,22 +199,25 @@ public class Auto13 extends Statics {
         autopose = drive.getPoseEstimate();
     }
     public void Cycle(){
-        savepos = true;
-        math(xcordset,ycordset,wcordset,savepos);
-        math(xcordset,ycordset,wcordset,savepos);
+        math(xcordset,ycordset,wcordset,true);
+        math(xcordset,ycordset,wcordset,true);
         for(int i = 0;i < xcord.length; i++){
 
             xcordset = xm * xcord[i];
             ycordset = ycord[i];
            ServoClamp();
-            Drive(xcordset,ycordset,wcordset,savepos);
-            if (i < xcord.length -1) {Drive(xcordset,ycordset,wcordset,savepos);Slam();}
+            Drive(xcordset,ycordset,wcordset,true);
+            if (i < xcord.length -1) {
+                Drive(xcordset,ycordset,wcordset,true);
+                Slam();}
             else {drop();}
         }
     }
 public void Slam(){
     drive.setPoseEstimate(new Pose2d());
-    traj = drive.trajectorySequenceBuilder(new Pose2d()).forward(dslam).build();
+    traj = drive.trajectorySequenceBuilder(new Pose2d())
+            .forward(dslam)
+            .build();
     drive.followTrajectorySequenceAsync(traj);
     drive.update();
     while( drive.isBusy()){drive.update();Slide();}
@@ -211,6 +236,8 @@ public void Slam(){
                 telemetry.addData("zone",zone);
                 //telemetry.addLine("working");
                 telemetry.addData("position",position);
+                telemetry.addData("", "");
+                telemetry.addData("slide", D0.getState());
                 telemetry.addData("", "");
                 telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
                 telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));

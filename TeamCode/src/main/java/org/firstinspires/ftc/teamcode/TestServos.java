@@ -43,8 +43,8 @@ public class    TestServos extends LinearOpMode {
     DistanceSensor D4;
 
     public static double camBothClosed = 0.18;
-    public static double camTopOpen= 0.37;
-    public static double camBothOpen= 0.47;
+    public static double camTopOpen= 0.25;
+    public static double camBothOpen= 0.3;
     public static double UmbrellaMin1 = 0.055;
     public static double UmbrellaMin2 = 0.03;
     public static double UmbrellaMax1 = 0.68;

@@ -35,9 +35,7 @@ import static org.firstinspires.ftc.teamcode.TestServos.camTopOpen;
 import static org.firstinspires.ftc.teamcode.DriveV10.useiteration;
 import static org.firstinspires.ftc.teamcode.Auto13.stagger;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-
 import java.util.List;
-
 @Config
 
 public class Statics extends LinearOpMode {
@@ -60,25 +58,16 @@ public class Statics extends LinearOpMode {
     Pose2d currentpose;
     Pose2d prevpose;
 
-
-
-    //auto vars
-
-
-    //teleop vars
-
-    //common vars
-
     public static double d2 = 3;
     public static double centerpos = 50.2;
-    public static double defaultcenter = 52;
+    public static double defaultcenter = 51;
     public static double offset = 12;
     public static double reverseoffset = 8;
     public static double Sdrop = 450;
-    public static double slideoffset = 100;
+    public static double slideoffset = 750;
     public static double slidespeed = .6;
     public static double bump = 150;
-    public static double calibratespeed = 1;
+    public static double calibratespeed = .85;
     public static double vopark;
 
     int[] hdata = {100, 1150, 100, 1150, 100,
@@ -88,45 +77,6 @@ public class Statics extends LinearOpMode {
     100, 1150, 100, 1150, 100
     ,200,200,200,200,200,200,200,200,200,200,200};
 
-    TrajectorySequence init1;
-    TrajectorySequence parktraj;
-    boolean translate;
-    int[] xcord;
-    int[] ycord;
-    int position;
-    int preset;
-    int xm;
-    double x4;
-    double y4;
-    double o4;
-    boolean gx;
-    boolean gy;
-    double target;
-    boolean beacon;
-    boolean auto;
-    double park;
-    int xcordset;
-    int ycordset;
-    int wcordset;
-    double b1;
-    double vy;
-    double vx;
-    double vo;
-    double d1;
-    int y;
-    int x;
-    int w;
-    boolean dup;
-    boolean ddown;
-    boolean dright;
-    boolean dleft;
-    boolean dbright;
-    boolean dleft2;
-    boolean dright2;
-    boolean dbleft;
-    boolean slidecalibrated;
-    boolean beenoff;
-    boolean Bbutton;
     double starget;
     double d;
     double ix;
@@ -141,16 +91,50 @@ public class Statics extends LinearOpMode {
     double o1;
     double o2;
     double o3;
+    double x4;
+    double y4;
+    double o4;
+    double target;
+    double b1;
+    double vy;
+    double vx;
+    double vo;
+    double d1;
+    double park;
+    int xcordset;
+    int ycordset;
+    int wcordset;
+    int y;
+    int x;
+    int w;
+    int[] xcord;
+    int[] ycord;
+    int position;
+    int preset;
+    int xm;
+    boolean translate;
+    boolean gx;
+    boolean gy;
+    boolean beacon;
+    boolean auto;
+    boolean dup;
+    boolean ddown;
+    boolean dright;
+    boolean dleft;
+    boolean dbright;
+    boolean dleft2;
+    boolean dright2;
+    boolean dbleft;
+    boolean slidecalibrated;
+    boolean beenoff;
+    boolean Bbutton;
     boolean atwall = true;
     boolean usedistance = true;
+    TrajectorySequence init1;
+    TrajectorySequence parktraj;
     SampleMecanumDrive drive;
 
-
-
-    public void runOpMode() {
-
-
-    }
+    public void runOpMode() {}
     public void StaticInit(boolean autof,double d1f, int[] xcordf, int[]ycordf, boolean useiterationf){
         if (!autof){
             stagger = 0;
@@ -214,7 +198,7 @@ public class Statics extends LinearOpMode {
     }
     public void Drive(int xf, int yf, int wf, boolean savepos) {
         double staggerf = 0;
-        if (atwall) {
+        if (atwall || !auto) {
             staggerf = 0;
         } else {
             staggerf = stagger;
@@ -232,15 +216,15 @@ public class Statics extends LinearOpMode {
                             target = starget;
                         }
                         if (!atwall) {
-                            target = hdata[x + 5 * (y - 1) + 2];
-                            if (hdata[xcordset + 5 * (ycordset - 1) + 2] > 1000) {
+                            target = hdata[xf + 5 * (yf - 1) + 2];
+                            if (hdata[xf + 5 * (yf - 1) + 2] > 1000) {
                                 S1.setPosition(UmbrellaMax1); //.7
                                 S2.setPosition(UmbrellaMin2); //.03
                                 ;//.7
                             }
                         }
                     })
-                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .splineToSplineHeading(new Pose2d(x2, y2-staggerf, o2), o2)
                     .addDisplacementMarker(() -> {
                         if (target < 150 && atwall == false) {  //if at ground station than drop cone and set slide up
                             S0.setPosition(camBothClosed);
@@ -563,7 +547,7 @@ public class Statics extends LinearOpMode {
 
                 slidecalibrated = true;
                 beenoff = false;
-                M0_2.setPower(0);
+                //M0_2.setPower(0);
 
             }
         }
