@@ -46,7 +46,7 @@ public class Statics extends LinearOpMode {
     Pose2d currentpose;
     Pose2d prevpose;
 
-    public static double dslam = 1.5;
+    public static double dslam = 3;
     public static double d2 = 3;
     public static double centerpos = 52.5;
     //public static double defaultcenter = 51;
@@ -125,6 +125,7 @@ public class Statics extends LinearOpMode {
     boolean servoclamp4;
     boolean servoclampasync;
     TrajectorySequence init1;
+    TrajectorySequence init2;
     TrajectorySequence parktraj;
     SampleMecanumDrive drive;
 
@@ -272,7 +273,7 @@ public class Statics extends LinearOpMode {
                 }
             } else if (servoclamp4) {
                 if (M0_2.getCurrentPosition() * 1.4 > target) {
-                    M0_2.setPower(0);
+                    M0_2.setPower(.01);
                     servoclamp4 = false;
                     servoclamp1 = true;
                     servoclampasync = false;

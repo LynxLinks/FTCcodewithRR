@@ -27,14 +27,14 @@ import java.util.List;
 public class Auto14 extends Statics {
 
     public static double d1 = 10.8;
-    public static double stagger = 1;
-    public static double parkyoffset = -2;
+    public static double stagger = 0;//1
+    public static double parkyoffset = 0;//-2
     public static double dwall = 16.5;
     public static double dwall2 = -2;
-    public static double dwall3 = 30;
+    public static double dwall3 = 29;
     public static double ywall = 50;
-    public static double ywall2 = 50;
-    public static double ywalloffset = 2;
+    public static double ywall2 = 52.25;//50
+    public static double ywalloffset = -3;//4
     public static double slideoffset = 750;
     boolean useiteration = true;
 
@@ -60,7 +60,7 @@ public class Auto14 extends Statics {
         S2.setPosition(UmbrellaMax2); //.03
         initVuforia();
         initTfod();
-        if (D1.getDistance(DistanceUnit.INCH)>2) { // audience side
+        if (!D5.getState()) { // audience side
             if (D2.getDistance(DistanceUnit.INCH) > D4.getDistance(DistanceUnit.INCH)) position = 1;
             else position = 2;
             xcord = new int[]{1,1,0};
@@ -135,6 +135,13 @@ public class Auto14 extends Statics {
                     .lineToLinearHeading(new Pose2d(x1, y1, o1))
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                     .build();
+            drive.followTrajectorySequenceAsync(init1);
+            drive.update();
+            while (drive.isBusy()
+                    && !isStopRequested()) {
+                drive.update();
+                Slide();
+            }
         }
 
 
@@ -154,7 +161,7 @@ public class Auto14 extends Statics {
                 pose = (new Pose2d( dwall3 - distance, 0, Math.toRadians(-90)));
                 o2 = Math.toRadians(135);
                 o4 = Math.toRadians(0);
-                x4 = 29;
+                x4 = 32;
             }if (position == 3) {
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D2.getDistance(DistanceUnit.INCH);
@@ -169,7 +176,7 @@ public class Auto14 extends Statics {
                 pose = (new Pose2d(  distance - dwall3, 0, Math.toRadians(-90)));
                 o2 = Math.toRadians(45);
                 o4 = Math.toRadians(180);
-                x4 = -29;
+                x4 = -32;
 
             }
             y1 = ywall2 - 18;
@@ -187,25 +194,35 @@ public class Auto14 extends Statics {
                         S2.setPosition(UmbrellaMin2); //.03
                     })
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                    .addDisplacementMarker(() -> {
-                        drop();
-                    })
+                    .build();
+            init2 = drive.trajectorySequenceBuilder(init1.end())
+
                     .back(y3)
                     .addDisplacementMarker(() -> {
                         target = 650;
                     })
                     .splineToSplineHeading(new Pose2d(x4, y4, o4), o4)
                     .build();
-        }
 
-
-        drive.followTrajectorySequenceAsync(init1);
-        drive.update();
-        while (drive.isBusy()
-                && !isStopRequested()) {
+            drive.followTrajectorySequenceAsync(init1);
             drive.update();
-            Slide();
+            while (drive.isBusy()
+                    && !isStopRequested()) {
+                drive.update();
+                Slide();
+            }
+            drop();
+            drive.followTrajectorySequenceAsync(init2);
+            drive.update();
+            while (drive.isBusy()
+                    && !isStopRequested()) {
+                drive.update();
+                Slide();
+            }
         }
+
+
+
     }
 
     public void Park() {
@@ -274,10 +291,12 @@ public class Auto14 extends Statics {
                 telemetry.addData("position",position);
                 telemetry.addData("", "");
                 telemetry.addData("slide", D0.getState());
-                telemetry.addData("", "");
+                telemetry.addData("cam", D5.getState());
                 telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
                 telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-
+                if (!D0.getState()||D2.getDistance(DistanceUnit.INCH) < 20||D4.getDistance(DistanceUnit.INCH)<20||(D2.getDistance(DistanceUnit.INCH) > 40&&D4.getDistance(DistanceUnit.INCH) > 40)){
+                    telemetry.addData("", "ERROR");
+                }
 
                 //telemetry.addData("xm",xm);
                 telemetry.update();
