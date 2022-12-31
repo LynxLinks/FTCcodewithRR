@@ -582,46 +582,6 @@ public class Statics extends LinearOpMode {
             x3 =x2;
             y3 = y2;
             o3 = o2;
-            /*
-            if (usedistance) {
-                double distance = 0;
-                double distanceholder;
-                int count = 0;
-                if (w == 1 || w == 3) {
-                    for (int i = 0; i < 5; i++) {
-                        distanceholder = D4.getDistance(DistanceUnit.INCH);
-                        if (distanceholder < 55) {
-                            distance += distanceholder;
-                            count += 1;
-                        }
-                    }
-                } else {
-                    for (int i = 0; i < 5; i++) {
-                        distanceholder = D2.getDistance(DistanceUnit.INCH);
-                        if (distanceholder < 55) {
-                            distance += distanceholder;
-                            count += 1;
-                        }
-                    }
-                }
-
-                if (count == 0) {
-                    distance = defaultcenter;
-                } else {
-                    distance = distance / count;
-                }
-
-                if (w == 1 || w ==4){
-                    iy = distance - centerpos - 12;
-                }else if (w == 2){
-                    ix = distance - centerpos - 12;
-                }else{
-                    ix = centerpos - distance + 12;
-                }
-                telemetry.addData("distanceSensor", distance);
-                telemetry.update();
-
-            }*/
             currentpose = new Pose2d(ix, iy, io);
             atwall = false;
 
@@ -813,4 +773,43 @@ public class Statics extends LinearOpMode {
         target = target + slideoffset;
         UntilSlide();
     }
- */
+      /*
+            if (usedistance) {
+                double distance = 0;
+                double distanceholder;
+                int count = 0;
+                if (w == 1 || w == 3) {
+                    for (int i = 0; i < 5; i++) {
+                        distanceholder = D4.getDistance(DistanceUnit.INCH);
+                        if (distanceholder < 55) {
+                            distance += distanceholder;
+                            count += 1;
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < 5; i++) {
+                        distanceholder = D2.getDistance(DistanceUnit.INCH);
+                        if (distanceholder < 55) {
+                            distance += distanceholder;
+                            count += 1;
+                        }
+                    }
+                }
+
+                if (count == 0) {
+                    distance = defaultcenter;
+                } else {
+                    distance = distance / count;
+                }
+
+                if (w == 1 || w ==4){
+                    iy = distance - centerpos - 12;
+                }else if (w == 2){
+                    ix = distance - centerpos - 12;
+                }else{
+                    ix = centerpos - distance + 12;
+                }
+                telemetry.addData("distanceSensor", distance);
+                telemetry.update();
+
+            }*/
