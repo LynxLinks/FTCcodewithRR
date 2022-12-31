@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import static org.firstinspires.ftc.teamcode.Auto13.autopose;
+import static org.firstinspires.ftc.teamcode.Auto14.autopose;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
 import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
@@ -19,9 +19,10 @@ public class DriveV10 extends Statics {
     public static boolean useiteration = false;
     public static boolean usepreset =false;
     public static boolean savepos = true;
+    public static double slideoffset = 750;
 
     public void runOpMode() {
-        StaticInit(false,d1,xcord,ycord,useiteration);
+        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset);
         S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
@@ -176,14 +177,14 @@ rrinnit();
         }
         if((gamepad1.dpad_right) && dright2){
             dright2 = false;
-            usedistance = true;
-            Drive(xcordset,ycordset,wcordset,savepos);
+            //usedistance = true;
+            Drive(xcordset,ycordset,wcordset,savepos,true);
 
         }
         if((gamepad1.dpad_left) && dleft2){
             dleft2 = false;
-            usedistance = false;
-            Drive(xcordset,ycordset,wcordset,savepos);
+            //usedistance = false;
+            Drive(xcordset,ycordset,wcordset,savepos,true);
 
         }
         if(gamepad2.right_trigger > 0.6){
