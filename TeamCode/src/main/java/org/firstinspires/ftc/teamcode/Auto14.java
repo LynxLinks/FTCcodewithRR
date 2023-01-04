@@ -139,7 +139,7 @@ public class Auto14 extends Statics {
             drive.update();
             while (drive.isBusy()
                     && !isStopRequested()) {
-                drive.update();
+                drivestack();
                 Slide();
             }
         }
@@ -208,7 +208,7 @@ public class Auto14 extends Statics {
             drive.update();
             while (drive.isBusy()
                     && !isStopRequested()) {
-                drive.update();
+                drivestack();
                 Slide();
             }
             drop();
@@ -216,7 +216,7 @@ public class Auto14 extends Statics {
             drive.update();
             while (drive.isBusy()
                     && !isStopRequested()) {
-                drive.update();
+                drivestack();
                 Slide();
             }
         }
@@ -236,7 +236,6 @@ public class Auto14 extends Statics {
         }if (position == 2 || position == 3) {
             if (zone == "1") park = -58;
             if (zone == "2") park = -36;
-
             if (zone == "3") park = -12;
             //vopark = Math.toRadians(0);
             vopark = Math.toRadians(45);
@@ -251,7 +250,7 @@ public class Auto14 extends Statics {
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
         while( drive.isBusy()){
-            drive.update();
+            drivestack();
             Slide();
         }
         autopose = drive.getPoseEstimate();
@@ -276,15 +275,18 @@ public class Auto14 extends Statics {
             center = true;
         }
     }
-    public void Slam(){
+    /*public void Slam(){
         drive.setPoseEstimate(new Pose2d());
         traj = drive.trajectorySequenceBuilder(new Pose2d())
                 .forward(dslam)
                 .build();
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
-        while( drive.isBusy()){drive.update();Slide();}
-    }
+        while( drive.isBusy()){
+            drivestack();
+
+            Slide();}
+    }*/
     public void IdentifyVuforia(){
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();

@@ -65,7 +65,7 @@ rrinnit();
                 && !isStopRequested()
                 && Math.abs(gamepad1.right_trigger) < .5
                 && Math.abs(gamepad1.left_trigger) < .5) {
-            drive.update();
+            drivestack();
             Slide();
             UI();
         }
@@ -196,7 +196,7 @@ rrinnit();
             math(xcordset,ycordset,wcordset,savepos);
         }
 
-        drive.update();
+
         telemetry.addData("x", xcordset);
         telemetry.addData("", "");
         telemetry.addData("y", ycordset);
