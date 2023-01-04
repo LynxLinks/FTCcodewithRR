@@ -26,15 +26,15 @@ import java.util.List;
 
 public class Auto14 extends Statics {
 
-    public static double d1 = 10.8;
+    public static double d1 = 11.2;
     public static double stagger = 0;//1
     public static double parkyoffset = 0;//-2
     public static double dwall = 16.5;
-    public static double dwall2 = -2;
-    public static double dwall3 = 29;
+    public static double dwall2 = -6;
+    public static double dwall3 = 32;
     public static double ywall = 50;
-    public static double ywall2 = 52.25;//50
-    public static double ywalloffset = -3;//4
+    public static double ywall2 = 50;//50
+    public static double ywalloffset = 6;//4
     public static double slideoffset = 750;
     boolean useiteration = true;
 
@@ -90,7 +90,7 @@ public class Auto14 extends Statics {
         double distance = 0;
         double distanceholder = 0;
         int count = 0;
-        target = 900;
+        target = 950;
         if (position == 1 || position == 2) {
             drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(-90)));
             if (position == 1) {
@@ -179,14 +179,14 @@ public class Auto14 extends Statics {
                 x4 = -32;
 
             }
-            y1 = ywall2 - 18;
-            x2 = d1 * Math.cos(o2);
-            y2 = ywall2 + (d1 * Math.sin(o2));
-            y3 = reverseoffset;
+            y1 = ywall2 - 24;
+            x2 = 12.5 * Math.cos(o2);
+            y2 = ywall2 + (12.5 * Math.sin(o2));
+            y3 = 4;
             y4 = ywall2+ywalloffset;
 
             drive.setPoseEstimate(pose);
-            init1 = drive.trajectorySequenceBuilder(pose)
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
                     .back(y1)
                     .addDisplacementMarker(() -> {
                         target = hdata[7];
@@ -231,18 +231,23 @@ public class Auto14 extends Statics {
             if (zone == "1") park = 12;
             if (zone == "2") park = 36;
             if (zone == "3") park = 58;
-            vopark = Math.toRadians(0);
+            //vopark = Math.toRadians(180);
+            vopark = Math.toRadians(-135);
         }if (position == 2 || position == 3) {
             if (zone == "1") park = -58;
             if (zone == "2") park = -36;
+
             if (zone == "3") park = -12;
-            vopark = Math.toRadians(180);
+            //vopark = Math.toRadians(0);
+            vopark = Math.toRadians(45);
         }
         drive.setPoseEstimate(prevpose);
         parktraj = drive.trajectorySequenceBuilder(prevpose)
-                .back(2)
+                //.back(2)
+                .back(4)
                 .addDisplacementMarker(() ->{target = 800;})
-                .splineToSplineHeading(new Pose2d(park,vy+parkyoffset,vopark),vopark)
+                //.splineToSplineHeading(new Pose2d(park,vy+parkyoffset,vopark),vopark)
+                .lineToLinearHeading(new Pose2d(park,vy+parkyoffset,vopark))
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
         while( drive.isBusy()){
@@ -254,16 +259,21 @@ public class Auto14 extends Statics {
     public void Cycle(){
         math(xcordset,ycordset,wcordset,true);
         math(xcordset,ycordset,wcordset,true);
+        boolean center = false;
         for(int i = 0;i < xcord.length; i++){
 
             xcordset = xm * xcord[i];
             ycordset = ycord[i];
-            Drive(xcordset,ycordset,wcordset,true,true);
+            if (!center){
+                ServoClamp();
+            }
+            Drive(xcordset,ycordset,wcordset,true,center);
             if (i < xcord.length -1) {
-                Drive(xcordset,ycordset,wcordset,true,true);
+                Drive(xcordset,ycordset,wcordset,true,center);
                 //Slam();
                 }
             else {drop();}
+            center = true;
         }
     }
     public void Slam(){
@@ -279,23 +289,30 @@ public class Auto14 extends Statics {
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
-                telemetry.addData("# Objects Detected", updatedRecognitions.size());
+                //telemetry.addData("# Objects Detected", updatedRecognitions.size());
                 // step through the list of recognitions and display image position/size information for each one
                 // Note: "Image number" refers to the randomized image orientation/number
                 for (Recognition recognition : updatedRecognitions) {
-                    telemetry.addData("GoTo", recognition.getLabel(), recognition.getConfidence() * 100 );
+                    //telemetry.addData("GoTo", recognition.getLabel(), recognition.getConfidence() * 100 );
                     zone = recognition.getLabel();
                 }
-                telemetry.addData("zone",zone);
+                telemetry.addData("park",zone);
                 //telemetry.addLine("working");
-                telemetry.addData("position",position);
-                telemetry.addData("", "");
-                telemetry.addData("slide", D0.getState());
-                telemetry.addData("cam", D5.getState());
-                telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
-                telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-                if (!D0.getState()||D2.getDistance(DistanceUnit.INCH) < 20||D4.getDistance(DistanceUnit.INCH)<20||(D2.getDistance(DistanceUnit.INCH) > 40&&D4.getDistance(DistanceUnit.INCH) > 40)){
-                    telemetry.addData("", "ERROR");
+                telemetry.addData("start",position);
+                //telemetry.addData("", "");
+                //telemetry.addData("cam", D5.getState());
+                if (position == 1 || position == 4){
+                    telemetry.addData("distance", D4.getDistance(DistanceUnit.INCH));
+                }else{
+                    telemetry.addData("distance", D2.getDistance(DistanceUnit.INCH));
+                }
+                //telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+                //telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+                if (D2.getDistance(DistanceUnit.INCH) < 20||D4.getDistance(DistanceUnit.INCH)<20||(D2.getDistance(DistanceUnit.INCH) > 36&&D4.getDistance(DistanceUnit.INCH) > 36)){
+                    telemetry.addData("", "CHECK DISTANCE SENSORS");
+                }
+                if (!D0.getState()){
+                    telemetry.addData("", "//////////SLIDE FALSE///////////");
                 }
 
                 //telemetry.addData("xm",xm);

@@ -184,7 +184,7 @@ rrinnit();
         if((gamepad1.dpad_left) && dleft2){
             dleft2 = false;
             //usedistance = false;
-            Drive(xcordset,ycordset,wcordset,savepos,true);
+            Drive(xcordset,ycordset,wcordset,savepos,false);
 
         }
         if(gamepad2.right_trigger > 0.6){

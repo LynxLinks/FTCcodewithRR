@@ -46,11 +46,11 @@ public class Statics extends LinearOpMode {
     Pose2d currentpose;
     Pose2d prevpose;
 
-    public static double dslam = 3;
+    public static double dslam = 2;
     public static double d2 = 3;
     public static double centerpos = 52.5;
     //public static double defaultcenter = 51;
-    public static double offset = 16;
+    public static double offset = 24;
     public static double reverseoffset = 8;
     public static double Sdrop = 450;
     public static double slidespeed = .6;
@@ -386,7 +386,7 @@ public class Statics extends LinearOpMode {
             M3.setPower(0);
             for(int i = 0;i < 5; i++) {
                 distanceholder = D4.getDistance(DistanceUnit.INCH);
-                if (distanceholder < 55 && distanceholder > 40) {
+                if (distanceholder < 55 && distanceholder > 35) {
                     distance += distanceholder;
                     count += 1;
                 }
@@ -434,7 +434,7 @@ public class Statics extends LinearOpMode {
             distance = 0;
             for(int i = 0;i < 5; i++) {
                 distanceholder = D2.getDistance(DistanceUnit.INCH);
-                if (distanceholder < 55 && distanceholder > 40) {
+                if (distanceholder < 55 && distanceholder > 35) {
                     distance += distanceholder;
                     count += 1;
                 }
