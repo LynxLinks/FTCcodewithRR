@@ -46,15 +46,15 @@ public class Statics extends LinearOpMode {
     Pose2d currentpose;
     Pose2d prevpose;
 
-    public static double dslam = 2;
+    public static double dslam = 1.5;
     public static double d2 = 3;
-    public static double centerpos = 52.5;
+    public static double centerpos = 52;//53.5
     //public static double defaultcenter = 51;
     public static double offset = 24;
     public static double reverseoffset = 8;
     public static double Sdrop = 450;
     public static double slidespeed = .6;
-    public static double bump = 150;
+    public static double bump = 100;
     public static double calibratespeed = 1;
     public static double vopark;
 
@@ -188,6 +188,7 @@ public class Statics extends LinearOpMode {
         M0_2.setPower(0);
     }
     public void drivestack(){
+        drive.update();
         drive.update();
         drive.update();
         drive.update();

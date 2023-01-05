@@ -26,22 +26,26 @@ import java.util.List;
 
 public class Auto14 extends Statics {
 
-    public static double d1 = 11.2;
+    public static double d1 = 11.5;//11.2
     public static double stagger = 0;//1
-    public static double parkyoffset = 0;//-2
+    public static double parkyoffset = 1;//-2
     public static double dwall = 16.5;
     public static double dwall2 = -6;
-    public static double dwall3 = 32;
+    public static double dwall3blue = 32;
+    public static double dwall3red = 26;
     public static double ywall = 50;
     public static double ywall2 = 50;//50
-    public static double ywalloffset = 6;//4
-    public static double slideoffset = 750;
+    public static double ywalloffsetred = 0;//4
+    public static double ywalloffsetblue = 6;//4
+    public static double slideoffset = 400;
     boolean useiteration = true;
 
     public static Pose2d pose = new Pose2d();
     public static Pose2d autopose = new Pose2d();
     boolean savepos;
+    double distance;
 
+    int i;
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
     private static final String[] LABELS = {"1", "2", "3"};
     private static final String VUFORIA_KEY = "AW9YHO7/////AAABmac9s9LxrUDQuPRw+qlK4+1ZyAszPO7ouIyCLjm98NVZSbtunzGw0u8sSmhuTWNKjpGUxGCkMqV1mVUxgl9h4/J0GxK6120V5SfAcPH2XO17MGzFAm421Lcixendmv2WpyNU3HqERp0Og+sWFVwQTMM5f9rPnzsGiOVSOJ3xgZ9vltV2yHIrYxq1X95szieyo3xGab+kyy4mP5gWgu4VYwqffKb+nhXQ28jTzYhkqTbmE1saub+9juGnkNbqolX3A82q6/jrpIq1a/Nx5Egebwv1ItuABv0lq0gQJ4MiAGOf6czB9FnreVCYxSA4bUvCEZYxUG9RPgbczmU6eW85/wDskT3+1vMYR+BoqqwSa0mr";
@@ -77,20 +81,37 @@ public class Auto14 extends Statics {
             tfod.setZoom(1.0, 16.0 / 12.0);
         }
         FtcDashboard.getInstance().startCameraStream(tfod, 0);
-        while (!isStarted()) {
-            IdentifyVuforia();
-        }
         rrinnit();
         Init();
+        while (!isStarted()) {
+            IdentifyVuforia();
+            telemetry.addData("park",zone);
+            telemetry.addData("start",position);
+            if (position == 1 || position == 4){telemetry.addData("distance", D4.getDistance(DistanceUnit.INCH));}
+            else{
+                //telemetry.addData("distance", D2.getDistance(DistanceUnit.INCH));
+                telemetry.addData("distance", distance);
+            }
+            if (D2.getDistance(DistanceUnit.INCH) < 20||D4.getDistance(DistanceUnit.INCH)<20||(D2.getDistance(DistanceUnit.INCH) > 36&&D4.getDistance(DistanceUnit.INCH) > 36)){
+                telemetry.addData("", "CHECK DISTANCE SENSORS");}
+            if (!D0.getState()){telemetry.addData("", "//////////SLIDE FALSE///////////");}
+            telemetry.update();
+        }
+        drive.followTrajectorySequenceAsync(init1);
+        drive.update();
+        while (drive.isBusy()
+                && !isStopRequested()) {
+            drivestack();
+            Slide();
+        }
         Cycle();
         Park();
     }
 
     public void Init() {
-        double distance = 0;
         double distanceholder = 0;
         int count = 0;
-        target = 950;
+        target = 800;
         if (position == 1 || position == 2) {
             drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(-90)));
             if (position == 1) {
@@ -135,13 +156,13 @@ public class Auto14 extends Statics {
                     .lineToLinearHeading(new Pose2d(x1, y1, o1))
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                     .build();
-            drive.followTrajectorySequenceAsync(init1);
+            /*drive.followTrajectorySequenceAsync(init1);
             drive.update();
             while (drive.isBusy()
                     && !isStopRequested()) {
                 drivestack();
                 Slide();
-            }
+            }*/
         }
 
 
@@ -158,10 +179,11 @@ public class Auto14 extends Statics {
                 distance = distance/count;
                 xm = 1;
                 wcordset = 4;
-                pose = (new Pose2d( dwall3 - distance, 0, Math.toRadians(-90)));
+                pose = (new Pose2d( dwall3blue - distance, 0, Math.toRadians(-90)));
                 o2 = Math.toRadians(135);
                 o4 = Math.toRadians(0);
                 x4 = 32;
+                y4 = ywall2+ywalloffsetblue;
             }if (position == 3) {
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D2.getDistance(DistanceUnit.INCH);
@@ -173,17 +195,18 @@ public class Auto14 extends Statics {
                 distance = distance/count;
                 xm = -1;
                 wcordset = 1;
-                pose = (new Pose2d(  distance - dwall3, 0, Math.toRadians(-90)));
+                pose = (new Pose2d(  distance - dwall3red, 0, Math.toRadians(-90)));
                 o2 = Math.toRadians(45);
                 o4 = Math.toRadians(180);
                 x4 = -32;
+                y4 = ywall2+ywalloffsetred;
 
             }
-            y1 = ywall2 - 24;
+            y1 = ywall2 - 18;
             x2 = 12.5 * Math.cos(o2);
             y2 = ywall2 + (12.5 * Math.sin(o2));
             y3 = 4;
-            y4 = ywall2+ywalloffset;
+
 
             drive.setPoseEstimate(pose);
             init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
@@ -194,9 +217,11 @@ public class Auto14 extends Statics {
                         S2.setPosition(UmbrellaMin2); //.03
                     })
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                    .build();
-            init2 = drive.trajectorySequenceBuilder(init1.end())
-
+                    //.build();
+            //init2 = drive.trajectorySequenceBuilder(init1.end())
+                    .addDisplacementMarker(() -> {
+                        drop();
+                    })
                     .back(y3)
                     .addDisplacementMarker(() -> {
                         target = 650;
@@ -204,7 +229,7 @@ public class Auto14 extends Statics {
                     .splineToSplineHeading(new Pose2d(x4, y4, o4), o4)
                     .build();
 
-            drive.followTrajectorySequenceAsync(init1);
+            /*drive.followTrajectorySequenceAsync(init1);
             drive.update();
             while (drive.isBusy()
                     && !isStopRequested()) {
@@ -218,12 +243,13 @@ public class Auto14 extends Statics {
                     && !isStopRequested()) {
                 drivestack();
                 Slide();
-            }
+            }*/
         }
 
 
 
     }
+
 
     public void Park() {
 
@@ -238,13 +264,13 @@ public class Auto14 extends Statics {
             if (zone == "2") park = -36;
             if (zone == "3") park = -12;
             //vopark = Math.toRadians(0);
-            vopark = Math.toRadians(45);
+            vopark = Math.toRadians(-45);
         }
         drive.setPoseEstimate(prevpose);
         parktraj = drive.trajectorySequenceBuilder(prevpose)
                 //.back(2)
-                .back(4)
-                .addDisplacementMarker(() ->{target = 800;})
+                .back(8)
+                .addDisplacementMarker(() ->{target = 500;})
                 //.splineToSplineHeading(new Pose2d(park,vy+parkyoffset,vopark),vopark)
                 .lineToLinearHeading(new Pose2d(park,vy+parkyoffset,vopark))
                 .build();
@@ -260,6 +286,11 @@ public class Auto14 extends Statics {
         math(xcordset,ycordset,wcordset,true);
         boolean center = false;
         for(int i = 0;i < xcord.length; i++){
+            if (i ==1) {
+                center = true;
+            }else{
+                center = false;
+            }
 
             xcordset = xm * xcord[i];
             ycordset = ycord[i];
@@ -272,7 +303,6 @@ public class Auto14 extends Statics {
                 //Slam();
                 }
             else {drop();}
-            center = true;
         }
     }
     /*public void Slam(){
@@ -288,6 +318,7 @@ public class Auto14 extends Statics {
             Slide();}
     }*/
     public void IdentifyVuforia(){
+        telemetry.clear();
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
@@ -298,27 +329,7 @@ public class Auto14 extends Statics {
                     //telemetry.addData("GoTo", recognition.getLabel(), recognition.getConfidence() * 100 );
                     zone = recognition.getLabel();
                 }
-                telemetry.addData("park",zone);
-                //telemetry.addLine("working");
-                telemetry.addData("start",position);
-                //telemetry.addData("", "");
-                //telemetry.addData("cam", D5.getState());
-                if (position == 1 || position == 4){
-                    telemetry.addData("distance", D4.getDistance(DistanceUnit.INCH));
-                }else{
-                    telemetry.addData("distance", D2.getDistance(DistanceUnit.INCH));
-                }
-                //telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
-                //telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
-                if (D2.getDistance(DistanceUnit.INCH) < 20||D4.getDistance(DistanceUnit.INCH)<20||(D2.getDistance(DistanceUnit.INCH) > 36&&D4.getDistance(DistanceUnit.INCH) > 36)){
-                    telemetry.addData("", "CHECK DISTANCE SENSORS");
-                }
-                if (!D0.getState()){
-                    telemetry.addData("", "//////////SLIDE FALSE///////////");
-                }
 
-                //telemetry.addData("xm",xm);
-                telemetry.update();
             }
         }
     }
