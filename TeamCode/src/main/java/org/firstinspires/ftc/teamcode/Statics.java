@@ -46,7 +46,7 @@ public class Statics extends LinearOpMode {
     Pose2d currentpose;
     Pose2d prevpose;
 
-    public static double dslam = 1.5;
+    public static double dslam = 2.5;//1.5
     public static double d2 = 3;
     public static double centerpos = 52;//53.5
     //public static double defaultcenter = 51;

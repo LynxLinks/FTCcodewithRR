@@ -28,7 +28,7 @@ public class Auto14 extends Statics {
 
     public static double d1 = 11.5;//11.2
     public static double stagger = 0;//1
-    public static double parkyoffset = 1;//-2
+    public static double parkyoffset = -1;//-2
     public static double dwall = 16.5;
     public static double dwall2 = -6;
     public static double dwall3blue = 32;
@@ -36,7 +36,7 @@ public class Auto14 extends Statics {
     public static double ywall = 50;
     public static double ywall2 = 50;//50
     public static double ywalloffsetred = 0;//4
-    public static double ywalloffsetblue = 6;//4
+    public static double ywalloffsetblue = 4;//4
     public static double slideoffset = 400;
     boolean useiteration = true;
 
@@ -87,15 +87,15 @@ public class Auto14 extends Statics {
             IdentifyVuforia();
             telemetry.addData("park",zone);
             telemetry.addData("start",position);
-            if (position == 1 || position == 4){telemetry.addData("distance", D4.getDistance(DistanceUnit.INCH));}
-            else{
-                //telemetry.addData("distance", D2.getDistance(DistanceUnit.INCH));
-                telemetry.addData("distance", distance);
-            }
+
+            telemetry.addData("distance", distance);
             if (D2.getDistance(DistanceUnit.INCH) < 20||D4.getDistance(DistanceUnit.INCH)<20||(D2.getDistance(DistanceUnit.INCH) > 36&&D4.getDistance(DistanceUnit.INCH) > 36)){
                 telemetry.addData("", "CHECK DISTANCE SENSORS");}
             if (!D0.getState()){telemetry.addData("", "//////////SLIDE FALSE///////////");}
+            telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
+            telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
             telemetry.update();
+
         }
         drive.followTrajectorySequenceAsync(init1);
         drive.update();
@@ -286,7 +286,7 @@ public class Auto14 extends Statics {
         math(xcordset,ycordset,wcordset,true);
         boolean center = false;
         for(int i = 0;i < xcord.length; i++){
-            if (i ==1) {
+            if (i ==2) {
                 center = true;
             }else{
                 center = false;
