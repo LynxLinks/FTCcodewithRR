@@ -296,7 +296,12 @@ public class Auto14 extends Statics {
             ycordset = ycord[i];
             if (!center){
                 ServoClamp();
+                if (!D5.getState()){
+                    Center(wcordset);
+                    break;
+                }
             }
+
             Drive(xcordset,ycordset,wcordset,true,center);
             if (i < xcord.length -1) {
                 Drive(xcordset,ycordset,wcordset,true,center);

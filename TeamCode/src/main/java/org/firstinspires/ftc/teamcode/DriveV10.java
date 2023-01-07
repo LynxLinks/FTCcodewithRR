@@ -70,6 +70,7 @@ rrinnit();
             UI();
         }
     }
+
     public void manual(){
 
         drive.setWeightedDrivePower(
@@ -91,124 +92,7 @@ rrinnit();
         }
     }
 
-    public void UI() {
 
-
-        //Manual Servo
-        if (gamepad1.left_bumper) {
-            S0.setPosition(camBothClosed);
-        }
-
-        //Manual Slide
-        if (gamepad1.a) target = starget;
-        if (gamepad1.b) target = 2275;
-        if (gamepad1.y) target = 1750;
-        if (gamepad1.x) target = 1350;
-
-        //Mauanl Umbrella
-        if (gamepad2.left_stick_button){ //down
-            S1.setPosition(UmbrellaMax1); //.7
-            S2.setPosition(UmbrellaMin2); //.03
-        }if (gamepad2.right_stick_button){ // up
-            S1.setPosition(UmbrellaMin1); //.02
-            S2.setPosition(UmbrellaMax2); ;//.7
-        }
-
-        //coordinates
-        if (!gamepad2.dpad_up) dup = true;
-        if (!gamepad2.dpad_down) ddown = true;
-        if (!gamepad2.dpad_left) dleft = true;
-        if (!gamepad2.dpad_right) dright = true;
-        if (!gamepad2.right_bumper) dbright = true;
-        if (!gamepad2.left_bumper) dbleft = true;
-        if (!gamepad1.dpad_right) dright2 = true;
-        if (!gamepad1.dpad_left) dleft2 = true;
-
-        if (gamepad2.x && preset < xcord.length) gx = true;
-        if (gamepad2.y && preset > 1) gy = true;
-        if (gamepad2.right_bumper && wcordset < 4 && dbright) {
-            dbright = false;
-            wcordset += 1;
-        }
-        if (gamepad2.left_bumper && wcordset > 1 && dbleft) {
-            dbleft = false;
-            wcordset -= 1;
-        }
-        if ((gamepad2.dpad_up) && dup && wcordset < 4) {
-            dup = false;
-            ycordset += 1;
-        }
-        if ((gamepad2.dpad_down) && ddown) {
-            ddown = false;
-            ycordset -= 1;
-        }
-        if ((gamepad2.dpad_right) && dright) {
-            dright = false;
-            xcordset += 1;
-        }
-        if ((gamepad2.dpad_left) && dleft) {
-            dleft = false;
-            xcordset -= 1;
-
-        }
-        if((gamepad2.x) && gx){
-            preset += 1;
-            xcordset = xm*xcord[preset-1];
-            ycordset = ycord[preset-1];
-
-            gx = false;
-        }
-        if((gamepad2.y) && gy){
-            preset -= 1;
-            xcordset = xm*xcord[preset-1];
-            ycordset = ycord[preset-1];
-
-            gy = false;
-        }
-        if(gamepad2.right_stick_y > .5){
-            beacon = true;
-        }
-        if(gamepad2.right_stick_y < -.5){
-            beacon = false;
-        }
-        if(gamepad2.a){
-            xcordset = 0;
-            ycordset = 2;
-        }
-        if((gamepad1.dpad_right) && dright2){
-            dright2 = false;
-            //usedistance = true;
-            Drive(xcordset,ycordset,wcordset,savepos,true);
-
-        }
-        if((gamepad1.dpad_left) && dleft2){
-            dleft2 = false;
-            //usedistance = false;
-            Drive(xcordset,ycordset,wcordset,savepos,false);
-
-        }
-        if(gamepad2.right_trigger > 0.6){
-            slidecalibrated = false;
-        }
-        if(!gamepad2.b) Bbutton = true;
-        if(gamepad2.b && Bbutton){
-            Bbutton = false;
-            math(xcordset,ycordset,wcordset,savepos);
-        }
-
-
-        telemetry.addData("x", xcordset);
-        telemetry.addData("", "");
-        telemetry.addData("y", ycordset);
-        telemetry.addData("", "");
-        telemetry.addData("w", wcordset);
-        telemetry.addData("", "");
-        telemetry.addData("atwall", atwall);
-        telemetry.addData("", "");
-        telemetry.addData("beacon", beacon);
-        telemetry.update();
-
-    }
 }
 
 
