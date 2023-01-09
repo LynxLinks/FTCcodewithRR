@@ -31,11 +31,11 @@ public class Auto14 extends Statics {
     public static double stagger = 0;//1
     //public static double missedparkeoffset = 3;//1
     public static double parkyoffset = 4;//-2
-    public static double dwall = 16.5;
-    public static double dwall2 = -6;
+    public static double dwall = 14.5;
+    public static double dwall2 = -8;
     public static double dwall3blue = 32;
     public static double dwall3red = 26;
-    public static double ywallblue = 51;
+    public static double ywallblue = 50;
     public static double ywallred = 51.7;
     public static double ywall2 = 50;//50
     public static double ywalloffsetred = 0;//4
@@ -121,7 +121,7 @@ public class Auto14 extends Statics {
 
             drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(-90)));
             if (position == 1) {
-                vopark = Math.toRadians(180);
+
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D4.getDistance(DistanceUnit.INCH);
                     if (distanceholder < 55) {
@@ -140,7 +140,7 @@ public class Auto14 extends Statics {
                 o2 = Math.toRadians(0);
 
             } else {
-                vopark = Math.toRadians(0);
+
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D2.getDistance(DistanceUnit.INCH);
                     if (distanceholder < 55) {
@@ -194,7 +194,7 @@ public class Auto14 extends Statics {
                 y4 = ywall2+ywalloffsetblue;
 
             }if (position == 3) {
-                vopark = Math.toRadians(0);
+
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D2.getDistance(DistanceUnit.INCH);
                     if (distanceholder < 55) {
@@ -264,6 +264,11 @@ public class Auto14 extends Statics {
     public void Park() {
 
         if (position == 1){
+            if (broke){
+                Math.toRadians(0);
+            }else{
+                Math.toRadians(180);
+            }
             if (zone == "1") {
                 park = 12;
                 parkyoffset -= 5;
@@ -273,8 +278,8 @@ public class Auto14 extends Statics {
                 parkyoffset -= 2;
             }
             if (zone == "3") park = 58;
-            //vopark = Math.toRadians(180);
-            vopark = Math.toRadians(-180);
+
+
         } if (position == 4){
 
             if (zone == "1") {
@@ -287,12 +292,18 @@ public class Auto14 extends Statics {
                     parkyoffset += 4;
                 }
             }
-            //vopark = Math.toRadians(180);
-            vopark = Math.toRadians(-135);
+
 
 
         }
         if (position == 2) {
+            if(broke){
+                vopark = Math.toRadians(180);
+            }else{
+                vopark = Math.toRadians(0);
+            }
+
+
 
             if (zone == "1") {
                 park = -61;
@@ -318,7 +329,7 @@ public class Auto14 extends Statics {
                     parkyoffset -= 1.5;
                 }
             }
-            //vopark = Math.toRadians(0);
+
 
         }
         if (position == 3) {
@@ -329,7 +340,7 @@ public class Auto14 extends Statics {
             }
             if (zone == "2") park = -36;
             if (zone == "3") park = -12;
-            //vopark = Math.toRadians(0);
+
 
         }
         if (firststack){
@@ -340,7 +351,7 @@ public class Auto14 extends Statics {
                 //.back(2)
                 .back(8)
                 .addDisplacementMarker(() ->{target = 500;})
-                //.splineToSplineHeading(new Pose2d(park,vy+parkyoffset,vopark),vopark)
+
                 .lineToLinearHeading(new Pose2d(park,vy+parkyoffset,vopark))
                 .build();
         drive.followTrajectorySequenceAsync(parktraj);
@@ -372,7 +383,7 @@ public class Auto14 extends Statics {
                     Drive(xcordset,ycordset,wcordset,true,center,0,0);
                     if (position == 1) vopark = Math.toRadians(0);
                     if (position == 2){
-                        vopark = Math.toRadians(0);
+                        vopark = Math.toRadians(180);
 
                     }
                     broke = true;

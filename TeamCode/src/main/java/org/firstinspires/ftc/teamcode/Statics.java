@@ -823,7 +823,12 @@ public class Statics extends LinearOpMode {
             /*if (centered && auto){
                 currentpose = new Pose2d(ix, iy-(centerpos-distance), io);
             }else {*/
-            currentpose = new Pose2d(ix, iy, io);
+            if (savepos && auto && !broke && drive.getPoseEstimate().getY() > -24 && drive.getPoseEstimate().getY() < 0){
+                currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
+            }else{
+                currentpose = new Pose2d(ix, iy, io);
+            }
+
            // }
             atwall = false;
 
