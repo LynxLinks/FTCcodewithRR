@@ -26,14 +26,17 @@ import java.util.List;
 
 public class Auto14 extends Statics {
 
-    public static double d1 = 11.5;//11.2
+    public static double d1 = 11.6;//11.2
+    public static double reverseoffset = 8;
     public static double stagger = 0;//1
-    public static double parkyoffset = -1;//-2
+    //public static double missedparkeoffset = 3;//1
+    public static double parkyoffset = 4;//-2
     public static double dwall = 16.5;
     public static double dwall2 = -6;
     public static double dwall3blue = 32;
     public static double dwall3red = 26;
-    public static double ywall = 50;
+    public static double ywallblue = 51;
+    public static double ywallred = 51.7;
     public static double ywall2 = 50;//50
     public static double ywalloffsetred = 0;//4
     public static double ywalloffsetblue = 4;//4
@@ -44,6 +47,7 @@ public class Auto14 extends Statics {
     public static Pose2d autopose = new Pose2d();
     boolean savepos;
     double distance;
+    boolean firststack= true;
 
     int i;
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
@@ -58,7 +62,7 @@ public class Auto14 extends Statics {
 
 
     public void runOpMode() {
-        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset);
+        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset);
         S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
@@ -75,7 +79,7 @@ public class Auto14 extends Statics {
             xcord = new int[]{1,2,0};
             ycord = new int[]{2,2,2};
         }
-        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset);
+        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset);
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1.0, 16.0 / 12.0);
@@ -91,9 +95,10 @@ public class Auto14 extends Statics {
             telemetry.addData("distance", distance);
             if (D2.getDistance(DistanceUnit.INCH) < 20||D4.getDistance(DistanceUnit.INCH)<20||(D2.getDistance(DistanceUnit.INCH) > 36&&D4.getDistance(DistanceUnit.INCH) > 36)){
                 telemetry.addData("", "CHECK DISTANCE SENSORS");}
-            if (!D0.getState()){telemetry.addData("", "//////////SLIDE FALSE///////////");}
             telemetry.addData("right", D2.getDistance(DistanceUnit.INCH));
             telemetry.addData("left", D4.getDistance(DistanceUnit.INCH));
+            if (!D0.getState()){telemetry.addData("", "//////////SLIDE FALSE///////////");}
+            //telemetry.addData("limit",D5.getState());
             telemetry.update();
 
         }
@@ -113,8 +118,10 @@ public class Auto14 extends Statics {
         int count = 0;
         target = 800;
         if (position == 1 || position == 2) {
+
             drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(-90)));
             if (position == 1) {
+                vopark = Math.toRadians(180);
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D4.getDistance(DistanceUnit.INCH);
                     if (distanceholder < 55) {
@@ -129,10 +136,11 @@ public class Auto14 extends Statics {
                 y1 = 2;
                 o1 = Math.toRadians(-90);
                 x2 = (distance - dwall2);
-                y2 = ywall;
+                y2 = ywallblue;
                 o2 = Math.toRadians(0);
 
             } else {
+                vopark = Math.toRadians(0);
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D2.getDistance(DistanceUnit.INCH);
                     if (distanceholder < 55) {
@@ -148,7 +156,7 @@ public class Auto14 extends Statics {
                 o1 = Math.toRadians(-90);
 
                 x2 = -(distance - dwall2);
-                y2 = ywall;
+                y2 = ywallred;
                 o2 = Math.toRadians(180);
 
             }
@@ -184,7 +192,9 @@ public class Auto14 extends Statics {
                 o4 = Math.toRadians(0);
                 x4 = 32;
                 y4 = ywall2+ywalloffsetblue;
+
             }if (position == 3) {
+                vopark = Math.toRadians(0);
                 for(int i = 0;i < 10; i++) {
                     distanceholder = D2.getDistance(DistanceUnit.INCH);
                     if (distanceholder < 55) {
@@ -224,7 +234,7 @@ public class Auto14 extends Statics {
                     })
                     .back(y3)
                     .addDisplacementMarker(() -> {
-                        target = 650;
+                        target = 800;
                     })
                     .splineToSplineHeading(new Pose2d(x4, y4, o4), o4)
                     .build();
@@ -253,18 +263,77 @@ public class Auto14 extends Statics {
 
     public void Park() {
 
-        if (position == 1 || position == 4){
-            if (zone == "1") park = 12;
-            if (zone == "2") park = 36;
+        if (position == 1){
+            if (zone == "1") {
+                park = 12;
+                parkyoffset -= 5;
+            }
+            if (zone == "2") {
+                park = 36;
+                parkyoffset -= 2;
+            }
             if (zone == "3") park = 58;
             //vopark = Math.toRadians(180);
+            vopark = Math.toRadians(-180);
+        } if (position == 4){
+
+            if (zone == "1") {
+                park = 12;
+            }
+            if (zone == "2") park = 36;
+            if (zone == "3") {
+                park = 58;
+                if (!broke) {
+                    parkyoffset += 4;
+                }
+            }
+            //vopark = Math.toRadians(180);
             vopark = Math.toRadians(-135);
-        }if (position == 2 || position == 3) {
-            if (zone == "1") park = -58;
+
+
+        }
+        if (position == 2) {
+
+            if (zone == "1") {
+                park = -61;
+                if (broke){
+
+                }else {
+                    parkyoffset -= 3.5;
+                }
+            }
+            if (zone == "2") {
+                park = -36;
+                if (broke){
+
+                }else {
+                    parkyoffset -= 0;
+                }
+            }
+            if (zone == "3") {
+                park = -12;
+                if (broke) {
+                    parkyoffset -= 1;
+                }else{
+                    parkyoffset -= 1.5;
+                }
+            }
+            //vopark = Math.toRadians(0);
+
+        }
+        if (position == 3) {
+
+            if (zone == "1") {
+                park = -61;
+                parkyoffset += 2;
+            }
             if (zone == "2") park = -36;
             if (zone == "3") park = -12;
             //vopark = Math.toRadians(0);
-            vopark = Math.toRadians(-45);
+
+        }
+        if (firststack){
+            prevpose = currentpose;
         }
         drive.setPoseEstimate(prevpose);
         parktraj = drive.trajectorySequenceBuilder(prevpose)
@@ -286,8 +355,9 @@ public class Auto14 extends Statics {
         math(xcordset,ycordset,wcordset,true);
         boolean center = false;
         for(int i = 0;i < xcord.length; i++){
+
             if (i ==2) {
-                center = true;
+                //center = true;
             }else{
                 center = false;
             }
@@ -297,14 +367,23 @@ public class Auto14 extends Statics {
             if (!center){
                 ServoClamp();
                 if (!D5.getState()){
-                    Center(wcordset);
+
+                    center = true;
+                    Drive(xcordset,ycordset,wcordset,true,center,0,0);
+                    if (position == 1) vopark = Math.toRadians(0);
+                    if (position == 2){
+                        vopark = Math.toRadians(0);
+
+                    }
+                    broke = true;
                     break;
                 }
             }
+            firststack = false;
+            Drive(xcordset,ycordset,wcordset,true,center,0,0);
 
-            Drive(xcordset,ycordset,wcordset,true,center);
             if (i < xcord.length -1) {
-                Drive(xcordset,ycordset,wcordset,true,center);
+                Drive(xcordset,ycordset,wcordset,true,center,0,0);
                 //Slam();
                 }
             else {drop();}

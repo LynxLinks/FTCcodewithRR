@@ -54,7 +54,9 @@ public class Auto13 extends Statics {
 
 
     public void runOpMode() {
-        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset);
+
+    }
+        /*StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset);
         S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
@@ -71,7 +73,7 @@ public class Auto13 extends Statics {
             xcord = new int[]{1,2,0};
             ycord = new int[]{2,2,2};
         }
-        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset);
+        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset);
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1.0, 16.0 / 12.0);
@@ -255,6 +257,7 @@ public void Slam(){
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
+        /*
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
@@ -278,7 +281,7 @@ public void Slam(){
         // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
     }
 
-
+*/
 }
 
 

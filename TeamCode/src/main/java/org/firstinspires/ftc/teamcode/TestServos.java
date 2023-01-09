@@ -43,12 +43,12 @@ public class    TestServos extends LinearOpMode {
     DistanceSensor D4;
 
     public static double camBothClosed = 0.13;
-    public static double camTopOpen= 0.25;
-    public static double camBothOpen= 0.3;
-    public static double UmbrellaMin1 = 0.055;
-    public static double UmbrellaMin2 = 0.03;
-    public static double UmbrellaMax1 = 0.68;
-    public static double UmbrellaMax2 = 0.67;
+    public static double camTopOpen= 0.35;
+    public static double camBothOpen= 0.45;
+    public static double UmbrellaMin1 = 0.14;
+    public static double UmbrellaMin2 = 0.13;
+    public static double UmbrellaMax1 = 0.79;
+    public static double UmbrellaMax2 = 0.79;
     public static double centerpos = 51.5;
     public static int Sdrop = 150;
     public static double calibratespeed = 1;
@@ -196,18 +196,32 @@ public class    TestServos extends LinearOpMode {
             S2.setPosition(UmbrellaMin2); //.03
         }
         if(gamepad2.right_bumper){
-            S0.setPosition(0.21);
+            S0.setPosition(camBothClosed);
+            M0_2.setPower(-.75);
+            while (D5.getState() == false && M0_2.getCurrentPosition()*1.4 > -150) {
+
+            }
+
+
+                S0.setPosition(camBothOpen);
+
+            target = M0_2.getCurrentPosition() * 1.4 - bump;
+            UntilSlide();
+            target = target + slideoffset;
+            UntilSlide();
+            /*
+            S0.setPosition(camBothClosed);
             M0_2.setPower(-.5);
             while (D5.getState() == false && M0_2.getCurrentPosition() > 0){
             }
-            S0.setPosition(.47);
+            S0.setPosition(camBothOpen);
             //telemetry.addData("current",M0_2.getCurrentPosition());
             target = M0_2.getCurrentPosition() - bump;
             //telemetry.addData("target",target);
             //telemetry.update();
             UntilSlide();
             target = target + slideoffset;
-            UntilSlide();
+            UntilSlide();*/
         }
 
         //Manual Slide

@@ -13,16 +13,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @TeleOp(name = "DriveV10", group="Linear Opmode")
 public class DriveV10 extends Statics {
 
-    public static double d1 = 11.5;
+    public static double d1 = 11;
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
     public static boolean useiteration = false;
     public static boolean usepreset =false;
     public static boolean savepos = true;
     public static double slideoffset = 750;
+    public static double reverseoffset = 3;
 
     public void runOpMode() {
-        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset);
+        StaticInit(false,d1,xcord,ycord,useiteration,slideoffset,0,reverseoffset);
         S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
@@ -38,17 +39,31 @@ public class DriveV10 extends Statics {
         }
         ycordset = ycord[0];
         xcordset = xm*xcord[0];
-
+        target = 800;
         if (usepreset) Init();
 
-        math(xcordset,ycordset,wcordset,savepos);
-        math(xcordset,ycordset,wcordset,savepos);
+
         waitForStart();
+        math(xcordset,ycordset,wcordset,false);
+        math(xcordset,ycordset,wcordset,false);
 rrinnit();
         while (opModeIsActive()) {
             Slide();
             UI();
             manual();
+            ServoTrigger();
+        }
+    }
+    public void ServoTrigger() {
+        if (gamepad1.right_bumper ) {
+            if (atwall) {
+                ServoClamp();
+            } else {
+                drop();
+            }
+        }
+        if (D5.getState() == false && D1.getDistance(DistanceUnit.INCH) < 1.75 && atwall){
+            ServoClamp();
         }
     }
     public void Init(){
@@ -71,26 +86,7 @@ rrinnit();
         }
     }
 
-    public void manual(){
 
-        drive.setWeightedDrivePower(
-                new Pose2d(
-                        -gamepad1.left_stick_y*.5 - 0.1*gamepad1.right_stick_y,
-                        -gamepad1.left_stick_x*.5- 0.1*gamepad1.right_stick_x,
-                        gamepad1.left_trigger - gamepad1.right_trigger
-                )
-        );
-        if (gamepad1.right_bumper ) {
-            if (atwall) {
-                ServoClamp();
-            } else {
-                drop();
-            }
-        }
-        if (D5.getState() == false && D1.getDistance(DistanceUnit.INCH) < 1.75 && atwall){
-            ServoClamp();
-        }
-    }
 
 
 }
