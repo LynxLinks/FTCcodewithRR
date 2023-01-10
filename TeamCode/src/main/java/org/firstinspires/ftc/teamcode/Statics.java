@@ -51,8 +51,9 @@ public class Statics extends LinearOpMode {
     public static double centerposblue = 51;//53.5
     public static double centerposred = 64;//53.5
     public static double centerposoffset = -1;
+    double offset;
     //public static double defaultcenter = 51;
-    public static double offset = 24;
+
 
     public static double Sdrop = 450;
     public static double slidespeed = .6;
@@ -76,6 +77,7 @@ public class Statics extends LinearOpMode {
     double iy;
     double io;
     double x1;
+    double angle;
     double x2;
     double x3;
     double y1;
@@ -125,6 +127,7 @@ public class Statics extends LinearOpMode {
     boolean slidecalibrated;
     boolean beenoff;
     boolean Bbutton;
+    boolean interupted;
     boolean atwall = true;
     //boolean usedistance = true;
     boolean servoclamp1 = true;
@@ -139,7 +142,7 @@ public class Statics extends LinearOpMode {
     SampleMecanumDrive drive;
 
     public void runOpMode() {}
-    public void StaticInit(boolean autof,double d1f, int[] xcordf, int[]ycordf, boolean useiterationf,double slideoffsetf, int position, double reverseoffsetf){
+    public void StaticInit(boolean autof,double d1f, int[] xcordf, int[]ycordf, boolean useiterationf,double slideoffsetf, int position, double reverseoffsetf,double offsetf){
         if (autof){
             if ((position == 1|| position == 2) && !inited){
                 centerposred = centerposred + centerposoffset;
@@ -151,6 +154,7 @@ public class Statics extends LinearOpMode {
         }
         reverseoffset = reverseoffsetf;
         slideoffset = slideoffsetf;
+        offset = offsetf;
         auto = autof;
         d1 = d1f;
 
@@ -279,6 +283,12 @@ public class Statics extends LinearOpMode {
                         gamepad1.left_trigger*.5 - gamepad1.right_trigger*.5
                 )
         );
+
+        //drive.update();
+        drive.updatePoseEstimate();
+        prevpose = drive.getPoseEstimate();
+
+
 
     }
     public void ServoClamp() {
@@ -420,10 +430,13 @@ public class Statics extends LinearOpMode {
             xcordset = 0;
             ycordset = 2;
         }
+        if (gamepad1.dpad_up){
+
+        }
         if((gamepad1.dpad_right) && dright2){
             dright2 = false;
             //usedistance = true;
-            Drive(xcordset,ycordset,wcordset,true,true,0,0);
+            Drive(xcordset,ycordset,wcordset,false,true,0,0);
 
         }
         if((gamepad1.dpad_left) && dleft2){
@@ -458,6 +471,7 @@ public class Statics extends LinearOpMode {
     }
     public void Drive(int xf, int yf, int wf, boolean savepos, boolean center, double xoffsetf, double yoffsetf) {
         double staggerf = 0;
+        interupted = false;
         if (atwall || !auto) {
             staggerf = 0;
         } else {
@@ -482,6 +496,7 @@ public class Statics extends LinearOpMode {
             yoffsetf = 0;
             xoffsetf = 0;
         }
+
         math(xf, yf, wf,savepos);
         drive.setPoseEstimate(currentpose);
         if (!auto || D5.getState()||atwall) {
@@ -506,7 +521,7 @@ public class Statics extends LinearOpMode {
                             }
                         }
                     })
-                    .splineToSplineHeading(new Pose2d(x2, y2 - staggerf, o2), o2)
+                    .splineToSplineHeading(new Pose2d(x2 + xoffsetf, y2 - staggerf + yoffsetf, o2), o2)
                     .addDisplacementMarker(() -> {
                         if (target < 150 && atwall == false) {  //if at ground station than drop cone and set slide up
                             target = 400;
@@ -534,6 +549,7 @@ public class Statics extends LinearOpMode {
                     UI();
                 }
             }
+
             if (!atwall) {
                 preset += 1;
                 if (preset <= xcord.length && useiteration) {
@@ -547,17 +563,29 @@ public class Statics extends LinearOpMode {
                 }
 
             }
+
+            /*if (!(Math.abs(gamepad1.left_stick_x) < .5
+                    && Math.abs(gamepad1.left_stick_y) < .5
+                    && Math.abs(gamepad1.right_stick_x) < .5
+                    && Math.abs(gamepad1.right_stick_y) < .5
+                    && drive.isBusy()
+                    && !isStopRequested()
+                    && Math.abs(gamepad1.right_trigger) < .5
+                    && Math.abs(gamepad1.left_trigger) < .5 )){
+                interupted = false;
+            }else{
+                interupted = true;
+            }
             M0.setPower(0);
             M1.setPower(0);
             M2.setPower(0);
-            M3.setPower(0);
-            drive.waitForIdle();
+            M3.setPower(0);*/
 
 
 
 
 
-            prevpose = drive.getPoseEstimate();
+
         }else{
 
             broke = true;
@@ -565,8 +593,10 @@ public class Statics extends LinearOpMode {
 
     }
     public void Center(int wf){
-        if (!D5.getState() && !broke) {
+        if (!D5.getState() ) {
             servoclampasync = true;
+        }else{
+            M0.setPower(.02);
         }
         drive.setPoseEstimate(new Pose2d());
 
@@ -589,7 +619,7 @@ public class Statics extends LinearOpMode {
         if (wf == 1 || wf == 3){
 
             traj = drive.trajectorySequenceBuilder(new Pose2d())
-                    .back(.5)
+                    .back(1)
                     .strafeLeft(100)
                     .build();
 
@@ -904,9 +934,12 @@ public class Statics extends LinearOpMode {
                     translate = false;
                 }
             }
-            if (savepos) {
+            if(savepos && auto){
+                currentpose = drive.getPoseEstimate();
+            }else if(savepos && !auto){
                 currentpose = prevpose;
-            }else{
+            }
+            else{
                 currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
             }
             if (!beacon){

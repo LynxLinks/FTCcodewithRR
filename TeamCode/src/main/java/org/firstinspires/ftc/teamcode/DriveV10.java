@@ -20,10 +20,11 @@ public class DriveV10 extends Statics {
     public static boolean usepreset =false;
     public static boolean savepos = true;
     public static double slideoffset = 750;
-    public static double reverseoffset = 3;
+    public static double reverseoffset = 10;
+    public static double offset = 14;
 
     public void runOpMode() {
-        StaticInit(false,d1,xcord,ycord,useiteration,slideoffset,0,reverseoffset);
+        StaticInit(false,d1,xcord,ycord,useiteration,slideoffset,0,reverseoffset,offset);
         S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03

@@ -26,17 +26,18 @@ import java.util.List;
 
 public class Auto14 extends Statics {
 
-    public static double d1 = 11.6;//11.2
+    public static double d1 = 11;//11.2
     public static double reverseoffset = 8;
+    public static double offset = 24;
     public static double stagger = 0;//1
     //public static double missedparkeoffset = 3;//1
-    public static double parkyoffset = 4;//-2
-    public static double dwall = 14.5;
+    public static double parkyoffset = 0;//-2
+    public static double dwall = 15.5;
     public static double dwall2 = -8;
     public static double dwall3blue = 32;
     public static double dwall3red = 26;
     public static double ywallblue = 50;
-    public static double ywallred = 51.7;
+    public static double ywallred = 50;
     public static double ywall2 = 50;//50
     public static double ywalloffsetred = 0;//4
     public static double ywalloffsetblue = 4;//4
@@ -62,7 +63,7 @@ public class Auto14 extends Statics {
 
 
     public void runOpMode() {
-        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset);
+        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset,offset);
         S0.setPosition(camBothClosed);
         S1.setPosition(UmbrellaMin1); //.7
         S2.setPosition(UmbrellaMax2); //.03
@@ -79,7 +80,7 @@ public class Auto14 extends Statics {
             xcord = new int[]{1,2,0};
             ycord = new int[]{2,2,2};
         }
-        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset);
+        StaticInit(true,d1,xcord,ycord,useiteration,slideoffset,position,reverseoffset,offset);
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1.0, 16.0 / 12.0);
@@ -262,12 +263,14 @@ public class Auto14 extends Statics {
 
 
     public void Park() {
-
+        atwall = true;
         if (position == 1){
             if (broke){
                 Math.toRadians(0);
+                math(xcordset,ycordset,wcordset,false);
+                vopark = Math.toRadians(0);
             }else{
-                Math.toRadians(180);
+                vopark = Math.toRadians(180);vopark = Math.toRadians(0);
             }
             if (zone == "1") {
                 park = 12;
@@ -298,9 +301,13 @@ public class Auto14 extends Statics {
         }
         if (position == 2) {
             if(broke){
+                math(xcordset,ycordset,wcordset,false);
                 vopark = Math.toRadians(180);
+                drive.setPoseEstimate(currentpose);
+
             }else{
                 vopark = Math.toRadians(0);
+
             }
 
 
@@ -309,7 +316,8 @@ public class Auto14 extends Statics {
                 park = -61;
                 if (broke){
 
-                }else {
+                }
+                else {
                     parkyoffset -= 3.5;
                 }
             }
@@ -344,10 +352,10 @@ public class Auto14 extends Statics {
 
         }
         if (firststack){
-            prevpose = currentpose;
+
         }
-        drive.setPoseEstimate(prevpose);
-        parktraj = drive.trajectorySequenceBuilder(prevpose)
+        //drive.setPoseEstimate(prevpose);
+        parktraj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 //.back(2)
                 .back(8)
                 .addDisplacementMarker(() ->{target = 500;})
@@ -365,12 +373,13 @@ public class Auto14 extends Statics {
         math(xcordset,ycordset,wcordset,true);
         math(xcordset,ycordset,wcordset,true);
         boolean center = false;
+        int k = 50;
         for(int i = 0;i < xcord.length; i++){
 
             if (i ==2) {
                 //center = true;
             }else{
-                center = false;
+                center = true;
             }
 
             xcordset = xm * xcord[i];
@@ -381,9 +390,9 @@ public class Auto14 extends Statics {
 
                     center = true;
                     Drive(xcordset,ycordset,wcordset,true,center,0,0);
-                    if (position == 1) vopark = Math.toRadians(0);
+                    if (position == 1)
                     if (position == 2){
-                        vopark = Math.toRadians(180);
+
 
                     }
                     broke = true;
@@ -391,13 +400,21 @@ public class Auto14 extends Statics {
                 }
             }
             firststack = false;
-            Drive(xcordset,ycordset,wcordset,true,center,0,0);
+            if (i == 2 && position == 2){
+                Drive(xcordset, ycordset, wcordset, false, center, -2, 1);
+            }else{
+                Drive(xcordset, ycordset, wcordset, true, center, 0, 0);
+            }/*
+            while (k > 0) {
 
+                k -= 1;
+            }*/
             if (i < xcord.length -1) {
                 Drive(xcordset,ycordset,wcordset,true,center,0,0);
                 //Slam();
                 }
             else {drop();}
+
         }
     }
     /*public void Slam(){
