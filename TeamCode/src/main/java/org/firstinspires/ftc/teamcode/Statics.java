@@ -54,19 +54,26 @@ public class Statics extends LinearOpMode {
     double offset;
     //public static double defaultcenter = 51;
 
+    public static double offset1 = 12;
+    public static double offset2 = 5;
+    public static double offset3 = 10;
+    public static double offset4 = 2;
+    public static double offset5 = 9;
+    public static double offset6 = 13;
+    boolean righttrig;
 
     public static double Sdrop = 450;
     public static double slidespeed = .6;
-    public static double bump = 250;
+    public static double bump = 300;
     public static double calibratespeed = 1;
     public static double vopark;
 
     boolean broke = false;
 
     int[] hdata = {50, 1150, 50, 1150, 50,
-    1150, 1775, 2300, 1775, 1150,
+    1150, 1750, 2300, 1750, 1150,
     50, 2300, 50, 2300, 50,
-    1150, 1775, 2300, 1775, 1150,
+    1150, 1750, 2300, 1750, 1150,
     50, 1150, 50, 1150, 50
     ,200,200,200,200,200,200,200,200,200,200,200};
 
@@ -233,14 +240,15 @@ public class Statics extends LinearOpMode {
         else {
             S0.setPosition(camBothClosed);
         }
-        double pt = target-(Sdrop/2);
-        target = target - Sdrop;
-        UntilSlide();
-        S1.setPosition(UmbrellaMin1); //.7
-        S2.setPosition(UmbrellaMax2); //.03
-        target = pt;
-        UntilSlide();
-
+        if (target > 1100) {
+            double pt = target - (Sdrop / 2);
+            target = target - Sdrop;
+            UntilSlide();
+            S1.setPosition(UmbrellaMin1); //.7
+            S2.setPosition(UmbrellaMax2); //.03
+            target = pt;
+            UntilSlide();
+        }
         beacon = false;
     }
     public void Slide () {
@@ -351,7 +359,7 @@ public class Statics extends LinearOpMode {
 
         //Manual Servo
         if (gamepad1.left_bumper) {
-            S0.setPosition(camBothClosed);
+            drop();
         }
 
         //Manual Slide
@@ -431,12 +439,17 @@ public class Statics extends LinearOpMode {
             ycordset = 2;
         }
         if (gamepad1.dpad_up){
-
+            S1.setPosition(UmbrellaMin1); //.02
+            S2.setPosition(UmbrellaMax2); ;//.7
+        }
+        if (gamepad1.dpad_down){
+            S1.setPosition(UmbrellaMax1); //.7
+            S2.setPosition(UmbrellaMin2); //.03
         }
         if((gamepad1.dpad_right) && dright2){
             dright2 = false;
             //usedistance = true;
-            Drive(xcordset,ycordset,wcordset,false,true,0,0);
+            Drive(xcordset,ycordset,wcordset,false,false,0,0);
 
         }
         if((gamepad1.dpad_left) && dleft2){
@@ -445,13 +458,22 @@ public class Statics extends LinearOpMode {
             Drive(xcordset,ycordset,wcordset,true,false,0,0);
 
         }
-        if(gamepad2.right_trigger > 0.6){
+        if (gamepad2.right_trigger < 0.6) righttrig = true;
+        if(gamepad2.right_trigger > 0.6 && righttrig){
+
+            righttrig = false;
+            if (slidecalibrated == false) {
+
+
+                target = target - 500;
+                UntilSlide();
+            }
             slidecalibrated = false;
         }
         if(!gamepad2.b) Bbutton = true;
         if(gamepad2.b && Bbutton){
             Bbutton = false;
-            math(xcordset,ycordset,wcordset,true);
+            math(xcordset,ycordset,wcordset,false);
         }
 
 
@@ -500,7 +522,10 @@ public class Statics extends LinearOpMode {
         math(xf, yf, wf,savepos);
         drive.setPoseEstimate(currentpose);
         if (!auto || D5.getState()||atwall) {
+            if (target < 150 && atwall == true) {  //if at ground station than drop cone and set slide up
+                target = 400;
 
+            }
             traj = drive.trajectorySequenceBuilder(currentpose)
                     .back(b1)
                     .addDisplacementMarker(() -> {
@@ -523,10 +548,7 @@ public class Statics extends LinearOpMode {
                     })
                     .splineToSplineHeading(new Pose2d(x2 + xoffsetf, y2 - staggerf + yoffsetf, o2), o2)
                     .addDisplacementMarker(() -> {
-                        if (target < 150 && atwall == false) {  //if at ground station than drop cone and set slide up
-                            target = 400;
 
-                        }
                     })
                     .splineToSplineHeading(new Pose2d(x3 - .01 + xoffsetf, y3 - staggerf + yoffsetf, o3 + .01), o3)
                     .build();
@@ -557,33 +579,12 @@ public class Statics extends LinearOpMode {
                     ycordset = ycord[preset - 1];
                 }
                 if (target > 500 && beacon) {
-                    S0.setPosition(camTopOpen);
+                    //S0.setPosition(camTopOpen);
                 } else {
                     S0.setPosition(camBothClosed);
                 }
 
             }
-
-            /*if (!(Math.abs(gamepad1.left_stick_x) < .5
-                    && Math.abs(gamepad1.left_stick_y) < .5
-                    && Math.abs(gamepad1.right_stick_x) < .5
-                    && Math.abs(gamepad1.right_stick_y) < .5
-                    && drive.isBusy()
-                    && !isStopRequested()
-                    && Math.abs(gamepad1.right_trigger) < .5
-                    && Math.abs(gamepad1.left_trigger) < .5 )){
-                interupted = false;
-            }else{
-                interupted = true;
-            }
-            M0.setPower(0);
-            M1.setPower(0);
-            M2.setPower(0);
-            M3.setPower(0);*/
-
-
-
-
 
 
         }else{
@@ -593,7 +594,7 @@ public class Statics extends LinearOpMode {
 
     }
     public void Center(int wf){
-        if (!D5.getState() ) {
+        if (!D5.getState() && !auto) {
             servoclampasync = true;
         }else{
             M0.setPower(.02);
@@ -613,6 +614,9 @@ public class Statics extends LinearOpMode {
                     && !isStopRequested()){
                 drivestack();
                 Slide();
+                if (!auto){
+                    UI();
+                }
             }
         }
 
@@ -629,6 +633,9 @@ public class Statics extends LinearOpMode {
                     && !isStopRequested()){
                 drivestack();
                 ServoClampAsync();
+                if (!auto){
+                    UI();
+                }
             }
             /////////////////
             M1.setPower(0);
@@ -667,6 +674,9 @@ public class Statics extends LinearOpMode {
                         && !isStopRequested()) {
                     drivestack();
                     ServoClampAsync();
+                    if (!auto){
+                        UI();
+                    }
                 }
 
 
@@ -683,6 +693,9 @@ public class Statics extends LinearOpMode {
                     && !isStopRequested()){
                 drivestack();
                 ServoClampAsync();
+                if (!auto){
+                    UI();
+                }
             }
             /////////////////
             M1.setPower(0);
@@ -722,6 +735,9 @@ public class Statics extends LinearOpMode {
                         && !isStopRequested()) {
                     drivestack();
                     ServoClampAsync();
+                    if (!auto){
+                        UI();
+                    }
                 }
 
             }
@@ -760,6 +776,13 @@ public class Statics extends LinearOpMode {
                         vo = Math.toRadians(-45);
                     }
                 }
+                if (Math.abs(iy-vy)  == 0){
+                    offset = offset1;
+                }if (Math.abs(iy-vy)  == 24){
+                    offset = offset2;
+                }if (Math.abs(iy-vy)  == 48){
+                    offset = offset3;
+                }
                 x1 = vx - offset;
                 y1 = iy;
                 o1 = io;
@@ -785,8 +808,17 @@ public class Statics extends LinearOpMode {
                         vo = Math.toRadians(135);
                     }
                 }
+                if (Math.abs(ix-vx)  == 0){
+                    offset = offset1;
+                }if (Math.abs(ix-vx)  == 24){
+                    offset = offset2;
+                }if (Math.abs(ix-vx)  == 48){
+                    offset = offset3;
+
+                }
                 x1 = ix;
                 y1 = vy - offset;
+
                 o1 = io;
                 b1 = y1 - iy;
             }
@@ -809,6 +841,13 @@ public class Statics extends LinearOpMode {
                         vy = 24 * (y - 3) - 12;
                         vo = Math.toRadians(135);
                     }
+                }
+                if (Math.abs(ix-vx)  == 0){
+                    offset = offset1;
+                }if (Math.abs(ix-vx)  == 24){
+                    offset = offset2;
+                }if (Math.abs(ix-vx)  == 48){
+                    offset = offset3;
                 }
                 x1 = ix;
                 y1 = vy - offset;
@@ -835,6 +874,13 @@ public class Statics extends LinearOpMode {
                         vo = Math.toRadians(-135);
                     }
                 }
+                if (Math.abs(iy-vy)  == 0){
+                    offset = offset1;
+                }if (Math.abs(iy-vy)  == 24){
+                    offset = offset2;
+                }if (Math.abs(iy-vy)  == 48){
+                    offset = offset3;
+                }
                 x1 = vx + offset;
                 y1 = iy;
                 o1 = io;
@@ -854,7 +900,35 @@ public class Statics extends LinearOpMode {
                 currentpose = new Pose2d(ix, iy-(centerpos-distance), io);
             }else {*/
             if (savepos && auto && !broke && drive.getPoseEstimate().getY() > -24 && drive.getPoseEstimate().getY() < 0){
-                currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
+                //currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
+                double distanceholder;
+                int count =0;
+                distance = 0;
+                if (w ==1){
+                    for(int i = 0;i < 20; i++) {
+                        distanceholder = D4.getDistance(DistanceUnit.INCH);
+                        if (distanceholder < 55 && distanceholder > 35) {
+                            distance += distanceholder;
+                            count += 1;
+                        }
+                    }
+                }
+                if (w==4){
+                    for(int i = 0;i < 20; i++) {
+                        distanceholder = D2.getDistance(DistanceUnit.INCH);
+                        if (distanceholder < 55 && distanceholder > 35) {
+                            distance += distanceholder;
+                            count += 1;
+                        }
+                    }
+
+                }
+                distance = distance/count;
+                if (distance <60 && distance >40 ){
+                    currentpose = new Pose2d(ix, distance, io);
+                }else {
+                    currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
+                }
             }else{
                 currentpose = new Pose2d(ix, iy, io);
             }
@@ -869,7 +943,14 @@ public class Statics extends LinearOpMode {
                 io = Math.toRadians(180);
                 starget = 850;
                 y2 = iy;
-                x2 = vx;// - offset;
+                if (Math.abs(iy-vy)  == 0){
+                    offset = offset4;
+                }if (Math.abs(iy-vy)  == 24){
+                    offset = offset5;
+                }if (Math.abs(iy-vy)  == 48){
+                    offset = offset6;
+                }
+                x2 = vx - offset;
 
             }
             if (w == 2) {
@@ -877,7 +958,14 @@ public class Statics extends LinearOpMode {
                 iy = -64;
                 io = Math.toRadians(-90);
                 starget = 500;
-                y2 = vy;// - offset;
+                if (Math.abs(ix-vx)  == 0){
+                    offset = offset4;
+                }if (Math.abs(ix-vx)  == 24){
+                    offset = offset5;
+                }if (Math.abs(ix-vx)  == 48){
+                    offset = offset6;
+                }
+                y2 = vy - offset;
                 x2 = ix;
 
             }
@@ -886,7 +974,14 @@ public class Statics extends LinearOpMode {
                 iy = -64;
                 io = Math.toRadians(-90);
                 starget = 500;
-                y2 = vy;// - offset;
+                if (Math.abs(ix-vx)  == 0){
+                    offset = offset4;
+                }if (Math.abs(ix-vx)  == 24){
+                    offset = offset5;
+                }if (Math.abs(ix-vx)  == 48){
+                    offset = offset6;
+                }
+                y2 = vy - offset;
                 x2 = ix;
 
             }
@@ -896,7 +991,14 @@ public class Statics extends LinearOpMode {
                 io = 0;
                 starget = 850;
                 y2 = iy;
-                x2 = vx;// + offset;
+                if (Math.abs(iy-vy)  == 0){
+                    offset = offset4;
+                }if (Math.abs(iy-vy)  == 24){
+                    offset = offset5;
+                }if (Math.abs(iy-vy)  == 48){
+                    offset = offset6;
+                }
+                x2 = vx + offset;
 
 
             }

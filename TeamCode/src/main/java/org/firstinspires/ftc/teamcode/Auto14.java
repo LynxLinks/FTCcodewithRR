@@ -379,7 +379,7 @@ public class Auto14 extends Statics {
             if (i ==2) {
                 //center = true;
             }else{
-                center = true;
+                center = false;
             }
 
             xcordset = xm * xcord[i];
@@ -400,11 +400,11 @@ public class Auto14 extends Statics {
                 }
             }
             firststack = false;
-            if (i == 2 && position == 2){
-                Drive(xcordset, ycordset, wcordset, false, center, -2, 1);
-            }else{
-                Drive(xcordset, ycordset, wcordset, true, center, 0, 0);
-            }/*
+            /*if (i == 2 && position == 2){
+                Drive(xcordset, ycordset, wcordset, true, center, -2, 1);
+            }else{*/
+            Drive(xcordset, ycordset, wcordset, true, center, 0, 0);
+            /*}
             while (k > 0) {
 
                 k -= 1;

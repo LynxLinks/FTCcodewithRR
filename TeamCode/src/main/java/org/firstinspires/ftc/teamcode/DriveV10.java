@@ -13,14 +13,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @TeleOp(name = "DriveV10", group="Linear Opmode")
 public class DriveV10 extends Statics {
 
-    public static double d1 = 11;
+    public static double d1 = 9;
     int[] xcord = new int[]{-1,0,-1,0,1,0};
     int [] ycord = new int[]{3,2,1,1,2,1,2};
     public static boolean useiteration = false;
     public static boolean usepreset =false;
     public static boolean savepos = true;
     public static double slideoffset = 750;
-    public static double reverseoffset = 10;
+    public static double reverseoffset = 8.9;
     public static double offset = 14;
 
     public void runOpMode() {
@@ -57,11 +57,7 @@ rrinnit();
     }
     public void ServoTrigger() {
         if (gamepad1.right_bumper ) {
-            if (atwall) {
-                ServoClamp();
-            } else {
-                drop();
-            }
+            ServoClamp();
         }
         if (D5.getState() == false && D1.getDistance(DistanceUnit.INCH) < 1.75 && atwall){
             ServoClamp();

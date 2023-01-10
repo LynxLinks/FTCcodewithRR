@@ -37,8 +37,8 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
 
     private Encoder leftEncoder, rightEncoder, frontEncoder;
 
-    public static double X_MULTIPLIER = 1.0099; // Multiplier in the X direction
-    public static double Y_MULTIPLIER = 1.0112; // Multiplier in the Y direction
+    public static double X_MULTIPLIER = .99938;//1.0099; // Multiplier in the X direction
+    public static double Y_MULTIPLIER = 1.0059; // Multiplier in the Y direction
 
     public StandardTrackingWheelLocalizer(HardwareMap hardwareMap) {
         super(Arrays.asList(
