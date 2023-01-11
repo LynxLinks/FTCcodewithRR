@@ -111,7 +111,7 @@ public class Auto14 extends Statics {
             Slide();
         }
         Cycle();
-        Park();
+
     }
 
     public void Init() {
@@ -372,63 +372,20 @@ public class Auto14 extends Statics {
     public void Cycle(){
         math(xcordset,ycordset,wcordset,true);
         math(xcordset,ycordset,wcordset,true);
-        boolean center = false;
-        int k = 50;
         for(int i = 0;i < xcord.length; i++){
 
-            if (i ==2) {
-                //center = true;
-            }else{
-                center = false;
+            ServoClamp();
+            if (D5.getState() && i < xcord.length -1) {
+                AutoDrive(xm * xcord[i], ycord[i], wcordset,0);
+            }else {
+                int zonef = 0;
+                if (zone == "1") zonef = 1;
+                if (zone == "2") zonef = 2;
+                if (zone == "3") zonef = 3;
+                AutoDrive(xm * xcord[i], ycord[i], wcordset,zonef);
             }
-
-            xcordset = xm * xcord[i];
-            ycordset = ycord[i];
-            if (!center){
-                ServoClamp();
-                if (!D5.getState()){
-
-                    center = true;
-                    Drive(xcordset,ycordset,wcordset,true,center,0,0);
-                    if (position == 1)
-                    if (position == 2){
-
-
-                    }
-                    broke = true;
-                    break;
-                }
-            }
-            firststack = false;
-            /*if (i == 2 && position == 2){
-                Drive(xcordset, ycordset, wcordset, true, center, -2, 1);
-            }else{*/
-            Drive(xcordset, ycordset, wcordset, true, center, 0, 0);
-            /*}
-            while (k > 0) {
-
-                k -= 1;
-            }*/
-            if (i < xcord.length -1) {
-                Drive(xcordset,ycordset,wcordset,true,center,0,0);
-                //Slam();
-                }
-            else {drop();}
-
         }
     }
-    /*public void Slam(){
-        drive.setPoseEstimate(new Pose2d());
-        traj = drive.trajectorySequenceBuilder(new Pose2d())
-                .forward(dslam)
-                .build();
-        drive.followTrajectorySequenceAsync(traj);
-        drive.update();
-        while( drive.isBusy()){
-            drivestack();
-
-            Slide();}
-    }*/
     public void IdentifyVuforia(){
         telemetry.clear();
         if (tfod != null) {
