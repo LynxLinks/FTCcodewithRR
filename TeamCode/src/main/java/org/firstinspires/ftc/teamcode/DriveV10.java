@@ -3,31 +3,20 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import static org.firstinspires.ftc.teamcode.Auto14.autopose;
-import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax1;
-import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMax2;
-import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin1;
-import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
-import static org.firstinspires.ftc.teamcode.TestServos.camBothClosed;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 @TeleOp(name = "DriveV10", group="Linear Opmode")
 public class DriveV10 extends Statics {
 
     public static double d1 = 9;
-    int[] xcord = new int[]{-1,0,-1,0,1,0};
-    int [] ycord = new int[]{3,2,1,1,2,1,2};
-    public static boolean useiteration = false;
     public static boolean usepreset =false;
-    public static boolean savepos = true;
     public static double slideoffset = 750;
     public static double reverseoffset = 8.9;
     public static double offset = 14;
 
     public void runOpMode() {
-        StaticInit(false,d1,xcord,ycord,useiteration,slideoffset,0,reverseoffset,offset);
-        S0.setPosition(camBothClosed);
-        S1.setPosition(UmbrellaMin1); //.7
-        S2.setPosition(UmbrellaMax2); //.03
+        StaticInit(false,d1,slideoffset,reverseoffset,offset);
+
 
         if (position == 2){
             wcordset = 1;
@@ -41,10 +30,11 @@ public class DriveV10 extends Statics {
         ycordset = ycord[0];
         xcordset = xm*xcord[0];
         target = 800;
-        if (usepreset) Init();
+
 
 
         waitForStart();
+        if (usepreset) Init();
         math(xcordset,ycordset,wcordset,false);
         math(xcordset,ycordset,wcordset,false);
 rrinnit();
