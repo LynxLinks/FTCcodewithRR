@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import static org.firstinspires.ftc.teamcode.Auto14.autopose;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 @TeleOp(name = "DriveV10", group="Linear Opmode")
@@ -13,31 +12,24 @@ public class DriveV10 extends Statics {
     public static double slideoffset = 750;
     public static double reverseoffset = 8.9;
     public static double offset = 14;
+    Pose2d autopose2;
+
 
     public void runOpMode() {
         StaticInit(false,d1,slideoffset,reverseoffset,offset);
 
 
-        if (position == 2){
-            wcordset = 1;
-            w = 1;
-            xm = 1;
-        } else {
-            wcordset = 4;
-            w = 4;
-            xm = -1;
-        }
-        ycordset = ycord[0];
-        xcordset = xm*xcord[0];
+
         target = 800;
-
-
-
         waitForStart();
-        if (usepreset) Init();
-        math(xcordset,ycordset,wcordset,false);
-        math(xcordset,ycordset,wcordset,false);
+
+
         rrinnit();
+        autopose2 = (PoseStorage.autoPose);
+        drive.setPoseEstimate(autopose2);
+        if (usepreset) Init();
+        math(0,2,wcordset,false);
+        math(0,2,wcordset,false);
         while (opModeIsActive()) {
             Slide();
             UI();
@@ -50,15 +42,20 @@ public class DriveV10 extends Statics {
         if (D5.getState() == false && D1.getDistance(DistanceUnit.INCH) < 1.75 && atwall){
             ServoClamp();
         }
+        if (gamepad1.right_bumper ) {
+            ServoClamp();
+        }
     }
     public void Init(){
-        drive.setPoseEstimate(autopose);
-        if (autopose.getX() > 0) {
-            traj = drive.trajectorySequenceBuilder(autopose)
+        drive.setPoseEstimate(autopose2);
+        if (autopose2.getX() > 0) {
+            wcordset = 4;
+            traj = drive.trajectorySequenceBuilder(autopose2)
                     .lineToLinearHeading(new Pose2d(65, -12, Math.toRadians(0)))
                     .build();
         }else{
-            traj = drive.trajectorySequenceBuilder(autopose)
+            wcordset = 4;
+            traj = drive.trajectorySequenceBuilder(autopose2)
                     .lineToLinearHeading(new Pose2d(-65, -12,Math.toRadians(180)))
                     .build();
         }

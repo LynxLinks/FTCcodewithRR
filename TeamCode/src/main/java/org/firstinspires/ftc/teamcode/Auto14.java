@@ -78,7 +78,8 @@ public class Auto14 extends Statics {
             Slide();
         }
         Cycle();
-        autopose = drive.getPoseEstimate();
+        drive.updatePoseEstimate();
+        PoseStorage.autoPose = drive.getPoseEstimate();
     }
 
     public void Init() {
@@ -131,6 +132,42 @@ public class Auto14 extends Statics {
                 .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                 .build();
     }
+    public void Park(int zone, int w){
+        if (w == 4) {//blue
+            io = Math.toRadians(0);
+            if (zone == 1) {
+                ix = 12 ;
+            }
+            if (zone == 2) {
+                ix = 36;
+            }
+            if (zone == 3) {
+                ix = 58;
+            }
+        }else{
+            io = Math.toRadians(180);
+            if (zone == 1) {
+                ix = -58 ;
+            }
+            if (zone == 2) {
+                ix = -36 ;
+
+            }
+            if (zone == 3) {
+                ix = -12 ;
+            }
+        }
+        traj = drive.trajectorySequenceBuilder(currentpose)
+                .lineToLinearHeading(new Pose2d(ix,-12,io))
+                .build();
+        drive.followTrajectorySequenceAsync(traj);
+        drive.update();
+        while (drive.isBusy()) {
+            drivestack();
+            Slide();
+        }
+    }
+
     public void Cycle(){
         math(xcordset,ycordset,wcordset,true);
         math(xcordset,ycordset,wcordset,true);
@@ -139,13 +176,21 @@ public class Auto14 extends Statics {
             ServoClamp();
             if (D5.getState() && i < xcord.length -1) {
                 AutoDrive(xm * xcord[i], ycord[i], wcordset,0);
-            }else {
+            }else if (i >= xcord.length-1 && D5.getState()) {
                 int zonef = 0;
                 if (zone == "1") zonef = 1;
                 if (zone == "2") zonef = 2;
                 if (zone == "3") zonef = 3;
                 AutoDrive(xm * xcord[i], ycord[i], wcordset,zonef);
+            }else if (!D5.getState()){
+
+                int zonef = 0;
+                if (zone == "1") zonef = 1;
+                if (zone == "2") zonef = 2;
+                if (zone == "3") zonef = 3;
+                Park(zonef,wcordset);
             }
+            PoseStorage.autoPose = drive.getPoseEstimate();
         }
     }
     public void IdentifyVuforia(){
@@ -190,7 +235,6 @@ public class Auto14 extends Statics {
         tfod.loadModelFromFile(TFOD_MODEL_ASSET, LABELS);
         // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
     }
-
 
 }
 /* public void Park() {

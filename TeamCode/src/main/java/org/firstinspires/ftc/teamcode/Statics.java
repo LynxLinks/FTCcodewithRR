@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -230,9 +231,8 @@ public class Statics extends LinearOpMode {
         drive.update();
         drive.update();
         drive.update();
-        drive.update();
-        drive.update();
-        drive.update();
+
+
     }
     public void drop(){
         if (beacon){
@@ -283,7 +283,7 @@ public class Statics extends LinearOpMode {
         }
     }
     public void manual(){
-        yc = -gamepad1.left_stick_y*.7 - gamepad1.right_stick_y*.2 ;
+       /* yc = -gamepad1.left_stick_y*.7 - gamepad1.right_stick_y*.2 ;
         xc = gamepad1.left_stick_x*.7 + gamepad1.right_stick_x*.2;
         m = Math.sqrt(Math.pow(yc,2) + Math.pow(xc,2));
         o = Math.atan2(  yc,xc);
@@ -299,8 +299,23 @@ public class Statics extends LinearOpMode {
 
                 )
         );
+
+        */
         drive.updatePoseEstimate();
         prevpose = drive.getPoseEstimate();
+
+        Vector2d input = new Vector2d(
+                gamepad1.left_stick_x*.7 + gamepad1.right_stick_x*.2,
+                -gamepad1.left_stick_y*.7 - gamepad1.right_stick_y*.2
+        ).rotated(-prevpose.getHeading());
+
+        drive.setWeightedDrivePower(
+                new Pose2d(
+                        input.getX(),
+                        input.getY(),
+                        gamepad1.left_trigger*.5 - gamepad1.right_trigger*.5
+                )
+        );
     }
     public void ServoClamp() {
         S0.setPosition(camBothClosed);
@@ -358,9 +373,7 @@ public class Statics extends LinearOpMode {
             dbleft = false;
             wcordset -= 1;
         }
-        if (gamepad1.right_bumper ) {
-            ServoClamp();
-        }
+
         if ((gamepad2.dpad_up) && dup && ycordset < 5) {
             dup = false;
             ycordset += 1;
@@ -426,10 +439,11 @@ public class Statics extends LinearOpMode {
         if(gamepad2.right_trigger > 0.6 && righttrig){
             righttrig = false;
             if (slidecalibrated == false) {
-                target = 500;
-                UntilSlide();
+                slidecalibrated = true;
             }
-            slidecalibrated = false;
+            else if (slidecalibrated == true) {
+                slidecalibrated = false;
+            }
         }
         if(!gamepad2.b) Bbutton = true;
         if(gamepad2.b && Bbutton){
@@ -445,6 +459,8 @@ public class Statics extends LinearOpMode {
         telemetry.addData("atwall", atwall);
         telemetry.addData("", "");
         telemetry.addData("beacon", beacon);
+        telemetry.addData("", "");
+        telemetry.addData("slidecalibrated", slidecalibrated);
         telemetry.update();
     }
     public void AutoDrive(int xf, int yf, int wf, int zone){
@@ -453,6 +469,7 @@ public class Statics extends LinearOpMode {
         math(xf, yf, wf,true);
         drive.setPoseEstimate(currentpose);
         if (zone > 0){
+            reverseoffset = 5;
             if (w == 4) {//blue
                 if (zone == 1) {
                     ix = 12 - dslam;
@@ -889,6 +906,7 @@ public class Statics extends LinearOpMode {
             }
         }
     }
+
 }
 /*
  public void Center(int wf){
