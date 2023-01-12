@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class DriveV10 extends Statics {
 
     public static double d1 = 9;
-    public static boolean usepreset =false;
+    public static boolean usepreset = true;
     public static double slideoffset = 750;
     public static double reverseoffset = 8.9;
     public static double offset = 14;
@@ -37,7 +37,7 @@ public class DriveV10 extends Statics {
         if (usepreset) Init();
         math(xcordset,ycordset,wcordset,false);
         math(xcordset,ycordset,wcordset,false);
-rrinnit();
+        rrinnit();
         while (opModeIsActive()) {
             Slide();
             UI();
@@ -46,18 +46,22 @@ rrinnit();
         }
     }
     public void ServoTrigger() {
-        if (gamepad1.right_bumper ) {
-            ServoClamp();
-        }
+
         if (D5.getState() == false && D1.getDistance(DistanceUnit.INCH) < 1.75 && atwall){
             ServoClamp();
         }
     }
     public void Init(){
         drive.setPoseEstimate(autopose);
-        traj = drive.trajectorySequenceBuilder(autopose)
-                .lineToLinearHeading(new Pose2d(-65, -12,vopark))
-                .build();
+        if (autopose.getX() > 0) {
+            traj = drive.trajectorySequenceBuilder(autopose)
+                    .lineToLinearHeading(new Pose2d(65, -12, Math.toRadians(0)))
+                    .build();
+        }else{
+            traj = drive.trajectorySequenceBuilder(autopose)
+                    .lineToLinearHeading(new Pose2d(-65, -12,Math.toRadians(180)))
+                    .build();
+        }
         drive.followTrajectorySequenceAsync(traj);
         while (Math.abs(gamepad1.left_stick_x) < .5
                 && Math.abs(gamepad1.left_stick_y) < .5

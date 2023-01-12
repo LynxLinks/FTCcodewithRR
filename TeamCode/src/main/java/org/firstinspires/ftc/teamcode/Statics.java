@@ -358,19 +358,22 @@ public class Statics extends LinearOpMode {
             dbleft = false;
             wcordset -= 1;
         }
-        if ((gamepad2.dpad_up) && dup && wcordset < 4) {
+        if (gamepad1.right_bumper ) {
+            ServoClamp();
+        }
+        if ((gamepad2.dpad_up) && dup && ycordset < 5) {
             dup = false;
             ycordset += 1;
         }
-        if ((gamepad2.dpad_down) && ddown) {
+        if ((gamepad2.dpad_down) && ddown && ycordset > 1) {
             ddown = false;
             ycordset -= 1;
         }
-        if ((gamepad2.dpad_right) && dright) {
+        if ((gamepad2.dpad_right) && dright&& xcordset < 2) {
             dright = false;
             xcordset += 1;
         }
-        if ((gamepad2.dpad_left) && dleft) {
+        if ((gamepad2.dpad_left) && dleft && xcordset > -2) {
             dleft = false;
             xcordset -= 1;
         }

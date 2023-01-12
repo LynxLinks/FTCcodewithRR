@@ -78,7 +78,7 @@ public class Auto14 extends Statics {
             Slide();
         }
         Cycle();
-
+        autopose = drive.getPoseEstimate();
     }
 
     public void Init() {
