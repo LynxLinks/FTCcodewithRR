@@ -7,10 +7,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @TeleOp(name = "DriveV10", group="Linear Opmode")
 public class DriveV10 extends Statics {
 
-    public static double d1 = 9;
+    public static double d1 = 7;
     public static boolean usepreset = true;
     public static double slideoffset = 750;
-    public static double reverseoffset = 8.9;
+    public static double reverseoffset = 3;
     public static double offset = 14;
     Pose2d autopose2;
 
@@ -19,7 +19,7 @@ public class DriveV10 extends Statics {
         StaticInit(false,d1,slideoffset,reverseoffset,offset);
 
 
-
+        slidecalibrated = false;
         target = 800;
         waitForStart();
 
@@ -28,8 +28,8 @@ public class DriveV10 extends Statics {
         autopose2 = (PoseStorage.autoPose);
         drive.setPoseEstimate(autopose2);
         if (usepreset) Init();
-        math(0,2,wcordset,false);
-        math(0,2,wcordset,false);
+        math2(0,2,wcordset,false);
+        math2(0,2,wcordset,false);
         while (opModeIsActive()) {
             Slide();
             UI();
@@ -44,6 +44,9 @@ public class DriveV10 extends Statics {
         }
         if (gamepad1.right_bumper ) {
             ServoClamp();
+        }
+        if (gamepad1.left_bumper) {
+            drop();
         }
     }
     public void Init(){

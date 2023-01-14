@@ -169,8 +169,8 @@ public class Auto14 extends Statics {
     }
 
     public void Cycle(){
-        math(xcordset,ycordset,wcordset,true);
-        math(xcordset,ycordset,wcordset,true);
+        math2(1,1,wcordset,true);
+        math2(1,1,wcordset,true);
         for(int i = 0;i < xcord.length; i++){
 
             ServoClamp();
