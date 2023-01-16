@@ -1,0 +1,793 @@
+/*
+/* public void Park() {
+        atwall = true;
+        if (position == 1){
+            if (broke){
+                Math.toRadians(0);
+                math(xcordset,ycordset,wcordset,false);
+                vopark = Math.toRadians(0);
+            }else{
+                vopark = Math.toRadians(180);vopark = Math.toRadians(0);
+            }
+            if (zone == "1") {
+                park = 12;
+                parkyoffset -= 5;
+            }
+            if (zone == "2") {
+                park = 36;
+                parkyoffset -= 2;
+            }
+            if (zone == "3") park = 58;
+
+
+        } if (position == 4){
+
+            if (zone == "1") {
+                park = 12;
+            }
+            if (zone == "2") park = 36;
+            if (zone == "3") {
+                park = 58;
+                if (!broke) {
+                    parkyoffset += 4;
+                }
+            }
+
+
+
+        }
+        if (position == 2) {
+            if(broke){
+                math(xcordset,ycordset,wcordset,false);
+                vopark = Math.toRadians(180);
+                drive.setPoseEstimate(currentpose);
+
+            }else{
+                vopark = Math.toRadians(0);
+
+            }
+
+
+
+            if (zone == "1") {
+                park = -61;
+                if (broke){
+
+                }
+                else {
+                    parkyoffset -= 3.5;
+                }
+            }
+            if (zone == "2") {
+                park = -36;
+                if (broke){
+
+                }else {
+                    parkyoffset -= 0;
+                }
+            }
+            if (zone == "3") {
+                park = -12;
+                if (broke) {
+                    parkyoffset -= 1;
+                }else{
+                    parkyoffset -= 1.5;
+                }
+            }
+
+
+        }
+        if (position == 3) {
+
+            if (zone == "1") {
+                park = -61;
+                parkyoffset += 2;
+            }
+            if (zone == "2") park = -36;
+            if (zone == "3") park = -12;
+
+
+        }
+        if (firststack){
+
+        }
+        //drive.setPoseEstimate(prevpose);
+        parktraj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                //.back(2)
+                .back(8)
+                .addDisplacementMarker(() ->{target = 500;})
+
+                .lineToLinearHeading(new Pose2d(park,vy+parkyoffset,vopark))
+                .build();
+        drive.followTrajectorySequenceAsync(parktraj);
+        while( drive.isBusy()){
+            drivestack();
+            Slide();
+        }
+        autopose = drive.getPoseEstimate();
+    }
+
+    if (position == 3) {
+
+                for(int i = 0;i < 10; i++) {
+                    distanceholder = D2.getDistance(DistanceUnit.INCH);
+                    if (distanceholder < 55) {
+                        distance += distanceholder;
+                        count += 1;
+                    }
+                }
+                distance = distance/count;
+                xm = -1;
+                wcordset = 1;
+                pose = (new Pose2d(  distance - dwall3red, 0, Math.toRadians(-90)));
+                o2 = Math.toRadians(45);
+                o4 = Math.toRadians(180);
+                x4 = -32;
+                y4 = ywall2+ywalloffsetred;
+
+            }
+            y1 = ywall2 - 18;
+            x2 = 12.5 * Math.cos(o2);
+            y2 = ywall2 + (12.5 * Math.sin(o2));
+            y3 = 4;
+
+
+            drive.setPoseEstimate(pose);
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(-90)))
+                    .back(y1)
+                    .addDisplacementMarker(() -> {
+                        target = hdata[7];
+                        S1.setPosition(UmbrellaMax1); //.7
+                        S2.setPosition(UmbrellaMin2); //.03
+                    })
+                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .addDisplacementMarker(() -> {
+                        drop();
+                    })
+                    .back(y3)
+                    .addDisplacementMarker(() -> {
+                        target = 800;
+                    })
+                    .splineToSplineHeading(new Pose2d(x4, y4, o4), o4)
+                    .build();
+        }
+        if (position == 3 || position == 4) {
+            S0.setPosition(camBothOpen);
+            if (position == 4) {
+                for(int i = 0;i < 10; i++) {
+                    distanceholder = D4.getDistance(DistanceUnit.INCH);
+                    if (distanceholder < 55) {
+                        distance += distanceholder;
+                        count += 1;
+                    }
+                }
+                distance = distance/count;
+                xm = 1;
+                wcordset = 4;
+                pose = (new Pose2d( dwall3blue - distance, 0, Math.toRadians(-90)));
+                o2 = Math.toRadians(135);
+                o4 = Math.toRadians(0);
+                x4 = 32;
+                y4 = ywall2+ywalloffsetblue;
+
+            }
+ */
+
+/* yc = -gamepad1.left_stick_y*.7 - gamepad1.right_stick_y*.2 ;
+        xc = gamepad1.left_stick_x*.7 + gamepad1.right_stick_x*.2;
+        m = Math.sqrt(Math.pow(yc,2) + Math.pow(xc,2));
+        o = Math.atan2(  yc,xc);
+
+        ang = drive.getPoseEstimate().getHeading();
+        a = o - ang;
+        mx = m*(Math.cos(a));
+        my = m*(Math.sin(a));
+
+        drive.setWeightedDrivePower(
+                new Pose2d(
+                        mx,my,gamepad1.left_trigger*.5 - gamepad1.right_trigger*.5
+
+                )
+        );
+
+        */
+         /*public void Cycle(){
+                math2(1,1,wcordset,true);
+                math2(1,1,wcordset,true);
+                for(int i = 0;i < xcord.length; i++){
+
+                    ServoClamp();
+                    if (D5.getState() && i < xcord.length -1) {
+                        AutoDrive(xm * xcord[i], ycord[i], wcordset,0);
+                    }else if (i >= xcord.length-1 && D5.getState()) {
+                        int zonef = 0;
+                        if (zone == "1") zonef = 1;
+                        if (zone == "2") zonef = 2;
+                        if (zone == "3") zonef = 3;
+                        AutoDrive(xm * xcord[i], ycord[i], wcordset,zonef);
+                    }else if (!D5.getState()){
+
+                        int zonef = 0;
+                        if (zone == "1") zonef = 1;
+                        if (zone == "2") zonef = 2;
+                        if (zone == "3") zonef = 3;
+                        Park(zonef,wcordset);
+                    }
+                    PoseStorage.autoPose = drive.getPoseEstimate();
+                }
+            }*/
+    public void AutoDrive(int xf, int yf, int wf, int zone){
+        target = 850;
+        atwall = true;
+        math2(xf, yf, wf,true);
+        drive.setPoseEstimate(currentpose);
+        if (zone > 0){
+            reverseoffset = 5;
+            if (w == 4) {//blue
+                if (zone == 1) {
+                    ix = 12 - dslam;
+                }
+                if (zone == 2) {
+                    ix = 36 - dslam;
+                }
+                if (zone == 3) {
+                    ix = 58 - dslam;
+                }
+            }else{
+                if (zone == 1) {
+                    ix = -58 + dslam;
+                }
+                if (zone == 2) {
+                    ix = -36 + dslam;
+
+                }
+                if (zone == 3) {
+                    ix = -12 + dslam;
+                }
+            }
+
+        }
+        traj = drive.trajectorySequenceBuilder(currentpose)
+                .back(b1)
+                .addDisplacementMarker(() -> {
+                    target = hdata[xf + 5 * (yf - 1) + 2];
+                    S1.setPosition(UmbrellaMax1); //.7
+                    S2.setPosition(UmbrellaMin2); //.03
+                })
+                .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                .addDisplacementMarker(() -> {
+                    drop();
+                })
+                .back(d1-reverseoffset)
+                .addDisplacementMarker(() -> {
+                    target = starget;
+                    //slidecalibrated = false;
+                })
+                .splineToSplineHeading(new Pose2d(ix + ((ix/Math.abs(ix))*dslam), iy, io), io)
+                .build();
+        drive.followTrajectorySequenceAsync(traj);
+        drive.update();
+        while (drive.isBusy()) {
+            drivestack();
+            Slide();
+        }
+    }
+ public void math(int xf,int yf, int wf,boolean savepos) {
+
+        translate = true;
+        y = yf;
+        x = xf;
+        w = wf;
+        if (atwall) {
+            if (y == 6) {
+                d = d2;
+            } else {
+                d = d1;
+            }
+            if (w == 1) {
+                if (y >= 3) {
+                    vy = 24 * (y - 3) - 12;
+                    if (x <= -2) {
+                        vx = 24 * (x + 1) - 12;
+                        vo = Math.toRadians(135);
+                    } else {
+                        vx = 24 * x - 12;
+                        vo = Math.toRadians(45);
+                    }
+                } else {
+                    vy = 24 * (y - 2) - 12;
+                    if (x <= -2) {
+                        vx = 24 * (x + 1) - 12;
+                        vo = Math.toRadians(-135);
+                    } else {
+                        vx = 24 * x - 12;
+                        vo = Math.toRadians(-45);
+                    }
+                }
+                if (Math.abs(iy-vy)  == 0){
+                    offset = offset1;
+                }if (Math.abs(iy-vy)  == 24){
+                    offset = offset2;
+                }if (Math.abs(iy-vy)  == 48){
+                    offset = offset3;
+                }
+                x1 = vx - offset;
+                y1 = iy;
+                o1 = io;
+                b1 = x1 - ix;
+            }
+            if (w == 2) {
+                if (x >= 0) {
+                    vx = 24 * x - 12;
+                    if (y <= 1) {
+                        vy = 24 * (y - 2) - 12;
+                        vo = Math.toRadians(-45);
+                    } else {
+                        vy = 24 * (y - 3) - 12;
+                        vo = Math.toRadians(45);
+                    }
+                } else {
+                    vx = 24 * (x + 1) - 12;
+                    if (y <= 1) {
+                        vy = 24 * (y - 2) - 12;
+                        vo = Math.toRadians(-135);
+                    } else {
+                        vy = 24 * (y - 3) - 12;
+                        vo = Math.toRadians(135);
+                    }
+                }
+                if (Math.abs(ix-vx)  == 0){
+                    offset = offset1;
+                }if (Math.abs(ix-vx)  == 24){
+                    offset = offset2;
+                }if (Math.abs(ix-vx)  == 48){
+                    offset = offset3;
+
+                }
+                x1 = ix;
+                y1 = vy - offset;
+
+                o1 = io;
+                b1 = y1 - iy;
+            }
+            if (w == 3) {
+                if (x >= 1) {
+                    vx = 24 * (x - 1) + 12;
+                    if (y <= 1) {
+                        vy = 24 * (y - 2) - 12;
+                        vo = Math.toRadians(-45);
+                    } else {
+                        vy = 24 * (y - 3) - 12;
+                        vo = Math.toRadians(45);
+                    }
+                } else {
+                    vx = 24 * x + 12;
+                    if (y <= 1) {
+                        vy = 24 * (y - 2) - 12;
+                        vo = Math.toRadians(-135);
+                    } else {
+                        vy = 24 * (y - 3) - 12;
+                        vo = Math.toRadians(135);
+                    }
+                }
+                if (Math.abs(ix-vx)  == 0){
+                    offset = offset1;
+                }if (Math.abs(ix-vx)  == 24){
+                    offset = offset2;
+                }if (Math.abs(ix-vx)  == 48){
+                    offset = offset3;
+                }
+                x1 = ix;
+                y1 = vy - offset;
+                o1 = io;
+                b1 = y1 - iy;
+            }
+            if (w == 4) {
+                if (y >= 3) {
+                    vy = 24 * (y - 3) - 12;
+                    if (x >= 2) {
+                        vx = 24 * (x-1 ) + 12;
+                        vo = Math.toRadians(45);
+                    } else {
+                        vx = 24 * x + 12;
+                        vo = Math.toRadians(135);
+                    }
+                } else {
+                    vy = 24 * (y - 2) - 12;
+                    if (x >= 2) {
+                        vx = 24 * (x -1) + 12;
+                        vo = Math.toRadians(-45);
+                    } else {
+                        vx = 24 * x + 12;
+                        vo = Math.toRadians(-135);
+                    }
+                }
+                if (Math.abs(iy-vy)  == 0){
+                    offset = offset1;
+                }if (Math.abs(iy-vy)  == 24){
+                    offset = offset2;
+                }if (Math.abs(iy-vy)  == 48){
+                    offset = offset3;
+                }
+                x1 = vx + offset;
+                y1 = iy;
+                o1 = io;
+                b1 = ix - x1;
+            }
+            if (y == 6) {
+                vx = vx - 2 * xm;
+            }
+
+            x2 = vx + d * Math.cos(vo);
+            y2 = vy + d * Math.sin(vo);
+            o2 = vo;
+            x3 =x2;
+            y3 = y2;
+            o3 = o2;
+            if (centered && auto){
+                currentpose = new Pose2d(ix, iy-(centerpos-distance), io);
+            }else {
+            if (savepos && auto && !broke && drive.getPoseEstimate().getY() > -24 && drive.getPoseEstimate().getY() < 0){
+        currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
+        double distanceholder;
+        int count =0;
+        distance = 0;
+        if (w ==1){
+        for(int i = 0;i < 20; i++) {
+        distanceholder = D4.getDistance(DistanceUnit.INCH);
+        if (distanceholder < 55 && distanceholder > 35) {
+        distance += distanceholder;
+        count += 1;
+        }
+        }
+        }
+        if (w==4){
+        for(int i = 0;i < 20; i++) {
+        distanceholder = D2.getDistance(DistanceUnit.INCH);
+        if (distanceholder < 55 && distanceholder > 35) {
+        distance += distanceholder;
+        count += 1;
+        }
+        }
+
+        }
+        distance = distance/count;
+
+        if (distance <60 && distance >40  && false){
+        currentpose = new Pose2d(ix, distance - centerpos -12 , io);
+        telemetry.addData("distanceestimate",distance - centerpos -12);
+        }else {
+        currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
+        telemetry.addData("yestimate",drive.getPoseEstimate().getY());
+        }
+        telemetry.update();
+        }else{
+        currentpose = new Pose2d(ix, iy, io);
+        }
+
+        // }
+        atwall = false;
+
+        } else {
+        if (w == 1) {
+        ix = -64;
+        iy = -12;
+        io = Math.toRadians(180);
+        starget = 850;
+        y2 = iy;
+        if (Math.abs(iy-vy)  == 0){
+        offset = offset4;
+        }if (Math.abs(iy-vy)  == 24){
+        offset = offset5;
+        }if (Math.abs(iy-vy)  == 48){
+        offset = offset6;
+        }
+        x2 = vx - offset;
+
+        }
+        if (w == 2) {
+        ix = -12;
+        iy = -64;
+        io = Math.toRadians(-90);
+        starget = 500;
+        if (Math.abs(ix-vx)  == 0){
+        offset = offset4;
+        }if (Math.abs(ix-vx)  == 24){
+        offset = offset5;
+        }if (Math.abs(ix-vx)  == 48){
+        offset = offset6;
+        }
+        y2 = vy - offset;
+        x2 = ix;
+
+        }
+        if (w == 3) {
+        ix = 12;
+        iy = -64;
+        io = Math.toRadians(-90);
+        starget = 500;
+        if (Math.abs(ix-vx)  == 0){
+        offset = offset4;
+        }if (Math.abs(ix-vx)  == 24){
+        offset = offset5;
+        }if (Math.abs(ix-vx)  == 48){
+        offset = offset6;
+        }
+        y2 = vy - offset;
+        x2 = ix;
+
+        }
+        if (w == 4) {
+        ix = 64;
+        iy = -12;
+        io = 0;
+        starget = 850;
+        y2 = iy;
+        if (Math.abs(iy-vy)  == 0){
+        offset = offset4;
+        }if (Math.abs(iy-vy)  == 24){
+        offset = offset5;
+        }if (Math.abs(iy-vy)  == 48){
+        offset = offset6;
+        }
+        x2 = vx + offset;
+
+
+        }
+        x1 =q vx + reverseoffset * Math.cos(vo);
+        y1 = vy + reverseoffset * Math.sin(vo);
+        o1 = vo;
+        o2 = io;
+        x3 = ix;
+        y3 = iy;
+        o3 = io;
+        b1 = d - reverseoffset;
+        if (w==1) {
+        x3 = x3 - dslam;
+        }if (w == 2 || w == 3){
+        y3 = y3 - dslam;
+        }
+        if ( w ==4){
+        x3 = x3 + dslam;
+        }
+
+
+
+        if ( w == 4 || w == 1) {
+        if (vy == iy) {
+        x2 = x3;
+        y2 = y3;
+        o2 = o3;
+        translate = false;
+        }
+        }else{
+        if (vx == ix){
+        x2 = x3;
+        y2 = y3;
+        o2 = o3;
+        translate = false;
+        }
+        }
+        if(savepos && auto){
+        currentpose = drive.getPoseEstimate();
+        }else if(savepos && !auto){
+        currentpose = prevpose;
+        }
+        else{
+        currentpose = new Pose2d(vx + d * Math.cos(vo), vy + d * Math.sin(vo), vo);
+        }
+        if (!beacon){
+        atwall = true;
+        }
+        }
+        }
+
+ public void Center(int wf){
+        if (!D5.getState() && !auto) {
+            servoclampasync = true;
+        }else{
+            M0.setPower(.02);
+        }
+        drive.setPoseEstimate(new Pose2d());
+
+        double distanceholder = 0;
+        int count = 0;
+        if (auto){
+            target = 800;
+            traj = drive.trajectorySequenceBuilder(new Pose2d())
+                    .forward(5)
+                    .build();
+            drive.followTrajectorySequenceAsync(traj);
+            drive.update();
+            while(drive.isBusy()
+                    && !isStopRequested()){
+                drivestack();
+                Slide();
+                if (!auto){
+                    UI();
+                }
+            }
+        }
+
+        if (wf == 1 || wf == 3){
+
+            traj = drive.trajectorySequenceBuilder(new Pose2d())
+                    .back(1)
+                    .strafeLeft(100)
+                    .build();
+
+            drive.followTrajectorySequenceAsync(traj);
+            drive.update();
+            while(D4.getDistance(DistanceUnit.INCH) > 380
+                    && !isStopRequested()){
+                drivestack();
+                ServoClampAsync();
+                if (!auto){
+                    UI();
+                }
+            }
+            /////////////////
+            M1.setPower(0);
+            M0.setPower(0);
+            M2.setPower(0);
+            M3.setPower(0);
+            for(int i = 0;i < 20; i++) {
+                distanceholder = D4.getDistance(DistanceUnit.INCH);
+                if (distanceholder < 55 && distanceholder > 35) {
+                    distance += distanceholder;
+                    count += 1;
+                }
+            }
+
+            distance = distance/count;
+            //centered = true;
+            //if (!auto) {
+            telemetry.addData("centerdistance", distance);
+            telemetry.update();
+            drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
+            traj = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+                    //.lineToLinearHeading(new Pose2d(centerpos-distance,.5,Math.toRadians(90)))
+                    .strafeRight(centerpos - distance)
+                    .forward(4)
+                    .build();
+            /*}else{
+                drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
+                traj = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+                        //.lineToLinearHeading(new Pose2d(centerpos-distance,.5,Math.toRadians(90)))
+                        .forward(4)
+                        .build();
+            }
+                drive.followTrajectorySequenceAsync(traj);
+                        drive.update();
+                        while ((drive.isBusy() || servoclampasync)
+                        && !isStopRequested()) {
+                        drivestack();
+                        ServoClampAsync();
+                        if (!auto){
+                        UI();
+                        }
+                        }
+
+
+                        }else{
+
+                        traj = drive.trajectorySequenceBuilder(new Pose2d())
+                        .back(.5)
+                        .strafeRight(100)
+                        .build();
+
+                        drive.followTrajectorySequenceAsync(traj);
+                        drive.update();
+                        while(D2.getDistance(DistanceUnit.INCH) > 380
+                        && !isStopRequested()){
+                        drivestack();
+                        ServoClampAsync();
+                        if (!auto){
+                        UI();
+                        }
+                        }
+                        /////////////////
+                        M1.setPower(0);
+                        M0.setPower(0);
+                        M2.setPower(0);
+                        M3.setPower(0);
+                        distance = 0;
+                        for(int i = 0;i < 20; i++) {
+        distanceholder = D2.getDistance(DistanceUnit.INCH);
+        if (distanceholder < 55 && distanceholder > 35) {
+        distance += distanceholder;
+        count += 1;
+        }
+        }
+        distance = distance/count;
+        //centered = true;
+        telemetry.addData("centerdistance", distance);
+        telemetry.update();
+        //if (!auto) {
+        drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
+        traj = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+        //.lineToLinearHeading(new Pose2d(-(centerpos-distance),.5,Math.toRadians(90)))
+        .strafeLeft(centerpos - distance)
+        .forward(4)
+        .build();
+
+            }else{
+                    drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
+                    traj = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+                            //.lineToLinearHeading(new Pose2d(centerpos-distance,.5,Math.toRadians(90)))
+                            .forward(4)
+                            .build();
+            }
+        drive.followTrajectorySequenceAsync(traj);
+        drive.update();
+        while ((drive.isBusy() || servoclampasync)
+        && !isStopRequested()) {
+        drivestack();
+        ServoClampAsync();
+        if (!auto){
+        UI();
+        }
+        }
+
+        }
+
+
+        }
+        public void  ServoClampAsync() {
+        if (servoclampasync) {
+            if (servoclamp1) {
+                S0.setPosition(camBothClosed);
+                M0_2.setPower(-.75);
+                servoclamp1 = false;
+                servoclamp2 = true;
+            } else if (servoclamp2) {
+                if ((D5.getState() == true || M0_2.getCurrentPosition() < -150)) {
+                    if (w == 1 || w == 4) S0.setPosition(camTopOpen);
+                    else S0.setPosition(camBothOpen);
+                    M0_2.setPower(-slidespeed);
+                    target = M0_2.getCurrentPosition() * 1.4 - bump;
+                    servoclamp2 = false;
+                    servoclamp3 = true;
+                }
+            } else if (servoclamp3) {
+                if (M0_2.getCurrentPosition() * 1.4 < target) {
+                    M0_2.setPower(slidespeed);
+                    target = target + slideoffset;
+                    servoclamp3 = false;
+                    servoclamp4 = true;
+                }
+            } else if (servoclamp4) {
+                if (M0_2.getCurrentPosition() * 1.4 > target) {
+                    M0_2.setPower(.01);
+                    servoclamp4 = false;
+                    servoclamp1 = true;
+                    servoclampasync = false;
+                }
+            }
+double vxf = 0;
+            double vyf = 0;
+            vx = xf*24;
+            vy = (yf - 3)*24;
+            if (w ==1){
+                vyf = vy;
+                if (vx > -24) {
+                    vxf = -24;
+                }else{
+                    vxf = vx;
+                }
+                vo = Math.atan2(vy+12,vxf + 36);
+            }if (w ==2){
+                if (vy > -24) {
+                    vyf = -24;
+                }else{
+                    vyf = vy;
+                }
+                vo = Math.atan2(vyf+12,vxf + 36);
+            }if (w ==3){
+
+            }if (w ==4){
+
+            }
+        }
+    }
+ */

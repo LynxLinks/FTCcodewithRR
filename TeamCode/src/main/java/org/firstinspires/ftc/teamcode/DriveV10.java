@@ -28,8 +28,6 @@ public class DriveV10 extends Statics {
         autopose2 = (PoseStorage.autoPose);
         drive.setPoseEstimate(autopose2);
         if (usepreset) Init();
-        math2(0,2,wcordset,false);
-        math2(0,2,wcordset,false);
         while (opModeIsActive()) {
             Slide();
             UI();
@@ -52,12 +50,10 @@ public class DriveV10 extends Statics {
     public void Init(){
         drive.setPoseEstimate(autopose2);
         if (autopose2.getX() > 0) {
-            wcordset = 4;
             traj = drive.trajectorySequenceBuilder(autopose2)
                     .lineToLinearHeading(new Pose2d(65, -12, Math.toRadians(0)))
                     .build();
         }else{
-            wcordset = 4;
             traj = drive.trajectorySequenceBuilder(autopose2)
                     .lineToLinearHeading(new Pose2d(-65, -12,Math.toRadians(180)))
                     .build();
@@ -75,6 +71,7 @@ public class DriveV10 extends Statics {
             Slide();
             UI();
         }
+
     }
 
 
