@@ -21,10 +21,10 @@ public class Auto14 extends Statics {
 
     public static double d1 = 7;
     public static double reverseoffset = 8;
-    public static double dwall = 15.5;
+    public static double dwall = 17.5;
     public static double dwall2 = -8;
-    public static double ywallblue = 50;
-    public static double ywallred = 51;
+    public static double ywallblue = 63.5;
+    public static double ywallred = 63.5;
     public static double slideoffset = 400;
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
     private static final String[] LABELS = {"1", "2", "3"};
@@ -81,17 +81,17 @@ public class Auto14 extends Statics {
                 } else {
                     drop();
                     target = 500;
-                    Park(zonei, wcordset);
+                    Park(zonei, wcordset,false);
                 }
             } else {
 
-                Park(zonei, wcordset);
+                Park(zonei, wcordset,true);
                 break;
             }
 
         }
     }
-    public void Park(int zone, int w){
+    public void Park(int zone, int w,boolean broke){
         if (w == 4) {
             io = Math.toRadians(0);
             if (zone == 1) {
@@ -102,6 +102,11 @@ public class Auto14 extends Statics {
             }
             if (zone == 3) {
                 ix = 58;
+            }
+            if (broke) {
+                vopark = Math.toRadians(0);
+            }else{
+                vopark = Math.toRadians(180);
             }
         }else{
             io = Math.toRadians(180);
@@ -114,9 +119,14 @@ public class Auto14 extends Statics {
             if (zone == 3) {
                 ix = -12 ;
             }
+            if (broke) {
+                vopark = Math.toRadians(180);
+            }else{
+                vopark = Math.toRadians(0);
+            }
         }
         traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                .lineToLinearHeading(new Pose2d(ix,-12,io))
+                .lineToLinearHeading(new Pose2d(ix,-12,vopark))
                 .build();
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
@@ -133,8 +143,9 @@ public class Auto14 extends Statics {
         double distanceholder = 0;
         int count = 0;
         target = 800;
-        drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(-90)));
         if (position == 1) {
+            drive.setPoseEstimate(new Pose2d(0,-ywallblue , Math.toRadians(-90)));
+
             initw = 4;
             initx = 2;
             inity = 2;
@@ -149,12 +160,18 @@ public class Auto14 extends Statics {
             xm = 1;
             wcordset = 4;
             x1 = (distance - dwall);
-            y1 = 2;
+            y1 = 2-ywallblue;
             o1 = Math.toRadians(-90);
             x2 = (distance - dwall2);
-            y2 = ywallblue;
+            y2 = -12;
             o2 = Math.toRadians(0);
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0, -ywallblue, Math.toRadians(-90)))
+                    .lineToLinearHeading(new Pose2d(x1, y1, o1))
+                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .build();
         } else if (position == 2){
+            drive.setPoseEstimate(new Pose2d(0,-ywallred , Math.toRadians(-90)));
+
             initw = 1;
             initx = -2;
             inity = 2;
@@ -169,16 +186,17 @@ public class Auto14 extends Statics {
             xm = -1;
             wcordset = 1;
             x1 = -(distance - dwall);
-            y1 = 2;
+            y1 = 2-ywallred;
             o1 = Math.toRadians(-90);
             x2 = -(distance - dwall2);
-            y2 = ywallred;
+            y2 = -12;
             o2 = Math.toRadians(180);
+            init1 = drive.trajectorySequenceBuilder(new Pose2d(0, -ywallred, Math.toRadians(-90)))
+                    .lineToLinearHeading(new Pose2d(x1, y1, o1))
+                    .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
+                    .build();
         }
-        init1 = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(-90)))
-                .lineToLinearHeading(new Pose2d(x1, y1, o1))
-                .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
-                .build();
+
     }
     public void IdentifyVuforia(){
         telemetry.clear();

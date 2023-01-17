@@ -43,7 +43,7 @@ public class Statics extends LinearOpMode {
     DigitalChannel D5;
 
 
-    public static double dslam = 2.5;//1.5
+    public static double dslam = 2;//1.5
     public static double d2 = 3;
     public static double centerposblue = 59;//53.5
     public static double centerposred = 59;//53.5
@@ -60,9 +60,9 @@ public class Statics extends LinearOpMode {
     public static double vopark;
 
     int[] hdata = {150, 1000, 150, 1000, 150,
-    1000, 1600, 2329, 1600, 1000,
+    1000, 1770, 2329, 1770, 1000,
     150, 2329, 150, 2329, 150,
-    1000, 1600, 2329, 1600, 1000,
+    1000, 1770, 2329, 1770, 1000,
     150, 1000, 150, 1000, 150
     ,100,100,100,100,100,100,100,100,100,100,100};
 
@@ -139,6 +139,7 @@ public class Statics extends LinearOpMode {
     boolean beacon;
     boolean righttrig;
     boolean auto;
+    boolean angleactive;
     boolean dup;
     boolean ddown;
     boolean dright;
@@ -297,26 +298,35 @@ public class Statics extends LinearOpMode {
             math2(xcordset,ycordset,wcordset,false);
         }
         if (Math.abs(gamepad1.right_stick_y) + Math.abs(gamepad1.right_stick_x) > .5) {
+            angleactive = true;
             o = Math.atan2(-gamepad1.right_stick_y, gamepad1.right_stick_x);
             o = o + Math.toRadians(180) * (1 - o / Math.abs(o));
             if (o != o){
                 o = 0;
             }
         }
+
         angdelta = (Math.toDegrees(o - drive.getPoseEstimate().getHeading()));
         if (angdelta > 180){
             angdelta -= 360;
         }else if (angdelta < -180){
             angdelta += 360;
         }
-        turn = -.6* Math.pow(((1 - Math.pow(9, ((angdelta) / 14))) / (1 + Math.pow(9, ((angdelta) / 14)))),3);// - gamepad1.right_trigger * .2;
+        if (angleactive){
+            turn = -.6* Math.pow(((1 - Math.pow(9, ((angdelta) / 14))) / (1 + Math.pow(9, ((angdelta) / 14)))),3);// - gamepad1.right_trigger * .2;
+
+        }else{
+            turn = 0;
+            o = drive.getPoseEstimate().getHeading();
+        }
         double sm = .65;
         if (gamepad1.left_trigger > .6){
             sm = .18;
         }
         Vector2d input = new Vector2d(
-                gamepad1.left_stick_x*sm, //+ gamepad1.right_stick_x*sm,
-                -gamepad1.left_stick_y*sm// - gamepad1.right_stick_y*sm
+                gamepad1.left_stick_x*sm,//+ gamepad1.right_stick_x*sm,
+                -gamepad1.left_stick_y*sm
+                // - gamepad1.right_stick_y*sm
         ).rotated(-drive.getPoseEstimate().getHeading());
 
         drive.setWeightedDrivePower(
@@ -328,7 +338,7 @@ public class Statics extends LinearOpMode {
         );
     }
     public void ServoClamp() {
-        o = drive.getPoseEstimate().getHeading();
+        angleactive = false;
         S0.setPosition(camBothClosed);
         M0_2.setPower(-.75);
         while (D5.getState() == false && M0_2.getCurrentPosition()*1.4 > -150) {
@@ -348,7 +358,9 @@ public class Statics extends LinearOpMode {
         UntilSlide();
     }
     public void UI() {
-
+        if (gamepad1.right_trigger > .6){
+            angleactive = false;
+        }
         if (gamepad1.a) {
             target = starget;
             S1.setPosition(UmbrellaMin1); //.7
@@ -361,8 +373,8 @@ public class Statics extends LinearOpMode {
         }
         if (gamepad1.y) {
             target = hdata[6];
-            S1.setPosition(UmbrellaMin1); //.7
-            S2.setPosition(UmbrellaMax2); //.03
+            S1.setPosition(UmbrellaMax1); //.7
+            S2.setPosition(UmbrellaMin2); //.03
         }
         if (gamepad1.x){
             target = hdata[5];
@@ -465,11 +477,14 @@ public class Statics extends LinearOpMode {
         telemetry.update();
     }
     public void Drive(int xf, int yf, int wf, boolean savepos) {
-
+        double dslamf = 0;
         if (atwall) {
 
             target = 850;
         } else {
+            if (auto){
+                dslamf = dslam;
+            }
             if (target < 1000){
                 target = 400;
             }else {
@@ -485,7 +500,7 @@ public class Statics extends LinearOpMode {
                         target = starget;
                     }else{
                         target = hdata[xf + 5 * (yf - 1) + 2];
-                        if (hdata[xf + 5 * (yf - 1) + 2] > 2000) {
+                        if (hdata[xf + 5 * (yf - 1) + 2] > 1400) {
                             S1.setPosition(UmbrellaMax1); //.7
                             S2.setPosition(UmbrellaMin2); //.03
                         }
@@ -494,8 +509,8 @@ public class Statics extends LinearOpMode {
                         }
                     }
                 })
-                .splineToSplineHeading(new Pose2d(x2, y2 , o2), o2)
-                .splineToSplineHeading(new Pose2d(x3+ .01 , y3+ .01 , o3 ), o3)
+                .splineToSplineHeading(new Pose2d(x2 + dslamf*(x2/Math.abs(x2)), y2 , o2), o2)
+                .splineToSplineHeading(new Pose2d(x3+ dslamf*(x2/Math.abs(x2)) +.01 , y3+ .01 , o3 ), o3)
                 .build();
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
