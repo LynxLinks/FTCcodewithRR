@@ -23,9 +23,9 @@ public class Auto14 extends Statics {
     public static double reverseoffset = 8;
     public static double dwall = 17.5;
     public static double dwall2 = -8;
-    public static double ywallblue = 63.5;
+    public static double ywallblue = 64.5;
     public static double ywallred = 63.5;
-    public static double slideoffset = 400;
+    public static double slideoffset = 200;
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
     private static final String[] LABELS = {"1", "2", "3"};
     private static final String VUFORIA_KEY = "AW9YHO7/////AAABmac9s9LxrUDQuPRw+qlK4+1ZyAszPO7ouIyCLjm98NVZSbtunzGw0u8sSmhuTWNKjpGUxGCkMqV1mVUxgl9h4/J0GxK6120V5SfAcPH2XO17MGzFAm421Lcixendmv2WpyNU3HqERp0Og+sWFVwQTMM5f9rPnzsGiOVSOJ3xgZ9vltV2yHIrYxq1X95szieyo3xGab+kyy4mP5gWgu4VYwqffKb+nhXQ28jTzYhkqTbmE1saub+9juGnkNbqolX3A82q6/jrpIq1a/Nx5Egebwv1ItuABv0lq0gQJ4MiAGOf6czB9FnreVCYxSA4bUvCEZYxUG9RPgbczmU6eW85/wDskT3+1vMYR+BoqqwSa0mr";
@@ -70,10 +70,10 @@ public class Auto14 extends Statics {
         Cycle();
     }
     public void Cycle() {
-        math2(1, 1, wcordset, true);
-        math2(1, 1, wcordset, true);
+
         for (int i = 0; i < xcord.length; i++) {
             ServoClamp();
+            M0_2.setPower(.25);
             if (D5.getState()) {
                 Drive(xm * xcord[i], ycord[i], wcordset, true);
                 if (i < xcord.length - 1) {
@@ -105,8 +105,10 @@ public class Auto14 extends Statics {
             }
             if (broke) {
                 vopark = Math.toRadians(0);
+                vopark2 = Math.toRadians(1);
             }else{
                 vopark = Math.toRadians(180);
+                vopark2 = Math.toRadians(180);
             }
         }else{
             io = Math.toRadians(180);
@@ -121,12 +123,15 @@ public class Auto14 extends Statics {
             }
             if (broke) {
                 vopark = Math.toRadians(180);
+                vopark2 = Math.toRadians(1);
             }else{
                 vopark = Math.toRadians(0);
+                vopark2 = Math.toRadians(180);
             }
         }
         traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .lineToLinearHeading(new Pose2d(ix,-12,vopark))
+                .turn(vopark2)
                 .build();
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
@@ -196,6 +201,8 @@ public class Auto14 extends Statics {
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                     .build();
         }
+        math2(1, 1, wcordset, true);
+        math2(1, 1, wcordset, true);
 
     }
     public void IdentifyVuforia(){

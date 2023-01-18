@@ -123,6 +123,7 @@ public class Statics extends LinearOpMode {
     double slideoffset;
     double offset;
     double centerpos;
+    double vopark2;
     double o;
     int xcordset;
     int zonei;
@@ -312,15 +313,21 @@ public class Statics extends LinearOpMode {
         }else if (angdelta < -180){
             angdelta += 360;
         }
-        if (angleactive){
-            turn = -.6* Math.pow(((1 - Math.pow(9, ((angdelta) / 14))) / (1 + Math.pow(9, ((angdelta) / 14)))),3);// - gamepad1.right_trigger * .2;
 
-        }else{
-            turn = 0;
+        if (gamepad1.left_trigger > .4 || gamepad1.right_trigger > .4 ){
+            turn = 0.2*gamepad1.left_trigger - 0.2*gamepad1.right_trigger;
             o = drive.getPoseEstimate().getHeading();
+        }else{
+            if (angleactive){
+                turn = -.6* Math.pow(((1 - Math.pow(9, ((angdelta) / 14))) / (1 + Math.pow(9, ((angdelta) / 14)))),3);// - gamepad1.right_trigger * .2;
+
+            }else{
+                turn = 0;
+                o = drive.getPoseEstimate().getHeading();
+            }
         }
         double sm = .65;
-        if (gamepad1.left_trigger > .6){
+        if (gamepad1.left_stick_button){
             sm = .18;
         }
         Vector2d input = new Vector2d(
@@ -356,11 +363,12 @@ public class Statics extends LinearOpMode {
         UntilSlide();
         target = target + slideoffset;
         UntilSlide();
+        if(!D5.getState()){
+            S0.setPosition(camBothClosed);
+        }
     }
     public void UI() {
-        if (gamepad1.right_trigger > .6){
-            angleactive = false;
-        }
+
         if (gamepad1.a) {
             target = starget;
             S1.setPosition(UmbrellaMin1); //.7
@@ -442,7 +450,7 @@ public class Statics extends LinearOpMode {
             dright2 = false;
             Drive(xcordset,ycordset,wcordset,false);
         }
-        if (gamepad1.left_stick_button){
+        if (gamepad1.right_stick_button){
             drive.setPoseEstimate(new Pose2d(drive.getPoseEstimate().getX(),drive.getPoseEstimate().getY(),Math.toRadians(-90)));
         }
         if((gamepad1.dpad_left) && dleft2){
@@ -597,46 +605,13 @@ public class Statics extends LinearOpMode {
             o3 = o2;
 
             if (savepos && auto && drive.getPoseEstimate().getY() > -24 && drive.getPoseEstimate().getY() < 0) {
-                double distanceholder;
-                int count = 0;
-                distance = 0;
-                if (w == 1) {
-                    for (int i = 0; i < 20; i++) {
-                        distanceholder = D4.getDistance(DistanceUnit.INCH);
-                        if (distanceholder < 55 && distanceholder > 35) {
-                            distance += distanceholder;
-                            count += 1;
-                        }
-                    }
-                }
-                if (w == 4) {
-                    for (int i = 0; i < 20; i++) {
-                        distanceholder = D2.getDistance(DistanceUnit.INCH);
-                        if (distanceholder < 55 && distanceholder > 35) {
-                            distance += distanceholder;
-                            count += 1;
-                        }
-                    }
-
-                }
-                distance = distance / count;
-
-                if (distance < 60 && distance > 40 && false) {
-                    currentpose = new Pose2d(ix, distance - centerpos - 12, io);
-                    telemetry.addData("distanceestimate", distance - centerpos - 12);
-                } else {
-                    currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
-                    telemetry.addData("yestimate", drive.getPoseEstimate().getY());
-                }
-                telemetry.update();
+                currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
                 startpose = currentpose;//changed
+
             } else if (savepos && !auto){
                 currentpose = drive.getPoseEstimate();
                 startpose = new Pose2d(ix, iy, io);
-            }
-
-
-            else {
+            } else {
                 currentpose = new Pose2d(ix, iy, io);
                 startpose = currentpose;
 
