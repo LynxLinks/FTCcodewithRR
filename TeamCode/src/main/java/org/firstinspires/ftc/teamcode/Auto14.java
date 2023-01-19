@@ -32,8 +32,8 @@ public class Auto14 extends Statics {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
     String zone = "3";
-    int [] xcord = new int[]{1,1,0};
-    int [] ycord = new int[]{2,3,2};
+    int [] xcord = new int[]{0,1,2};
+    int [] ycord = new int[]{2,2,2};
     public void runOpMode() {
         StaticInit(true,d1,slideoffset,reverseoffset,offset);
         initVuforia();
@@ -80,7 +80,7 @@ public class Auto14 extends Statics {
                     Drive(xm * xcord[i], ycord[i], wcordset, true);
                 } else {
                     drop();
-                    target = 500;
+                    target = 1000;
                     Park(zonei, wcordset,false);
                 }
             } else {
@@ -130,6 +130,7 @@ public class Auto14 extends Statics {
             }
         }
         traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .back(5)
                 .lineToLinearHeading(new Pose2d(ix,-12,vopark))
                 .turn(vopark2)
                 .build();
