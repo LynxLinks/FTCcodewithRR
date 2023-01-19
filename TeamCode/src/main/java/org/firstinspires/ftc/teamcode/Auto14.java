@@ -23,7 +23,7 @@ public class Auto14 extends Statics {
     public static double reverseoffset = 8;
     public static double dwall = 17.5;
     public static double dwall2 = -8;
-    public static double ywallblue = 63.5;
+    public static double ywallblue = 63;
     public static double ywallred = 63.5;
     public static double slideoffset = 350;
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
@@ -32,8 +32,8 @@ public class Auto14 extends Statics {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
     String zone = "3";
-    int [] xcord = new int[]{0,1,2};
-    int [] ycord = new int[]{2,2,2};
+    int [] xcord;// = new int[]{1,1,1};
+    int [] ycord;// = new int[]{3,3,3};
     public void runOpMode() {
         StaticInit(true,d1,slideoffset,reverseoffset,offset);
         initVuforia();
@@ -67,6 +67,12 @@ public class Auto14 extends Statics {
             drivestack();
             Slide();
         }
+        if (w == 1){
+            drive.setPoseEstimate(new Pose2d(drive.getPoseEstimate().getX(),(drive.getPoseEstimate().getY() + redstagger),drive.getPoseEstimate().getHeading()));
+        }else{
+            drive.setPoseEstimate(new Pose2d(drive.getPoseEstimate().getX(),(drive.getPoseEstimate().getY() + bluestagger),drive.getPoseEstimate().getHeading()));
+
+        }
         Cycle();
     }
     public void Cycle() {
@@ -81,19 +87,18 @@ public class Auto14 extends Statics {
                 } else {
                     drop();
                     target = 1000;
-                    Park(zonei, wcordset,false);
+                    Park(zonei, wcordset);
                 }
             } else {
 
-                Park(zonei, wcordset,true);
+                Park(zonei, wcordset);
                 break;
             }
 
         }
     }
-    public void Park(int zone, int w,boolean broke){
+    public void Park(int zone, int w){
         if (w == 4) {
-            io = Math.toRadians(0);
             if (zone == 1) {
                 ix = 12 ;
             }
@@ -103,15 +108,9 @@ public class Auto14 extends Statics {
             if (zone == 3) {
                 ix = 58;
             }
-            if (broke) {
-                vopark = Math.toRadians(0);
-                vopark2 = Math.toRadians(1);
-            }else{
-                vopark = Math.toRadians(180);
-                vopark2 = Math.toRadians(180);
-            }
+            vopark = Math.toRadians(0);
         }else{
-            io = Math.toRadians(180);
+
             if (zone == 1) {
                 ix = -58 ;
             }
@@ -121,17 +120,13 @@ public class Auto14 extends Statics {
             if (zone == 3) {
                 ix = -12 ;
             }
-            if (broke) {
-                vopark = Math.toRadians(180);
-                vopark2 = Math.toRadians(1);
-            }else{
-                vopark = Math.toRadians(0);
-                vopark2 = Math.toRadians(180);
-            }
+            vopark = Math.toRadians(180);
         }
         traj = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .setAccelConstraint(drive.getAccelerationConstraint(autoaccel))
                 .back(5)
-                .lineToLinearHeading(new Pose2d(ix,-12,vopark))
+                .lineToLinearHeading(new Pose2d(ix,-12,drive.getPoseEstimate().getHeading()))
+                .lineToLinearHeading(new Pose2d(ix-.01,-12+.01,vopark))
                 .turn(vopark2)
                 .build();
         drive.followTrajectorySequenceAsync(traj);
@@ -139,6 +134,7 @@ public class Auto14 extends Statics {
         while (drive.isBusy()) {
             drivestack();
             Slide();
+            PoseStorage.autoPose = drive.getPoseEstimate();
         }
         PoseStorage.autoPose = drive.getPoseEstimate();
         PoseStorage.initw = initw;
@@ -150,6 +146,8 @@ public class Auto14 extends Statics {
         int count = 0;
         target = 800;
         if (position == 1) {
+            xcord = new int[]{1,1,1};
+            ycord = new int[]{3,3,3};
             drive.setPoseEstimate(new Pose2d(0,-ywallblue , Math.toRadians(-90)));
 
             initw = 4;
@@ -172,10 +170,13 @@ public class Auto14 extends Statics {
             y2 = -12;
             o2 = Math.toRadians(0);
             init1 = drive.trajectorySequenceBuilder(new Pose2d(0, -ywallblue, Math.toRadians(-90)))
+                    .setAccelConstraint(drive.getAccelerationConstraint(autoaccel))
                     .lineToLinearHeading(new Pose2d(x1, y1, o1))
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                     .build();
         } else if (position == 2){
+            xcord = new int[]{0,1,2};
+            ycord = new int[]{2,2,2};
             drive.setPoseEstimate(new Pose2d(0,-ywallred , Math.toRadians(-90)));
 
             initw = 1;
@@ -198,6 +199,7 @@ public class Auto14 extends Statics {
             y2 = -12;
             o2 = Math.toRadians(180);
             init1 = drive.trajectorySequenceBuilder(new Pose2d(0, -ywallred, Math.toRadians(-90)))
+                    .setAccelConstraint(drive.getAccelerationConstraint(autoaccel))
                     .lineToLinearHeading(new Pose2d(x1, y1, o1))
                     .splineToSplineHeading(new Pose2d(x2, y2, o2), o2)
                     .build();

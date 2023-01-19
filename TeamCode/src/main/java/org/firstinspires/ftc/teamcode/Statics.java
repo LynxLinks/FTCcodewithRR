@@ -6,9 +6,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -21,6 +23,9 @@ import static org.firstinspires.ftc.teamcode.TestServos.UmbrellaMin2;
 import static org.firstinspires.ftc.teamcode.TestServos.camBothClosed;
 import static org.firstinspires.ftc.teamcode.TestServos.camBothOpen;
 import static org.firstinspires.ftc.teamcode.TestServos.camTopOpen;
+
+import androidx.annotation.NonNull;
+
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
@@ -58,11 +63,16 @@ public class Statics extends LinearOpMode {
     public static double bump = 250;
     public static double calibratespeed = 1;
     public static double vopark;
+    public static double redstagger = 0;
+    public static double bluestagger = 0;
+    public static double autoaccel = 25;
+    public static double teleopaccel = 40;
+
 
     int[] hdata = {150, 1000, 150, 1000, 150,
-    1000, 1770, 2329, 1770, 1000,
-    150, 2329, 150, 2329, 150,
-    1000, 1770, 2329, 1770, 1000,
+    1000, 1770, 2310, 1770, 1000,
+    150, 2310, 150, 2310, 150,
+    1000, 1770, 2310, 1770, 1000,
     150, 1000, 150, 1000, 150
     ,100,100,100,100,100,100,100,100,100,100,100};
 
@@ -124,6 +134,8 @@ public class Statics extends LinearOpMode {
     double offset;
     double centerpos;
     double vopark2;
+    double accel;
+    double vel;
     double o;
     int xcordset;
     int zonei;
@@ -138,7 +150,7 @@ public class Statics extends LinearOpMode {
     int position;
     int xm;
     boolean beacon;
-    boolean righttrig;
+    boolean gamepad2x;
     boolean auto;
     boolean angleactive;
     boolean dup;
@@ -170,6 +182,11 @@ public class Statics extends LinearOpMode {
             wcordset = (PoseStorage.initw);
             xcordset = (PoseStorage.initx);
             ycordset = (PoseStorage.inity);
+        }
+        if (auto){
+            accel = autoaccel;
+        }else{
+            accel = teleopaccel;
         }
 
         dashboard = FtcDashboard.getInstance();
@@ -209,13 +226,14 @@ public class Statics extends LinearOpMode {
     }
     public void rrinnit(){
         drive = new SampleMecanumDrive(hardwareMap);
+        //drive.getAccelerationConstraint(accel);
     }
     public void UntilSlide() {
        // telemetry.addLine("untilslide");
        // telemetry.update();
         if ((target > 1.4*M0_2.getCurrentPosition())) {
             M0_2.setPower(slidespeed);
-            while (target > 1.4*M0_2.getCurrentPosition() && gamepad2.right_trigger < .6 && !gamepad1.b){
+            while (target > 1.4*M0_2.getCurrentPosition() && !gamepad2.y){
                 if (!auto){
                     manual();
                     UI();
@@ -226,7 +244,7 @@ public class Statics extends LinearOpMode {
         }
         else{
             M0_2.setPower(-slidespeed );
-            while (target < 1.4*M0_2.getCurrentPosition() && gamepad2.right_trigger < .6  && !gamepad1.b) {
+            while (target < 1.4*M0_2.getCurrentPosition() && !gamepad2.y) {
                 if (!auto){
                     manual();
                     UI();
@@ -277,11 +295,8 @@ public class Statics extends LinearOpMode {
                 beenoff = true;
             }
             if (D0.getState() == false  && !beenoff) {
-                if (1.4*M0_2.getCurrentPosition()>500){
-                    M0_2.setPower(-calibratespeed);
-                }else{
-                    M0_2.setPower(-.2);
-                }
+
+                M0_2.setPower(-.2);
             }
             if (D0.getState() == false && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
                 M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -435,10 +450,10 @@ public class Statics extends LinearOpMode {
             dleft = false;
             xcordset -= 1;
         }
-        if(gamepad2.right_stick_y > .5){
+        if(gamepad2.right_trigger > .5){
             beacon = true;
         }
-        if(gamepad2.right_stick_y < -.5){
+        if(gamepad2.left_trigger > .5){
             beacon = false;
         }
         if(gamepad2.a){
@@ -464,9 +479,9 @@ public class Statics extends LinearOpMode {
             dleft2 = false;
             Drive(xcordset,ycordset,wcordset,true);
         }
-        if (gamepad2.right_trigger < 0.6) righttrig = true;
-        if(gamepad2.right_trigger > 0.6 && righttrig){
-            righttrig = false;
+        if (!gamepad2.x) gamepad2x = true;
+        if(gamepad2.x){
+            gamepad2x = false;
             if (slidecalibrated == false) {
                 slidecalibrated = true;
             }
@@ -495,7 +510,14 @@ public class Statics extends LinearOpMode {
 
        // telemetry.addLine("Drive");
        // telemetry.update();
-
+        double stagger = 0;
+        if (auto && !atwall) {
+            if (w == 1) {
+                stagger = redstagger;
+            } else {
+                stagger = bluestagger;
+            }
+        }
         double dslamf = 0;
         if (atwall) {
 
@@ -513,6 +535,7 @@ public class Statics extends LinearOpMode {
         math2(xf, yf, wf,savepos);
         drive.setPoseEstimate(currentpose);
         traj = drive.trajectorySequenceBuilder(startpose)
+                .setAccelConstraint(drive.getAccelerationConstraint(accel))
                 .back(b1)
                 .addDisplacementMarker(() -> {
                     if (atwall) {
@@ -528,8 +551,8 @@ public class Statics extends LinearOpMode {
                         }
                     }
                 })
-                .splineToSplineHeading(new Pose2d(x2 + dslamf*(x2/Math.abs(x2)), y2 , o2), o2)
-                .splineToSplineHeading(new Pose2d(x3+ dslamf*(x2/Math.abs(x2)) +.01 , y3+ .01 , o3 ), o3)
+                .splineToSplineHeading(new Pose2d(x2 + dslamf*(x2/Math.abs(x2)), y2 + stagger, o2), o2)
+                .splineToSplineHeading(new Pose2d(x3+ dslamf*(x2/Math.abs(x2)) +.01 , y3+ .01 + stagger , o3 ), o3)
                 .build();
         drive.followTrajectorySequenceAsync(traj);
         drive.update();
@@ -618,17 +641,21 @@ public class Statics extends LinearOpMode {
             o3 = o2;
 
             if (savepos && auto && drive.getPoseEstimate().getY() > -24 && drive.getPoseEstimate().getY() < 0) {
-                currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
-                startpose = currentpose;//changed
-
+                if(w==4){
+                    //io = Math.toRadians(-3.5);
+                    currentpose = new Pose2d(ix,drive.getPoseEstimate().getY() - bluestagger , io);
+                }else{
+                    currentpose = new Pose2d(ix, drive.getPoseEstimate().getY() - redstagger, io);
+                }
+                //currentpose = new Pose2d(ix, drive.getPoseEstimate().getY(), io);
             } else if (savepos && !auto){
                 currentpose = drive.getPoseEstimate();
-                startpose = new Pose2d(ix, iy, io);
             } else {
                 currentpose = new Pose2d(ix, iy, io);
-                startpose = currentpose;
 
             }
+            startpose = new Pose2d(ix, iy, io);
+
 
             // }
             atwall = false;

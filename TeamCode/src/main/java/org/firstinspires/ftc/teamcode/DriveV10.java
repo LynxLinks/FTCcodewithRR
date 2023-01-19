@@ -51,10 +51,12 @@ public class DriveV10 extends Statics {
         drive.setPoseEstimate(autopose2);
         if (autopose2.getX() > 0) {
             traj = drive.trajectorySequenceBuilder(autopose2)
+                    .setAccelConstraint(drive.getAccelerationConstraint(teleopaccel))
                     .lineToLinearHeading(new Pose2d(65, -12, Math.toRadians(0)))
                     .build();
         }else{
             traj = drive.trajectorySequenceBuilder(autopose2)
+                    .setAccelConstraint(drive.getAccelerationConstraint(teleopaccel))
                     .lineToLinearHeading(new Pose2d(-65, -12,Math.toRadians(180)))
                     .build();
         }
