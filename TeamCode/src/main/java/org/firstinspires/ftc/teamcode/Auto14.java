@@ -23,7 +23,7 @@ public class Auto14 extends Statics {
     public static double reverseoffset = 8;
     public static double dwall = 17.5;
     public static double dwall2 = -8;
-    public static double ywallblue = 64.5;
+    public static double ywallblue = 63.5;
     public static double ywallred = 63.5;
     public static double slideoffset = 350;
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";

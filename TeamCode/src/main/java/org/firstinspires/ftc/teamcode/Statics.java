@@ -211,8 +211,8 @@ public class Statics extends LinearOpMode {
         drive = new SampleMecanumDrive(hardwareMap);
     }
     public void UntilSlide() {
-        telemetry.addLine("untilslide");
-        telemetry.update();
+       // telemetry.addLine("untilslide");
+       // telemetry.update();
         if ((target > 1.4*M0_2.getCurrentPosition())) {
             M0_2.setPower(slidespeed);
             while (target > 1.4*M0_2.getCurrentPosition() && gamepad2.right_trigger < .6 && !gamepad1.b){
@@ -321,7 +321,7 @@ public class Statics extends LinearOpMode {
             o = drive.getPoseEstimate().getHeading();
         }else{
             if (angleactive){
-                turn = -.6* Math.pow(((1 - Math.pow(9, ((angdelta) / 14))) / (1 + Math.pow(9, ((angdelta) / 14)))),3);// - gamepad1.right_trigger * .2;
+                turn = -.6* Math.pow(((1 - Math.pow(9, ((angdelta) / 14))) / (1 + Math.pow(9, ((angdelta) / 14)))),5);// - gamepad1.right_trigger * .2;
 
             }else{
                 turn = 0;
@@ -348,8 +348,8 @@ public class Statics extends LinearOpMode {
     }
 
     public void ServoClamp() {
-        telemetry.addLine("ServoClamp");
-        telemetry.update();
+       // telemetry.addLine("ServoClamp");
+       // telemetry.update();
         angleactive = false;
         S0.setPosition(camBothClosed);
         M0_2.setPower(-.75);
@@ -372,6 +372,7 @@ public class Statics extends LinearOpMode {
         if(!D5.getState()){
             S0.setPosition(camBothClosed);
         }
+
     }
     public void UI() {
 
@@ -492,8 +493,8 @@ public class Statics extends LinearOpMode {
     }
     public void Drive(int xf, int yf, int wf, boolean savepos) {
 
-        telemetry.addLine("Drive");
-        telemetry.update();
+       // telemetry.addLine("Drive");
+       // telemetry.update();
 
         double dslamf = 0;
         if (atwall) {
@@ -552,8 +553,8 @@ public class Statics extends LinearOpMode {
         o = drive.getPoseEstimate().getHeading();
     }
     public void math2(int xf,int yf, int wf,boolean savepos) {
-        telemetry.addLine("Math");
-        telemetry.update();
+       // telemetry.addLine("Math");
+       // telemetry.update();
         y = yf;
         x = xf;
         w = wf;
