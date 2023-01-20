@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -40,6 +41,27 @@ public class DriveV1 extends OpMode {
             M0_2.setPower(-1 * ((1 - Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250))) / (1 + Math.pow(10, ((target - M0_2.getCurrentPosition()) / 250)))));
 
         }
+    }
+    public void manual(){
+        drive.updatePoseEstimate();
+        turn = 0.2*gamepad1.left_trigger - 0.2*gamepad1.right_trigger;
+        double sm = .65;
+        if (gamepad1.left_stick_button){
+            sm = .18;
+        }
+        Vector2d input = new Vector2d(
+                gamepad1.left_stick_x*sm,//+ gamepad1.right_stick_x*sm,
+                -gamepad1.left_stick_y*sm
+                // - gamepad1.right_stick_y*sm
+        ).rotated(-drive.getPoseEstimate().getHeading());
+
+        drive.setWeightedDrivePower(
+                new Pose2d(
+                        input.getX(),
+                        input.getY(),
+                        turn
+                )
+        );
     }
     public void Math(){
         y = ycord;
