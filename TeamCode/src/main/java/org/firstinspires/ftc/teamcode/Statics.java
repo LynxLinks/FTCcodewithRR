@@ -60,7 +60,7 @@ public class Statics extends LinearOpMode {
     public static double offset6 = 13;
     public static double Sdrop = 450;
     public static double slidespeed = .6;
-    public static double bump = 250;
+    public static double bump = 350;
     public static double calibratespeed = 1;
     public static double vopark;
     public static double redstagger = 0;
@@ -188,6 +188,7 @@ public class Statics extends LinearOpMode {
         }else{
             accel = teleopaccel;
         }
+        slidecalibrated = false;
 
         dashboard = FtcDashboard.getInstance();
         M0 = hardwareMap.get(DcMotor.class, "M0");
@@ -275,12 +276,12 @@ public class Statics extends LinearOpMode {
             UntilSlide();
             S1.setPosition(UmbrellaMin1); //.7
             S2.setPosition(UmbrellaMax2); //.03
-            target = pt;
+            target = pt - 100;
             UntilSlide();
-            if (beacon){
+            /*if (beacon){
                 S1.setPosition(UmbrellaMax1); //.7
                 S2.setPosition(UmbrellaMin2); //.03
-            }
+            }*/
         }
         beacon = false;
     }
@@ -368,7 +369,7 @@ public class Statics extends LinearOpMode {
         angleactive = false;
         S0.setPosition(camBothClosed);
         M0_2.setPower(-.75);
-        while (D5.getState() == false && M0_2.getCurrentPosition()*1.4 > 0) {
+        while (D5.getState() == false && M0_2.getCurrentPosition()*1.4 > -100) {
             if (!auto){
                 manual();
                 UI();
@@ -379,7 +380,6 @@ public class Statics extends LinearOpMode {
         } else {
             S0.setPosition(camBothOpen);
         }
-
         target = M0_2.getCurrentPosition() * 1.4 - bump;
         UntilSlide();
         target = target + slideoffset;
@@ -495,20 +495,20 @@ public class Statics extends LinearOpMode {
             math2(xcordset,ycordset,wcordset,false);
         }
         telemetry.addData("x", xcordset);
-        telemetry.addData("", "");
+        //telemetry.addData("", "");
         telemetry.addData("y", ycordset);
-        telemetry.addData("", "");
+        //telemetry.addData("", "");
         telemetry.addData("w", wcordset);
+        //telemetry.addData("", "");
         telemetry.addData("", "");
         telemetry.addData("atwall", atwall);
-        telemetry.addData("", "");
         telemetry.addData("beacon", beacon);
-        telemetry.addData("angdleta", angdelta);
+        telemetry.addData("calibrated", slidecalibrated);
         telemetry.update();
     }
     public void Drive(int xf, int yf, int wf, boolean savepos) {
 
-       // telemetry.addLine("Drive");
+       // telemetry.addLine("Drive");g`
        // telemetry.update();
         double stagger = 0;
         if (auto && !atwall) {
@@ -666,7 +666,7 @@ public class Statics extends LinearOpMode {
                 iy = -12;
                 io = Math.toRadians(180);
 
-                starget = 850;
+                starget = 650;
 
                 y2 = iy;
 
@@ -696,7 +696,7 @@ public class Statics extends LinearOpMode {
                 ix = -12;
                 iy = -64;
                 io = Math.toRadians(-90);
-                starget = 500;
+                starget = 400;
                 y2 = cy - offset;
                 x2 = ix;
             }
@@ -713,7 +713,7 @@ public class Statics extends LinearOpMode {
                 ix = 12;
                 iy = -64;
                 io = Math.toRadians(-90);
-                starget = 500;
+                starget = 400;
                 y2 = cy - offset;
                 x2 = ix;
             }
@@ -721,7 +721,7 @@ public class Statics extends LinearOpMode {
                 ix = 64;
                 iy = -12;
                 io = 0;
-                starget = 850;
+                starget = 650;
                 y2 = iy;
                 x2 = cx + offset;
                 if (Math.abs(iy - cy) == 0) {
