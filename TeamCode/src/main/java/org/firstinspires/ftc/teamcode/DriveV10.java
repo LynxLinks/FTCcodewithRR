@@ -19,14 +19,17 @@ public class DriveV10 extends Statics {
         StaticInit(false,d1,slideoffset,reverseoffset,offset);
 
 
-        slidecalibrated = false;
-        target = 800;
-        waitForStart();
+        target = 150;
+        while(!isStarted()){
+            //detects and save zone
+            Slide();
+        }
 
 
         rrinnit();
         autopose2 = (PoseStorage.autoPose);
         drive.setPoseEstimate(autopose2);
+        target = 800;
         if (usepreset) Init();
         while (opModeIsActive()) {
             Slide();

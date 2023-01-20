@@ -23,7 +23,7 @@ public class Auto14 extends Statics {
     public static double reverseoffset = 8;
     public static double dwall = 17.5;
     public static double dwall2 = -8;
-    public static double ywallblue = 63;
+    public static double ywallblue = 63.5;
     public static double ywallred = 63.5;
     public static double slideoffset = 350;
     private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/tflitemodels/model2.tflite";
@@ -180,8 +180,8 @@ public class Auto14 extends Statics {
             drive.setPoseEstimate(new Pose2d(0,-ywallred , Math.toRadians(-90)));
 
             initw = 1;
-            initx = -2;
-            inity = 2;
+            initx = -1;
+            inity = 3;
             for(int i = 0;i < 10; i++) {
                 distanceholder = D2.getDistance(DistanceUnit.INCH);
                 if (distanceholder < 55) {
