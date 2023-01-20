@@ -42,21 +42,19 @@ public class DriveV1 extends OpMode {
         }
     }
     public void Math(){
-        if (gamepad1.right_stick_button) {
-            if (atwall) {
-                y = ycord;
-                x = xcord;
-                vy = -(yoffset + 24 * (y - 1));
-                if (x > 0) {
-                    vx = .1 + 24 * Math.floor(Math.abs(x - xi));
-                } else {
-                    vx = .1 - 24 * Math.floor(Math.abs(x - xi));
-                }
-                if (x > xi) {
-                    vo = 135;
-                } else {
-                    vo = -135;
-                }
+        y = ycord;
+        x = xcord;
+        vy = -(yoffset + 24 * (y - 1));
+        if (x > 0) {
+            vx = .1 + 24 * Math.floor(Math.abs(x - xi));
+        } else {
+            vx = .1 - 24 * Math.floor(Math.abs(x - xi));
+        }
+        if (x > xi) {
+            vo = 135;
+        } else {
+            vo = -135;
+        }
     }
 
     public void Slide(){
