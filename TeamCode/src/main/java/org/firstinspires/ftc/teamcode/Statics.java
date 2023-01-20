@@ -298,7 +298,7 @@ public class Statics extends LinearOpMode {
 
                 M0_2.setPower(-.2);
             }
-            if (D0.getState() == false && beenoff) { //if slide is on limit and calibratedM0_2.setDirection(DcMotor.Direction.FORWARD);
+            if (D0.getState() == false && beenoff) {
                 M0_2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 M0_2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 M0_2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -480,7 +480,7 @@ public class Statics extends LinearOpMode {
             Drive(xcordset,ycordset,wcordset,true);
         }
         if (!gamepad2.x) gamepad2x = true;
-        if(gamepad2.x){
+        if(gamepad2.x && gamepad2x){
             gamepad2x = false;
             if (slidecalibrated == false) {
                 slidecalibrated = true;

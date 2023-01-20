@@ -41,6 +41,18 @@ public class DriveV1 extends OpMode {
 
         }
     }
+
+    public void Slide(){
+        if (target > M0_2.getCurrentPosition()){
+            M0_2.setPower(.5);
+        }else{
+            M0_2.setPower(-.5);
+        }
+    }
+
+
+
+
     public void RoadRunner() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
